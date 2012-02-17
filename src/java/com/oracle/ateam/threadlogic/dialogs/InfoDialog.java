@@ -85,11 +85,11 @@ public class InfoDialog extends JDialog {
         + "&nbsp;&nbsp;  and Eric Gross &lt;eric.x.gross@oracle.com&gt;,<br>"
         + "Oracle Fusion Middleware Architect Team (A-Team)</i></p><br><br>" +
 
-        "<p>TDA is free software; you can redistribute it and/or modify it under<br>"
+        "<p>ThreadLogic is free software; you can redistribute it and/or modify it under<br>"
         + "the terms of the Lesser GNU General Public License as published by<br>"
         + "the Free Software Foundation; either version 2.1 of the License, or<br>"
         + "(at your option) any later version.</p><br>"
-        + "TDA is distributed in the hope that it will be useful, but WITHOUT ANY<br>"
+        + "ThreadLogic is distributed in the hope that it will be useful, but WITHOUT ANY<br>"
         + "WARRANTY; without even the implied warranty of MERCHANTABILITY or <br>"
         + "FITNESS FOR A PARTICULAR PURPOSE. See the Lesser GNU General Public<br>"
         + "License for more details.<p><br>";
