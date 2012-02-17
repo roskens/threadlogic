@@ -53,7 +53,7 @@ public class RootSuite extends TestCase {
      */
     public static Test suite() {
         TestSuite suite = new TestSuite("RootSuite");
-        suite.addTest(com.pironet.tda.TdaSuite.suite());
+        suite.addTest(com.oracle.ateam.threadlogic.TdaSuite.suite());
         return suite;
     }
     
