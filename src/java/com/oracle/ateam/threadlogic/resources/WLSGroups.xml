@@ -58,7 +58,7 @@
 # In above sample, the Complex Group "Oracle AQ Adapter" uses 2 underlying simple groups. 
 # All threads belong to the simple group referred by "Oracle AQ AdapterTemp" should be included while all threads matching the "Oracle SOA DFW" should be excluded.
 
-# Also both Simple and Complex Groups can exclude certain advisories - as in dont take those advisories into consideration
+# Also both Simple and Complex Groups can exclude certain advisories - as in downgrade those advisories from overall thread health consideration
 # The AdvisoryId should match a predefined Advisory name in the AdvisoryMap.xml file.
 
 -->

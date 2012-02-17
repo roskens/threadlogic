@@ -9,10 +9,7 @@
  * which accompanies this distribution, and is available at
  * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package com.oracle.ateam.threadlogic.xml;
 
 import com.oracle.ateam.threadlogic.filter.CompositeFilter;
