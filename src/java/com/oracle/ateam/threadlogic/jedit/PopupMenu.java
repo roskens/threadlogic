@@ -1,25 +1,14 @@
 /**
- * Thread Dump Analysis Tool, parses Thread Dump input and displays it as tree
- *
- * This file is part of ThreadLogic - Thread Dump Analysis Tool.
- *
- * ThreadLogic is free software; you can redistribute it and/or modify
- * it under the terms of the Lesser GNU General Public License as published by
- * the Free Software Foundation; either version 2.1 of the License, or
- * (at your option) any later version.
- *
- * ThreadLogic is distributed in the hope that it will be useful,h
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * Lesser GNU General Public License for more details.
- *
- * ThreadLogic should have received a copy of the Lesser GNU General Public License
- * along with Foobar; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
- * $Id: PopupMenu.java,v 1.6 2008-04-27 20:31:13 irockel Exp $
+ * Copyright (c) 2012 egross, sabha.
+ * 
+ * ThreadLogic - parses thread dumps and provides analysis/guidance
+ * It is based on the popular TDA tool.  Thank you!
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser Public License v2.1
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
-
 package com.oracle.ateam.threadlogic.jedit;
 
 import com.oracle.ateam.threadlogic.ThreadLogic;

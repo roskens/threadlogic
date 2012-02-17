@@ -1,12 +1,13 @@
 /**
- * class Browser Copyright (C) 1999-2001 Fredrik Ehnbom <fredde@gjt.org>
- * available at
- * <http://www.gjt.org/servlets/JCVSlet/show/gjt/org/gjt/fredde/util/net/Browser.java/HEAD>
- * used under the terms of the GNU public license
- *
- * Launches the default browser of the current OS with the supplied URL.
- *
- * $Id: Browser.java,v 1.1 2007-05-03 09:18:07 irockel Exp $
+ * Copyright (c) 2012 egross, sabha.
+ * 
+ * ThreadLogic - parses thread dumps and provides analysis/guidance
+ * It is based on the popular TDA tool.  Thank you!
+ * 
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the GNU Lesser Public License v2.1
+ * which accompanies this distribution, and is available at
+ * http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 package com.oracle.ateam.threadlogic.utils;
 
