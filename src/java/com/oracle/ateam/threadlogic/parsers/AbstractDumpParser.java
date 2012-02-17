@@ -742,7 +742,7 @@ public abstract class AbstractDumpParser implements DumpParser {
         }
       }
       if (cat.getNodeCount() > 0) {
-        cat.setName(cat.getName() + " (" + cat.getNodeCount() + " Threads overall)");
+        cat.setName(cat.getName() + " (" + cat.getNodeCount() + " Threads)");
         threadDump.add(new DefaultMutableTreeNode(cat));
       }
     }
@@ -848,7 +848,7 @@ public abstract class AbstractDumpParser implements DumpParser {
     }
     if (cat.getNodeCount() > 0) {
       cat = sortThreadsByHealth(cat);
-      cat.setName(cat.getName() + " (" + cat.getNodeCount() + " Threads overall)");
+      cat.setName(cat.getName() + " (" + cat.getNodeCount() + " Threads)");
       newNode = new DefaultMutableTreeNode(cat);
       DefaultMutableTreeNode lockedNode = createLockedThreadsNode(cat);
       if (lockedNode != null) {
