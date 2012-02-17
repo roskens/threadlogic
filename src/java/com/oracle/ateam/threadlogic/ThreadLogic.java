@@ -2330,7 +2330,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    */
   private static void createAndShowGUI() {
     // Create and set up the window.
-    frame = new JFrame("ThreadLogic - We'll do the analsis for you!");
+    frame = new JFrame("ThreadLogic - We'll do the analysis for you!");
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     // Image image = Toolkit.getDefaultToolkit().getImage( "ThreadLogic.gif" );
