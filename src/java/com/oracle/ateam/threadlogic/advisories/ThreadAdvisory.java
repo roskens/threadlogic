@@ -386,10 +386,16 @@ public class ThreadAdvisory implements Comparable {
       keyword = keyword.replaceAll("\\$", ".");
       keyword = keyword.replaceAll("_", ".");
       
-      ThreadAdvisory advisory = ThreadAdvisory.lookupThreadAdvisory(keyword);
-      if (keyword.equals(ThreadLogicConstants.STUCK_PATTERN) && isPollerThread) {
+            
+      if (keyword.contains(ThreadLogicConstants.REENTRANTLOCK_PATTERN) && (state == ThreadState.PARKING)) {
+        threadInfo.setState(ThreadState.BLOCKED); 
+        if (threadInfo.getHealth().ordinal() < HealthLevel.WATCH.ordinal())
+          threadInfo.setHealth(HealthLevel.WATCH);
+      } else if (keyword.equals(ThreadLogicConstants.STUCK_PATTERN) && isPollerThread) {
         continue;
       }
+      
+      ThreadAdvisory advisory = ThreadAdvisory.lookupThreadAdvisory(keyword);
       
       if (advisory != null && !advisoryList.contains(advisory))
         advisoryList.add(advisory);
@@ -414,7 +420,8 @@ public class ThreadAdvisory implements Comparable {
     }
 
     // Check if some advisories are not adverse based on thread types
-    resetAdvisoriesBasedOnThread(threadInfo, advisoryList);
+    resetAdvisoriesBasedOnThread(threadInfo, advisoryList);   
+    
 
     // If the thread is in WAIT or BLOCKED state but the call came in as a
     // servlet

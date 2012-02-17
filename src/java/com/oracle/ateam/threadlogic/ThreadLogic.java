@@ -409,7 +409,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       resultString = result.toString();
       resultString = resultString
           .replaceFirst("./important.png", ThreadLogic.class.getResource("doc/important.png").toString());
-      resultString = resultString.replaceFirst("./logo-threadlogic.png", ThreadLogic.class.getResource("doc/logo-threadlogic.png")
+      resultString = resultString.replaceFirst("./logo-threadlogic.png", ThreadLogic.class.getResource("doc/logo-threadlogic-banner.png")
           .toString());
       resultString = resultString.replaceFirst("./fileopen.png", ThreadLogic.class.getResource("doc/fileopen.png").toString());
       resultString = resultString.replaceFirst("./settings.png", ThreadLogic.class.getResource("doc/settings.png").toString());

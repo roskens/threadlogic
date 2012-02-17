@@ -35,6 +35,7 @@ public class ThreadLogicConstants {
 
   public static final String STUCK_PATTERN = "STUCK";
   public static final String DEADLOCK_PATTERN = "DEADLOCK";
+  public static final String REENTRANTLOCK_PATTERN = "ReentrantLock";
   public static final String SOCKET_READ = "SocketInputStream.socketRead";
   public static final String SERVLET_PATTERN1 = "HttpServlet.service";
   public static final String SERVLET_PATTERN2 = "ServletRequestImpl.run";
