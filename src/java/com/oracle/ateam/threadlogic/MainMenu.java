@@ -292,6 +292,7 @@ public class MainMenu extends JMenuBar {
     menu.add(longMenuItem);
     menu.addSeparator();
 
+    /*
     menuItem = new JMenuItem("Filters", KeyEvent.VK_F);
     menuItem.setIcon(ThreadLogic.createImageIcon("Filters.gif"));
     menuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F, ActionEvent.ALT_MASK));
@@ -307,7 +308,8 @@ public class MainMenu extends JMenuBar {
     menu.add(menuItem);
 
     menu.addSeparator();
-
+*/
+    
     menuItem = new JMenuItem(ResourceManager.translate("file.preferences"), KeyStroke.getKeyStroke(
         ResourceManager.translate("file.preferences.mnem")).getKeyCode());
     menuItem.setIcon(ThreadLogic.createImageIcon("Preferences.gif"));
@@ -337,7 +339,7 @@ public class MainMenu extends JMenuBar {
     menu.setMnemonic(KeyStroke.getKeyStroke(ResourceManager.translate("help.menu.mnem")).getKeyCode());
     menu.getAccessibleContext().setAccessibleDescription(ResourceManager.translate("help.menu.description"));
 
-    menuItem = new JMenuItem(ResourceManager.translate("help.contents"), KeyStroke.getKeyStroke(
+    /*menuItem = new JMenuItem(ResourceManager.translate("help.contents"), KeyStroke.getKeyStroke(
         ResourceManager.translate("help.contents.mnem")).getKeyCode());
     menuItem.setIcon(ThreadLogic.createImageIcon("Help.gif"));
     menuItem.getAccessibleContext().setAccessibleDescription(ResourceManager.translate("help.contents.description"));
@@ -345,6 +347,7 @@ public class MainMenu extends JMenuBar {
 
     menuItem.addActionListener(listener);
     menu.add(menuItem);
+    */
     menuItem = new JMenuItem("Release Notes", null);
     menuItem.getAccessibleContext().setAccessibleDescription("Release Notes");
     menuItem.addActionListener(listener);
@@ -449,10 +452,13 @@ public class MainMenu extends JMenuBar {
     findLRThreadsButton.setEnabled(false);
     toolBar.add(findLRThreadsButton);
 
-    toolBar.add(createToolBarButton("Filters", "Filters.gif"));
+   /* toolBar.add(createToolBarButton("Filters", "Filters.gif"));
     toolBar.add(createToolBarButton("Custom Categories", "CustomCat.gif"));
+    
     toolBar.addSeparator();
     toolBar.add(createToolBarButton("Help", "Help.gif"));
+    */
+    
     toolBar.addSeparator();
     toolBar.add(new JLabel("    Minimum Health Level: "));
     toolBar.add(createHealthLevelComboBox());
