@@ -1672,12 +1672,12 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         showInfoFile("License Information", "doc/COPYING", "Document.gif");
       } else if ("Forum".equals(source.getText())) {
         try {
-          Browser.open("https://threadlogic.dev.java.net/servlets/ForumMessageList?forumID=1967");
+          Browser.open("http://java.net/projects/threadlogic/forums/ThreadLogic");
         } catch (Exception ex) {
           JOptionPane
               .showMessageDialog(
                   this.getRootPane(),
-                  "Error opening ThreadLogic Online Forum\nPlease open https://threadlogic.dev.java.net/servlets/ForumMessageList?forumID=1967 in your browser!",
+                  "Error opening ThreadLogic Online Forum\nPlease open http://java.net/projects/threadlogic/forums/ThreadLogic in your browser!",
                   "Error", JOptionPane.ERROR_MESSAGE);
         }
       } else if ("About ThreadLogic".equals(source.getText())) {
