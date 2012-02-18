@@ -51,8 +51,13 @@ public class WLSMuxerThreadGroup extends ThreadGroup {
     if (isAtWatchLevel && (threadInfo.getState() == ThreadState.BLOCKED)) {
       
       // Ensure the lock is also held by another muxer thread
-      // thats the nromal behavior
-      LockInfo blockedForLock = threadInfo.getBlockedForLock();
+      // thats the normal behavior
+      LockInfo blockedForLock = threadInfo.getBlockedForLock(); 
+      if (blockedForLock == null) {
+        threadInfo.setHealth(HealthLevel.NORMAL);
+        return;
+      }
+      
       ThreadInfo ownerOfLock = blockedForLock.getLockOwner();
       if (ownerOfLock != null) {
 

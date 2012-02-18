@@ -197,8 +197,23 @@ public class LockInfo {
 
       // Current owner not blocked for anything, so safe....
       // Nor is anyone currently waiting to lock
-      // Move to next lock
-      if ((blockedForLock == null) || (blockedThreads.size() == 0)) {
+      // Ignore for case where the owner is also blocked for the same lock - must be transient - 
+      // for a case where the lock its holding is the same lock its blocking too
+      // Saw a rare case of the owner of the lock blocking for the same lock it owns
+      // Possible the thread dump was taken at the exact moment as the thread tried to reobtain its lock
+      /*
+       * "RMICallHandler-2283" prio=1 tid=0x00002aab08ca8c70 nid=0x1f90 runnable [0x0000000046c5d000..0x0000000046c60c10]
+       * at oracle.xml.parser.v2.XMLNode.xdkInit(XMLNode.java:3511)
+       * - waiting to lock <0x00002acb22f504b0> (a oracle.j2ee.ws.saaj.soap.SOAPPartImpl$SOAPPartDocument)
+       * at oracle.xml.parser.v2.XMLNode.<init>(XMLNode.java:469)
+       * ...........
+       * at oracle.j2ee.ws.saaj.soap.SOAPPartImpl.getEnvelope(SOAPPartImpl.java:77)
+       * - locked <0x00002acb22f504b0> (a oracle.j2ee.ws.saaj.soap.SOAPPartImpl$SOAPPartDocument)
+       * at oracle.j2ee.ws.saaj.soap.MessageImpl.getSOAPBody(MessageImpl.java:989)
+       * 
+       */      
+      // Ignore this and move to next lock
+      if ((blockedForLock == null) || (blockedThreads.size() == 0) || lock.equals(blockedForLock)) {
         continue;
       }
 

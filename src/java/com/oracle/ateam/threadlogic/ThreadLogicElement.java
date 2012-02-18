@@ -135,9 +135,6 @@ public class ThreadLogicElement extends AbstractInfo implements Comparable {
     
     HealthLevel highestLevel = HealthLevel.IGNORE;
     ThreadState state = this.getState();
-    if (state == ThreadState.BLOCKED) {
-      highestLevel = HealthLevel.WATCH;
-    }
     
     for (ThreadAdvisory curAdvisory : this.advisories) {
       if (exclusionList.contains(curAdvisory)) {
