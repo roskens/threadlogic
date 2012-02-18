@@ -215,6 +215,7 @@ xmlns="http://java.net/projects/threadlogic">
     <ExcludedAdvisories>
 			<AdvisoryId>Database Query Execution</AdvisoryId>
 			<AdvisoryId>Socket Read</AdvisoryId>
+      <AdvisoryId>Stuck Thread</AdvisoryId>
 		</ExcludedAdvisories>        
 	</ComplexGroup>
 	<ComplexGroup>
