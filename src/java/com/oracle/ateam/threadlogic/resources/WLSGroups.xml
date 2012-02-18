@@ -74,6 +74,9 @@ xmlns="http://java.net/projects/threadlogic">
 		<PatternList>
 			<Pattern>SocketMuxer</Pattern>
 		</PatternList>
+  <ExcludedAdvisories>
+    <AdvisoryId>Socket Read</AdvisoryId>
+  </ExcludedAdvisories>    
 	</SimpleGroup>
 	<SimpleGroup>
 		<Name>WebLogic Timer</Name>

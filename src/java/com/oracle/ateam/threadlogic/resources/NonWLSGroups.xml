@@ -117,6 +117,15 @@ xmlns="http://java.net/projects/threadlogic">
 		</PatternList>
 	</SimpleGroup>
 	<SimpleGroup>
+		<Name>Other Poller</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>SelectorImpl.select</Pattern>
+		</PatternList>
+	</SimpleGroup>
+	<SimpleGroup>
 		<Name>Tibco JMS Listener</Name>
 		<Visible>true</Visible>
 		<Inclusion>true</Inclusion>
@@ -124,6 +133,9 @@ xmlns="http://java.net/projects/threadlogic">
 		<PatternList>
 			<Pattern>TibjmsxLinkTcp.LinkReader.run</Pattern>
 		</PatternList>
+  <ExcludedAdvisories>
+    <AdvisoryId>Socket Read</AdvisoryId>
+  </ExcludedAdvisories>           
 	</SimpleGroup>  
 	<SimpleGroup>
 		<Name>LDAP</Name>

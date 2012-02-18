@@ -387,7 +387,8 @@ public class ThreadAdvisory implements Comparable {
       keyword = keyword.replaceAll("_", ".");
       
             
-      if (keyword.contains(ThreadLogicConstants.REENTRANTLOCK_PATTERN) && (state == ThreadState.PARKING)) {
+      if (keyword.contains(ThreadLogicConstants.REENTRANTLOCK_PATTERN) 
+              && (state == ThreadState.PARKING)) {
         threadInfo.setState(ThreadState.BLOCKED); 
         if (threadInfo.getHealth().ordinal() < HealthLevel.WATCH.ordinal())
           threadInfo.setHealth(HealthLevel.WATCH);

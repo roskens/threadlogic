@@ -356,10 +356,10 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Normal Commit as long as there are no rollbacks</Advice>
 	</Advisory>
 	<Advisory>
-		<Name>Reserve JDBC Connection from Pool</Name>
+		<Name>Reserve Connection from Pool</Name>
 		<Health>WATCH</Health>
 		<Keyword>ConnectionPool.reserve</Keyword>
-		<Descrp>Reserving JDBC Connection from Pool</Descrp>
+		<Descrp>Reserving JDBC or other pooled resource connections from Pool in WLS</Descrp>
 		<Advice>Check the outcome of Connection reserve in a subsequent thread dump or stack trace of the reserve() call</Advice>
 	</Advisory>
 	<Advisory>
