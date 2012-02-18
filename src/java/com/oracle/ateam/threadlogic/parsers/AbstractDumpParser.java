@@ -1914,15 +1914,30 @@ public abstract class AbstractDumpParser implements DumpParser {
     if (stack == null)
       return;
 
+    ArrayList<String> ownedLockIds = getTrailingEntryAfterPattern(stack, LOCKED);
+    
     ArrayList<String> blockedLockIds = getTrailingEntryAfterPattern(stack, BLOCKED_FOR_LOCK);
     if (blockedLockIds.size() > 0) {
       blockedLockId = blockedLockIds.get(0);
-      thread.setBlockedForLock(blockedLockId);
-      // System.out.println("ADP: Thread: " + thread.getFilteredName() +
-      // ", blocked for lock: " + blockedLockId);
+      
+      // Make sure its not blocked on its own lock, saw a edge case of thread waiting to lock something it owned
+      /*
+       * "ExecuteThread: '2' for queue: 'weblogic.socket.Muxer'"  ... waiting for monitor entry [0xfffffffe37f3f000]
+       * java.lang.Thread.State: BLOCKED (on object monitor)
+       * at weblogic.socket.DevPollSocketMuxer.processSockets(DevPollSocketMuxer.java:94)
+       * - locked <0xfffffffe800550d0> (a java.lang.String)
+       * at weblogic.socket.SocketReaderRequest.run(SocketReaderRequest.java:29)
+       * at weblogic.socket.SocketReaderRequest.execute(SocketReaderRequest.java:42)
+       * at weblogic.kernel.ExecuteThread.execute(ExecuteThread.java:145)
+       * at weblogic.kernel.ExecuteThread.run(ExecuteThread.java:117)
+       */
+      // Verify we are not marking a lock owned by the same thread as the blocking lock
+      if (!ownedLockIds.contains(blockedLockId)) { 
+        thread.setBlockedForLock(blockedLockId);
+        // System.out.println("ADP: Thread: " + thread.getFilteredName() +
+        // ", blocked for lock: " + blockedLockId);
+      }
     }
-
-    ArrayList<String> ownedLockIds = getTrailingEntryAfterPattern(stack, LOCKED);
 
     // In Sun Hotspot, if the thread enters a synchronized block owning the lock
     // but then goes into a lock.wait() or lock.wait(xxx) timed wait,
@@ -1932,18 +1947,21 @@ public abstract class AbstractDumpParser implements DumpParser {
 
     /*
      * "Thread-1" prio=6 tid=0x186f4c00 nid=0x1318 waiting on condition
-     * [0x189ff000] java.lang.Thread.State: TIMED_WAITING (sleeping) at
-     * java.lang.Thread.sleep(Native Method) at
-     * MyTest.doSomething(MyTest.java:24) at MyTest.run(MyTest.java:18) - locked
-     * <0x04292a30> (a java.lang.Object) at
-     * java.lang.Thread.run(Thread.java:619)
+     * [0x189ff000] java.lang.Thread.State: TIMED_WAITING (sleeping) 
+     * at java.lang.Thread.sleep(Native Method)
+     * at MyTest.doSomething(MyTest.java:24) 
+     * at MyTest.run(MyTest.java:18) 
+     * - locked <0x04292a30> (a java.lang.Object) 
+     * at java.lang.Thread.run(Thread.java:619)
      * 
      * "Thread-0" prio=6 tid=0x186f0400 nid=0x2b28 in Object.wait() [0x1896f000]
-     * java.lang.Thread.State: WAITING (on object monitor) at
-     * java.lang.Object.wait(Native Method) - waiting on <0x04292a30> (a
-     * java.lang.Object) at java.lang.Object.wait(Object.java:485) at
-     * MyTest.run(MyTest.java:15) - locked <0x04292a30> (a java.lang.Object) at
-     * java.lang.Thread.run(Thread.java:619)
+     * java.lang.Thread.State: WAITING (on object monitor) 
+     * java.lang.Object.wait(Native Method) 
+     * - waiting on <0x04292a30> (a java.lang.Object) 
+     * at java.lang.Object.wait(Object.java:485) 
+     * at MyTest.run(MyTest.java:15) 
+     * - locked <0x04292a30> (a java.lang.Object) 
+     * at java.lang.Thread.run(Thread.java:619)
      */
 
     // So, check if the lock was released - as in its waiting on the same lock
@@ -1963,20 +1981,23 @@ public abstract class AbstractDumpParser implements DumpParser {
     // the lock first but released it which was then obtained by Thread-1
     /*
      * "Thread-0" id=12 idx=0x50 tid=9704 prio=5 alive, waiting, native_blocked
-     * -- Waiting for notification on: java/lang/Object@0x101F0B40[fat lock] at
-     * jrockit/vm/Threads.waitForNotifySignal(JLjava/lang/Object;)Z(Native
-     * Method) at java/lang/Object.wait(J)V(Native Method) at
-     * java/lang/Object.wait(Object.java:485) at MyTest.run(MyTest.java:15) ^--
-     * Lock released while waiting: java/lang/Object@0x101F0B40[fat lock] at
-     * java/lang/Thread.run(Thread.java:619) at
-     * jrockit/vm/RNI.c2java(IIIII)V(Native Method) -- end of trace
+     * -- Waiting for notification on: java/lang/Object@0x101F0B40[fat lock] 
+     * at jrockit/vm/Threads.waitForNotifySignal(JLjava/lang/Object;)Z(Native Method) 
+     * at java/lang/Object.wait(J)V(Native Method) 
+     * at java/lang/Object.wait(Object.java:485) at MyTest.run(MyTest.java:15) 
+     * ^-- Lock released while waiting: java/lang/Object@0x101F0B40[fat lock] 
+     * at java/lang/Thread.run(Thread.java:619) 
+     * at jrockit/vm/RNI.c2java(IIIII)V(Native Method) 
+     * -- end of trace
      * 
      * "Thread-1" id=13 idx=0x54 tid=7608 prio=5 alive, sleeping, native_waiting
-     * at java/lang/Thread.sleep(J)V(Native Method) at
-     * MyTest.doSomething(MyTest.java:24) at MyTest.run(MyTest.java:18) ^--
-     * Holding lock: java/lang/Object@0x101F0B40[fat lock] at
-     * java/lang/Thread.run(Thread.java:619) at
-     * jrockit/vm/RNI.c2java(IIIII)V(Native Method) -- end of trace
+     * at java/lang/Thread.sleep(J)V(Native Method) 
+     * at MyTest.doSomething(MyTest.java:24) 
+     * at MyTest.run(MyTest.java:18) 
+     * ^-- Holding lock: java/lang/Object@0x101F0B40[fat lock] 
+     * at java/lang/Thread.run(Thread.java:619) 
+     * at jrockit/vm/RNI.c2java(IIIII)V(Native Method) 
+     * -- end of trace
      */
     // But we dont have to discount it from the owned locks as JRockit logs it
     // as released already...

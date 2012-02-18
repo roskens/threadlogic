@@ -353,26 +353,10 @@ public class ThreadAdvisory implements Comparable {
 
     String threadName = threadInfo.getName();
     String threadStack = threadInfo.getContent();
-    StringBuffer sbuf = new StringBuffer();    
-
     ThreadState state = threadInfo.getState();
-    if ((state == ThreadState.BLOCKED)) {
-      
-      // Check if its really waiting for a lock
-      /** Check for a case of transient blocking... where it appears in blocked state but is not really blocked for any lock
-       * "ExecuteThread: '2' for queue: 'weblogic.socket.Muxer'" daemon prio=3 .... waiting for monitor entry 
-       *  java.lang.Thread.State: BLOCKED (on object monitor)
-       *   at weblogic.socket.DevPollSocketMuxer.processSockets(DevPollSocketMuxer.java:94)
-       *   - locked <0xfffffffe800550d0> (a java.lang.String)
-       *   at weblogic.socket.SocketReaderRequest.run(SocketReaderRequest.java:29)
-       *   at weblogic.socket.SocketReaderRequest.execute(SocketReaderRequest.java:42)
-       *   at weblogic.kernel.ExecuteThread.execute(ExecuteThread.java:145)
-       *   at weblogic.kernel.ExecuteThread.run(ExecuteThread.java:117)
-       * 
-       */
-      LockInfo lock = threadInfo.getBlockedForLock();
-      if (lock != null)
-        threadInfo.setHealth(HealthLevel.WATCH);
+    
+    if (threadInfo.isBlockedForLock() & (threadInfo.getBlockedForLock() != null)) {      
+      threadInfo.setHealth(HealthLevel.WATCH);
     }
 
     boolean isPollerThread = false;
