@@ -2058,18 +2058,19 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   private void closeCurrentDump() {
     TreePath selPath = tree.getSelectionPath();
 
-    boolean isFromClipBoard = isFromClipBoard((DefaultMutableTreeNode) selPath.getLastPathComponent());
+    boolean isNotFromFile = isNotFromFile((DefaultMutableTreeNode) selPath.getLastPathComponent());
     
-    while (selPath != null && !isFromClipBoard
-        && !(checkNameFromNode((DefaultMutableTreeNode) selPath.getLastPathComponent(), File.separator) || checkNameFromNode(
-            (DefaultMutableTreeNode) selPath.getLastPathComponent(), 2, File.separator))) {
+    while (selPath != null
+        && !isNotFromFile
+        && !(checkNameFromNode((DefaultMutableTreeNode) selPath.getLastPathComponent(), File.separator) 
+            || checkNameFromNode((DefaultMutableTreeNode) selPath.getLastPathComponent(), 2, File.separator))) {
       selPath = selPath.getParentPath();
     }
 
     Object[] options = { "Close File", "Cancel close" };
 
     String fileName = ((DefaultMutableTreeNode) selPath.getLastPathComponent()).getUserObject().toString();
-    if (!isFromClipBoard) {
+    if (!isNotFromFile) {
       fileName = fileName.substring(fileName.indexOf(File.separator));
     }
 
@@ -2081,7 +2082,10 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     // if first option "close file" is selected.
     if (selectValue == 0) {
       // remove stuff from the top nodes
-      topNodes.remove(selPath.getLastPathComponent());
+
+      if ( topNodes.remove(selPath.getLastPathComponent()) == false) {
+        ((DefaultMutableTreeNode) selPath.getPathComponent(0)).remove((DefaultMutableTreeNode) selPath.getLastPathComponent());
+      }
 
       if (topNodes.size() == 0) {
         // simply do a reinit, as there isn't anything to display
@@ -2131,7 +2135,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     }
   }
 
-  private boolean isFromClipBoard(DefaultMutableTreeNode node) {
+  private boolean isNotFromFile(DefaultMutableTreeNode node) {
     Object info = node.getUserObject();
     String result = null;
     if ((info != null) && (info instanceof AbstractInfo)) {
@@ -2139,7 +2143,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     } else if ((info != null) && (info instanceof String)) {
       result = (String) info;
     }
-    if (result.contains("Clipboard at")) {
+    if (result.contains("Clipboard at") || result.contains("Merge between Dump")
+        || result.contains("Long running thread detection")) {
       return true;
     }
     return false;
