@@ -142,19 +142,29 @@ public class BeaJDKParser extends AbstractDumpParser {
   protected String[] getThreadTokens(String name) {
     String patternMask = "^.*\"([^\"]+)\".*id=([^ ]+).*tid=([^ ]+).*"
         + "prio=[^ ]+ ([^,]+,? ?[^,]+?,? ?[^,]+?,? ?[^,]+?)(, daemon)?$";
-    Pattern p = Pattern.compile(patternMask);
-    Matcher m = p.matcher(name);
+    
+    String[] tokens = new String[] {};
+    
+    try {
+      Pattern p = Pattern.compile(patternMask);
+      Matcher m = p.matcher(name);
 
-    System.out.println(m.matches());
-    for (int iLoop = 1; iLoop < m.groupCount(); iLoop++) {
-      System.out.println(iLoop + ": " + m.group(iLoop));
+      System.out.println(m.matches());
+      for (int iLoop = 1; iLoop < m.groupCount(); iLoop++) {
+        System.out.println(iLoop + ": " + m.group(iLoop));
+      }
+
+      tokens = new String[7];
+      tokens[0] = m.group(1); // name
+      tokens[1] = m.group(3); // tid
+      tokens[2] = m.group(2); // nid
+      tokens[3] = m.group(4); // State
+
+    } catch(Exception e) { 
+
+      System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name  );
+      e.printStackTrace();
     }
-
-    String[] tokens = new String[7];
-    tokens[0] = m.group(1); // name
-    tokens[1] = m.group(3); // tid
-    tokens[2] = m.group(2); // nid
-    tokens[3] = m.group(4); // State
 
     return (tokens);
   }

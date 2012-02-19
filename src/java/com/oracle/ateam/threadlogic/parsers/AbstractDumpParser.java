@@ -436,7 +436,12 @@ public abstract class AbstractDumpParser implements DumpParser {
    */
   protected void createNode(DefaultMutableTreeNode top, String title, String info, String content, int lineCount) {
     DefaultMutableTreeNode threadInfo = null;
-    threadInfo = new DefaultMutableTreeNode(new ThreadInfo(title, info, content, lineCount, getThreadTokens(title)));
+    String[] tokens = getThreadTokens(title);
+    if (tokens == null || tokens.length == 0) {
+     return;
+    }
+    
+    threadInfo = new DefaultMutableTreeNode(new ThreadInfo(title, info, content, lineCount, tokens) );
     top.add(threadInfo);
   }
 
@@ -494,8 +499,13 @@ public abstract class AbstractDumpParser implements DumpParser {
   protected void addToCategory(DefaultMutableTreeNode category, ThreadDumpInfo tdi, String title, StringBuffer info,
       String content, int lineCount, boolean parseTokens) {
     DefaultMutableTreeNode threadInfo = null;
+    String[] tokens = parseTokens ? getThreadTokens(title) : null;
+    if (parseTokens && ((tokens == null) || (tokens.length == 0)) ) {      
+      return;
+    }
+    
     ThreadInfo newThread = new ThreadInfo(title, info != null ? info.toString() : null, content, lineCount,
-        parseTokens ? getThreadTokens(title) : null);
+        tokens);
     newThread.setParentThreadDump(tdi);
 
     threadInfo = new DefaultMutableTreeNode(newThread);

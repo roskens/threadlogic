@@ -549,19 +549,28 @@ public class IBMJDKParser extends AbstractDumpParser {
     // J9VMThread:0x000000011C692300, j9thread_t:0x000000011BB94AE0,
     // java/lang/Thread:0x07000000032B7618, state:B, prio=5
     String patternMask = "^.*\"([^\"]+)\".*:([^ ,]+),.*j9thread_t:([^ ,]+).*state:([^ ]+),.*prio=[^ ]+.*";
-    Pattern p = Pattern.compile(patternMask);
-    Matcher m = p.matcher(name);
+    String[] tokens = new String[] {};
+    
+    try {
+      Pattern p = Pattern.compile(patternMask);
+      Matcher m = p.matcher(name);
 
-    System.out.println(m.matches());
-    for (int iLoop = 1; iLoop < m.groupCount(); iLoop++) {
-      System.out.println(iLoop + ": " + m.group(iLoop));
+      System.out.println(m.matches());
+      for (int iLoop = 1; iLoop < m.groupCount(); iLoop++) {
+        System.out.println(iLoop + ": " + m.group(iLoop));
+      }
+
+      tokens = new String[7];
+      tokens[0] = m.group(1); // name
+      tokens[1] = m.group(3); // tid
+      tokens[2] = m.group(2); // nid
+      tokens[3] = m.group(4); // State
+
+     } catch(Exception e) { 
+      
+      System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name);
+      e.printStackTrace();
     }
-
-    String[] tokens = new String[7];
-    tokens[0] = m.group(1); // name
-    tokens[1] = m.group(3); // tid
-    tokens[2] = m.group(2); // nid
-    tokens[3] = m.group(4); // State
 
     return (tokens);
   }
