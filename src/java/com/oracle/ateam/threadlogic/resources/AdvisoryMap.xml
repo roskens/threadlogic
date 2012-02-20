@@ -223,7 +223,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>WLS has started paging messages to disk as consumers cannot keep up with producers and messages have started accumulating; Increase, speed or tune consumers or Introduce flow controls/quotas to slow down producers and Inflow rates. Or Increase number of servers to spread the load.</Advice>
 	</Advisory>
 	<Advisory>
-		<Name>Handle new Request</Name>
+		<Name>Handle new WLS Request</Name>
 		<Health>NORMAL</Health>
 		<Keyword>ConnectionManager.dispatch</Keyword>
 		<Descrp>Dispatching a new request for execution</Descrp>
@@ -319,6 +319,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>HttpSOAPConnection.post</Keyword>
 		<Descrp>SOA Layer making HTTP SOAP Outbound call</Descrp>
 		<Advice>Check for slowness in remote webservice if pattern continues</Advice>
+	</Advisory>
+  	<Advisory>
+		<Name>SOAP outbound calls from WLS</Name>
+		<Health>NORMAL</Health>
+		<Keyword>SOAPHttpURLConnection.getInputStream</Keyword>
+		<Descrp>WLS making HTTP SOAP Outbound call</Descrp>
+		<Advice>Check for slowness in remote webservice if thread continues to appear in Socket Read</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Bottleneck among threads</Name>
