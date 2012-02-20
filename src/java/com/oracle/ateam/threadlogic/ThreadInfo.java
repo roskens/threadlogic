@@ -96,20 +96,20 @@ public class ThreadInfo extends ThreadLogicElement {
     if (threadState != null) {
       threadState = threadState.toLowerCase();
       // Check against JRockit, IBM, SUN Thread states....
-      if (threadState.contains("waiting,") || threadState.equals("cw")
+      if (threadState.contains("waiting") || threadState.equals("cw")
           || content.contains("State: WAITING (on object monitor)")
           || content.contains("State: TIMED_WAITING (on object monitor)")
           || (threadState.contains("waiting") && content.contains("java.lang.Object.wait")))
         this.state = ThreadState.WAITING;
-      else if (threadState.contains("blocked,") || threadState.equals("b")
+      else if (threadState.contains("blocked") || threadState.equals("b")
           || content.contains("State: BLOCKED (on object monitor)")) {
         this.state = ThreadState.BLOCKED;
         this.health = HealthLevel.WATCH;
-      } else if (threadState.contains("parked,") || threadState.equals("p")
+      } else if (threadState.contains("parked") || threadState.equals("p")
           || content.contains("State: WAITING (parking)") || content.contains("State: TIMED_WAITING (parking)")
           || (threadState.contains("waiting") && content.contains(".park(")))
         this.state = ThreadState.PARKING;
-      else if (threadState.contains("sleeping,") || threadState.equals("cw")
+      else if (threadState.contains("sleeping") || threadState.equals("cw")
           || content.contains("State: TIMED_WAITING (sleeping))")
           || (threadState.contains("timed_waiting") && content.contains("Thread.sleep")))
         this.state = ThreadState.TIMED_WAIT;
