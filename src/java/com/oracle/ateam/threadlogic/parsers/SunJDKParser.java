@@ -418,7 +418,8 @@ public class SunJDKParser extends AbstractDumpParser {
    */
   public String[] getThreadTokens(String name) {
     
-    String patternMask = "^.*\"([^\\\"]+)\".*tid=([^ ]+).*nid=([^ ]+) *([^\\[]*).*";
+    String patternMask = "^.*\"([^\\\"]+)\".*tid=([^ ]+|).*nid=([^ ]+) *([^\\[]*).*";
+    name = name.replace("- Thread t@", "tid=");
     
     String[] tokens = new String[] {};
    

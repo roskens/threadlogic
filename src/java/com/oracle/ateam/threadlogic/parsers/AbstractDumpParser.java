@@ -1366,15 +1366,15 @@ public abstract class AbstractDumpParser implements DumpParser {
                 // informations
                 String state = tempLine.substring(tempLine.indexOf(':') + 1).trim();
                 if (state.indexOf(' ') > 0) {
-                  title += " state=" + state.substring(0, state.indexOf(' '));
+                  title += " nid=none " + state.substring(0, state.indexOf(' '));
                 } else {
-                  title += " state=" + state;
+                  title += " nid=none " + state;
                 }
               }
-            } else if (content != null && (tempLine = lineChecker.getLockedOwnable(line)) != null) {
-              concurrentSyncsFlag = true;
-              content.append(tempLine);
-              content.append("\n");
+            //} else if (content != null && (tempLine = lineChecker.getLockedOwnable(line)) != null) {
+            //  concurrentSyncsFlag = true;
+            //  content.append(tempLine);
+            //  content.append("\n");
             } else if (content != null && (tempLine = lineChecker.getWaitingOn(line)) != null) {
               content.append(linkifyMonitor(tempLine));
               monitorStack.push(tempLine);

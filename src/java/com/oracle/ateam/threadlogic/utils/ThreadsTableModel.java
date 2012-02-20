@@ -68,7 +68,7 @@ public class ThreadsTableModel extends AbstractTableModel {
 
             ThreadInfo ti = (ThreadInfo) entry;
             if (ti.getTokens().length > 3) {
-              columnNames = new String[] { "Name", "Health", "Advisories", "Thread-ID", "Native-ID", "State", };
+              columnNames = new String[] { "Name", "Health", "Advisories", "Native-ID", "Thread-ID", "State", };
             } else {
               columnNames = new String[] { "Name", "Thread-ID", "State" };
             }
