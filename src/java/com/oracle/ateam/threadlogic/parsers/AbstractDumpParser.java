@@ -1744,7 +1744,7 @@ public abstract class AbstractDumpParser implements DumpParser {
       if (gcThreadPattern != null) {
         Matcher matcher = gcThreadPattern.matcher(line);
         if (matcher.matches()) {
-          return matcher.group(1);
+          return format(matcher.group(1));
         }
       }
       return null;
@@ -1755,7 +1755,7 @@ public abstract class AbstractDumpParser implements DumpParser {
       if (atPattern != null) {
         Matcher matcher = atPattern.matcher(line);
         if (matcher.matches()) {
-          return matcher.group(1);
+          return format(matcher.group(1));
         }
       }
       return null;
@@ -1777,7 +1777,7 @@ public abstract class AbstractDumpParser implements DumpParser {
       if (lockedOwnablePattern != null) {
         Matcher matcher = lockedOwnablePattern.matcher(line);
         if (matcher.matches()) {
-          return matcher.group(1);
+          return format(matcher.group(1));
         }
       }
       return null;
@@ -1788,7 +1788,7 @@ public abstract class AbstractDumpParser implements DumpParser {
       if (waitingOnPattern != null) {
         Matcher matcher = waitingOnPattern.matcher(line);
         if (matcher.matches()) {
-          return matcher.group(1);
+          return format(matcher.group(1));
         }
       }
       return null;
@@ -1799,7 +1799,7 @@ public abstract class AbstractDumpParser implements DumpParser {
       if (parkingToWaitPattern != null) {
         Matcher matcher = parkingToWaitPattern.matcher(line);
         if (matcher.matches()) {
-          return matcher.group(1);
+          return format(matcher.group(1));
         }
       }
       return null;
@@ -1810,7 +1810,7 @@ public abstract class AbstractDumpParser implements DumpParser {
       if (waitingToPattern != null) {
         Matcher matcher = waitingToPattern.matcher(line);
         if (matcher.matches()) {
-          return matcher.group(1);
+          return format(matcher.group(1));
         }
       }
       return null;
@@ -1821,7 +1821,7 @@ public abstract class AbstractDumpParser implements DumpParser {
       if (lockedPattern != null) {
         Matcher matcher = lockedPattern.matcher(line);
         if (matcher.matches()) {
-          return matcher.group(1);
+          return format(matcher.group(1));
         }
       }
       return null;
@@ -1843,7 +1843,7 @@ public abstract class AbstractDumpParser implements DumpParser {
       if (lockReleasedPattern != null) {
         Matcher matcher = lockReleasedPattern.matcher(line);
         if (matcher.matches()) {
-          return matcher.group(1);
+          return format(matcher.group(1));
         }
       }
       return null;
@@ -1915,6 +1915,9 @@ public abstract class AbstractDumpParser implements DumpParser {
       return null;
     }
 
+    private String format(String s) {
+      return s.startsWith(" ") ? "\t" + s.trim() : s;
+    }
   }
 
   public void createLockInfo(ThreadInfo thread) {

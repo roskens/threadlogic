@@ -103,10 +103,10 @@ public class DumpParserFactory {
         if (WrappedSunJDKParser.checkForSupportedThreadDump(line)) {
           currentDumpParser = new WrappedSunJDKParser(bis, threadStore, lineCounter, withCurrentTimeStamp,
               startCounter, dm);
-        } else if (SunJDKParser.checkForSupportedThreadDump(line)) {
-          currentDumpParser = new SunJDKParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm);
-        } else if (BeaJDKParser.checkForSupportedThreadDump(line)) {
-          currentDumpParser = new BeaJDKParser(bis, threadStore, lineCounter, dm);
+        } else if (HotspotParser.checkForSupportedThreadDump(line)) {
+          currentDumpParser = new HotspotParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm);
+        } else if (JrockitParser.checkForSupportedThreadDump(line)) {
+          currentDumpParser = new JrockitParser(bis, threadStore, lineCounter, dm);
         } else if (IBMJDKParser.checkForSupportedThreadDump(line)) {
           currentDumpParser = new IBMJDKParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm);
         }

@@ -66,7 +66,7 @@ import javax.swing.tree.TreeNode;
  * 
  * @author irockel
  */
-public class SunJDKParser extends AbstractDumpParser {
+public class HotspotParser extends AbstractDumpParser {
 
   private int counter = 1;
   private int lineCounter = 0;
@@ -76,7 +76,7 @@ public class SunJDKParser extends AbstractDumpParser {
   /**
    * Creates a new instance of SunJDKParser
    */
-  public SunJDKParser(BufferedReader bis, Map threadStore, int lineCounter, boolean withCurrentTimeStamp,
+  public HotspotParser(BufferedReader bis, Map threadStore, int lineCounter, boolean withCurrentTimeStamp,
       int startCounter, DateMatcher dm) {
     super(bis, dm);
     this.threadStore = threadStore;

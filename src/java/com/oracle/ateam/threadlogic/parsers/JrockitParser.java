@@ -56,7 +56,7 @@ import javax.swing.tree.MutableTreeNode;
  * 
  * @author irockel
  */
-public class BeaJDKParser extends AbstractDumpParser {
+public class JrockitParser extends AbstractDumpParser {
   // private boolean foundClassHistograms = false;
   // private boolean withCurrentTimeStamp = false;
 
@@ -68,7 +68,7 @@ public class BeaJDKParser extends AbstractDumpParser {
    * @param threadStore
    *          the thread store to store the thread informations in.
    */
-  public BeaJDKParser(BufferedReader bis, Map threadStore, int lineCounter, DateMatcher dm) {
+  public JrockitParser(BufferedReader bis, Map threadStore, int lineCounter, DateMatcher dm) {
     super(bis, dm);
     this.threadStore = threadStore;
     this.lineCounter = lineCounter;

@@ -37,7 +37,7 @@ import java.util.Map;
 
 import com.oracle.ateam.threadlogic.utils.DateMatcher;
 
-public class WrappedSunJDKParser extends SunJDKParser {
+public class WrappedSunJDKParser extends HotspotParser {
 
   /**
    * Creates a new instance of WrappedSunJDKParser: A SunJDKParser reading a lot
