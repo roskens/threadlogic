@@ -253,6 +253,7 @@ xmlns="http://java.net/projects/threadlogic">
 			<SimpleGroupId>Oracle SOATemp</SimpleGroupId>
 			<SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
 			<SimpleGroupId>Oracle ADF</SimpleGroupId>
+      <SimpleGroupId>Oracle AQ AdapterTemp</SimpleGroupId>
 		</Exclusions>
 	</ComplexGroup>
 </tlogic:GroupsDefn>
