@@ -215,6 +215,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>OSB HTTP Proxy Execution</Descrp>
 		<Advice>Normal OSB Proxy Service inbound call</Advice>
 	</Advisory>
+  <!--
 	<Advisory>
 		<Name>WLS JMS Paging</Name>
 		<Health>FATAL</Health>
@@ -222,6 +223,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>WebLogic JMS paging messages to disk</Descrp>
 		<Advice>WLS has started paging messages to disk as consumers cannot keep up with producers and messages have started accumulating; Increase, speed or tune consumers or Introduce flow controls/quotas to slow down producers and Inflow rates. Or Increase number of servers to spread the load.</Advice>
 	</Advisory>
+-->  
 	<Advisory>
 		<Name>Handle new WLS Request</Name>
 		<Health>NORMAL</Health>
