@@ -340,7 +340,7 @@ public class IBMJDKParser extends AbstractDumpParser {
 
               // Second, initialize state for this new thread
               title = tempLine;
-              content = new StringBuffer("<body bgcolor=\"ffffff\"><pre><font size=" + ThreadLogic.getFontSizeModifier(-1)
+              content = new StringBuffer("<pre><font size=" + ThreadLogic.getFontSizeModifier(-1)
                   + ">");
               content.append(tempLine);
               content.append("\n");
