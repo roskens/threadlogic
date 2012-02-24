@@ -58,7 +58,8 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   
   private Filter allWLSThreadsFilter1 = new Filter("WLS Threads1", 
                                                     "(weblogic)|(oracle.integration)|(com.octetstring.vde)|(orabpel)|(dms)|"
-                                                    + "(HTTPClient)|(oracle.integration)|(oracle.mds)|(oracle.ias)|(oracle)", 
+                                                    + "(HTTPClient)|(oracle.integration)|(oracle.mds)|(oracle.ias)|(oracle)|"
+                                                    + "(com.tangosol.coherence)", 
                                                     2, false, false, true);
   
   private Filter allWLSThreadsFilter2 = new Filter("WLS Threads2", 
@@ -463,7 +464,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
 
           System.out.println(name + " > Adding exclusion for:" + advisoryId);
           ThreadAdvisory tadv = ThreadAdvisory.lookupThreadAdvisoryByName(advisoryId);
-          System.out.println("Found TADV :" + tadv);
+          System.out.println("Found ThreadAdvisory :" + tadv);
           if (tadv != null)
             tg.addToExclusionList(tadv);
         }      

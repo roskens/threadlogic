@@ -50,6 +50,18 @@ In above example, there are 2 keywords (PreparedStatement.execute and Statement.
 The next entry is the Descrp which is a just a textual description of the advisory
 The last entry is the Advice - as to actions or solutions can be applied.
 
+For multi-line pattern, use PatternA.*PatternB to match against all lines that start off 
+with PatternA with some content in the middle and ending with PatternB.
+Use with caution as it can do greedy grab of everything within the specified patterns.
+Example:
+  <Advisory>
+		<Name>Test Wild card Advice</Name>
+		<Health>WATCH</Health>
+		<Keyword>WsCalloutRuntimeStep.*WrapperRuntimeStep</Keyword>
+		<Descrp>Test Wild card advice</Descrp>
+		<Advice>Test Wild card advice</Advice>
+	</Advisory>
+  
 The Name of the advice can be used within the GroupDefns to downgrade certain advisories for specific thread groups.
 Ensure the Advice Name in AdvisoryMap matches with the AdvisoryId inside GroupDefns.
 Example:
@@ -71,6 +83,10 @@ Example:
 
 In the above example, Database Query Execution and Socket Read Advisories are excluded for the thread group: Oracle AQ Adapter
 as the AQ Adapter threads basic functionality is to poll for data from DB over sockets repeatedly and its their normal behavior.
+
+Note: Avoid using '&' as it would confuse the XML Parser and result in exceptions.
+If '&' is really required, use &amp;
+
 -->
 
 <tlogic:AdvisoryMap xmlns:tlogic="http://java.net/projects/threadlogic" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
@@ -87,7 +103,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>BlockedThreads</Keyword>
 		<Descrp>High Contention for Locks among threads creating a performance bottleneck</Descrp>
-		<Advice>Check and avoid contention in locks, modify code or conditions (Debugs possibly turned on), increase the number of contented resources via increased pool size/caching</Advice>
+		<Advice>Check and avoid contention in locks, modify code or conditions (Debugs possibly turned on), increase the number of contended resources via increased pool size/caching</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Finalizer Thread Blocked</Name>

@@ -41,6 +41,7 @@ public class ThreadAdvisory implements Comparable {
   public static String DICTIONARY_KEYS;
   public static String THREADTYPEMAPPER_KEYS;
 
+  public static final ArrayList<String> wildcardKeywordList = new ArrayList<String>();
   public static final Hashtable<String, ThreadType> threadTypeMapper = new Hashtable<String, ThreadType>();
   public static final Hashtable<String, ThreadAdvisory> threadAdvisoryMap = new Hashtable<String, ThreadAdvisory>();
   public static final Hashtable<String, ThreadAdvisory> threadAdvisoryMapById = new Hashtable<String, ThreadAdvisory>();
@@ -66,6 +67,8 @@ public class ThreadAdvisory implements Comparable {
         String key = tadv.getKeyword();
         
         threadAdvisoryMap.put(key, tadv);
+        if (key.contains("*"))
+          wildcardKeywordList.add(key);
         threadAdvisoryMapById.put(tadv.getPattern(), tadv);
         
         if (!empty)
@@ -79,12 +82,15 @@ public class ThreadAdvisory implements Comparable {
           for(int i = 1; i < noOfKeywords; i++) {
             key = tadv.getKeywordList()[i];
             threadAdvisoryMap.put(key, tadv);
+            if (key.contains("*"))
+              wildcardKeywordList.add(key);
             sbuf.append("|(" + key + ")");
           }
         }
       }
       
       DICTIONARY_KEYS = sbuf.toString();
+      System.out.println("Dictionary keys:" + DICTIONARY_KEYS);
       populateThreadTypeMapper();
       
     } catch (Exception e) {
@@ -216,11 +222,41 @@ public class ThreadAdvisory implements Comparable {
   }
 
   public static ThreadAdvisory lookupThreadAdvisory(String key) {
-    return new ThreadAdvisory(threadAdvisoryMap.get(key));
+    ThreadAdvisory readOnlyAdvisory = threadAdvisoryMap.get(key);
+    if (readOnlyAdvisory != null)
+      return new ThreadAdvisory(readOnlyAdvisory);
+    
+    /** If a multiline wild card pattern was actually used, the m.group() might return something vastly different from the pattern keyword:
+     * For example:WsCalloutRuntimeStep.*StageMetadataImpl
+     * would match against:
+    
+     * WsCalloutRuntimeStep$WsCalloutDispatcher.dispatch(WsCalloutRuntimeStep.java:1391)
+     * at stages.transform.runtime.WsCalloutRuntimeStep.processMessage(WsCalloutRuntimeStep.java:236)
+	   * at com.bea.wli.sb.stages.StageMetadataImpl$WrapperRuntimeStep.processMessage(StageMetadataImpl
+     
+     * In those cases, re-run the pattern so we can truly identify which one really matches..
+     * use the wildcard key list instead of going against the full dictionary key set.
+     */
+    
+    for(String wildcardKey: wildcardKeywordList) {      
+      
+      Pattern p = Pattern.compile(wildcardKey, Pattern.DOTALL);
+      Matcher m = p.matcher(key);
+      if (m.find()) {
+        // Found match of the wild card key....
+        readOnlyAdvisory = threadAdvisoryMap.get(wildcardKey);
+        return new ThreadAdvisory(readOnlyAdvisory); 
+      }
+    }
+    return null;
   }
 
   public static ThreadAdvisory lookupThreadAdvisoryByName(String name) {
-    return new ThreadAdvisory(threadAdvisoryMapById.get(name));
+    ThreadAdvisory readOnlyAdvisory = threadAdvisoryMapById.get(name);
+    if (readOnlyAdvisory != null)
+      return new ThreadAdvisory(readOnlyAdvisory);
+    
+    return null;
   }
 
   public static ThreadAdvisory getHotPatternAdvisory() {
@@ -368,7 +404,7 @@ public class ThreadAdvisory implements Comparable {
       }
     }
 
-    Pattern vmPattern = Pattern.compile(ThreadAdvisory.DICTIONARY_KEYS);
+    Pattern vmPattern = Pattern.compile(ThreadAdvisory.DICTIONARY_KEYS, Pattern.DOTALL);
     Matcher m = vmPattern.matcher(threadStack);
 
     ArrayList<ThreadAdvisory> advisoryList = new ArrayList<ThreadAdvisory>();
@@ -386,7 +422,7 @@ public class ThreadAdvisory implements Comparable {
       keyword = keyword.replaceAll("\\$", ".");
       keyword = keyword.replaceAll("_", ".");
       
-            
+      
       if (keyword.contains(ThreadLogicConstants.REENTRANTLOCK_PATTERN) 
               && (state == ThreadState.PARKING)) {
         threadInfo.setState(ThreadState.BLOCKED); 
@@ -397,6 +433,9 @@ public class ThreadAdvisory implements Comparable {
       }
       
       ThreadAdvisory advisory = ThreadAdvisory.lookupThreadAdvisory(keyword);
+      if (advisory == null) {
+        System.out.println("Unable to find matching advisory with keyword:" + keyword);
+      }
       
       if (advisory != null && !advisoryList.contains(advisory))
         advisoryList.add(advisory);

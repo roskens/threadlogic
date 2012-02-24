@@ -79,7 +79,7 @@ public class AdvisoryMapParser extends DefaultDomParser{
     try {
 		String pattern = getTextValue(grpEl,"Name");		
     String descrp = getTextValue(grpEl,"Descrp");
-    String advice = getTextValue(grpEl,"Advice");
+    String advice = getTextValue(grpEl,"Advice").replaceAll(";", ".<BR/>");;
     String health = getTextValue(grpEl,"Health");
     String keyword = getTextValue(grpEl,"Keyword");
 		
