@@ -12,6 +12,7 @@
 package com.oracle.ateam.threadlogic.advisories;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,7 +31,7 @@ import com.oracle.ateam.threadlogic.xml.ComplexGroup;
 import com.oracle.ateam.threadlogic.xml.GroupsDefnParser;
 import com.oracle.ateam.threadlogic.xml.SimpleGroup;
 
-public class ThreadAdvisory implements Comparable {
+public class ThreadAdvisory implements Comparable, Serializable {
 
   String keyword, descrp, advice, callPattern, group;
   private String[] keywordList = new String[1];

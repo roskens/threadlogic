@@ -684,10 +684,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     final ObjectInputStream ois = new ObjectInputStream(new ProgressMonitorInputStream(this, "Opening session " + file,
         new GZIPInputStream(new FileInputStream(file))));
 
+    resetMainPanel();
     setFileOpen(true);
     firstFile = false;
-    resetMainPanel();
     initDumpDisplay(null);
+
 
     final SwingWorker worker = new SwingWorker() {
 

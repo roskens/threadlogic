@@ -11,6 +11,7 @@
  */
 package com.oracle.ateam.threadlogic.advisories;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -23,7 +24,7 @@ import com.oracle.ateam.threadlogic.ThreadState;
 
 public class ThreadGroup extends ThreadLogicElement {
 
-  public class HotCallPattern {
+  public class HotCallPattern implements Serializable {
     String threadPattern;
     ArrayList<ThreadInfo> threads;
 

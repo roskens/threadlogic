@@ -11,6 +11,7 @@
  */
 package com.oracle.ateam.threadlogic;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -20,9 +21,9 @@ import java.util.Stack;
 import com.oracle.ateam.threadlogic.advisories.ThreadLogicConstants;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
 
-public class LockInfo {
+public class LockInfo implements Serializable {
 
-  public static class DeadLockEntry {
+  public static class DeadLockEntry implements Serializable {
     String deadlockMsg;
     String completeDeadlockStack;
     Collection<ThreadInfo> deadlockChain;

@@ -54,6 +54,7 @@ import com.oracle.ateam.threadlogic.utils.PrefManager;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,19 +84,19 @@ import javax.swing.tree.TreePath;
  * 
  * @author irockel
  */
-public abstract class AbstractDumpParser implements DumpParser {
+public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
-  private BufferedReader bis = null;
+  private transient BufferedReader bis = null;
   private int markSize = 16384;
   private int maxCheckLines = 10;
   private boolean millisTimeStamp = false;
-  private DateMatcher dm = null;
+  private transient DateMatcher dm = null;
   /**
    * this counter counts backwards for adding class histograms to the thread
    * dumps beginning with the last dump.
    */
   private int dumpHistogramCounter = -1;
-  protected LineChecker lineChecker;
+  protected transient LineChecker lineChecker;
   protected MonitorMap mmap;
   protected MutableTreeNode nextDump = null;
   protected Map threadStore = null;
@@ -107,6 +108,11 @@ public abstract class AbstractDumpParser implements DumpParser {
   protected String LOCKED;
   protected String BLOCKED_FOR_LOCK;
   protected String GENERAL_WAITING;
+
+  // Used for deserialization
+  public AbstractDumpParser() {
+    lineChecker = new LineChecker();
+  }
 
   protected AbstractDumpParser(BufferedReader bis, DateMatcher dm) {
     maxCheckLines = PrefManager.get().getMaxRows();
