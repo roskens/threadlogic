@@ -14,6 +14,7 @@ package com.oracle.ateam.threadlogic.categories;
 
 import com.oracle.ateam.threadlogic.filter.*;
 import com.oracle.ateam.threadlogic.HealthLevel;
+import com.oracle.ateam.threadlogic.ThreadLogic;
 import com.oracle.ateam.threadlogic.advisories.ThreadLogicConstants;
 import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
@@ -526,18 +527,13 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
       ThreadAdvisory hotcallPatternAdvsiory = ThreadAdvisory.getHotPatternAdvisory();
       for (HotCallPattern hotcall : hotPatterns) {
         HotCallPatternFilter fil = new HotCallPatternFilter("Hot Call Pattern - " + count, hotcall.geThreadPattern());
-        //System.out.println("\nAdding Hot call pattern for Group:" + tg.getName() + ", and Hot call:" + hotcall.geThreadPattern() + "\n\n");
         String color = hotcallPatternAdvsiory.getHealth().getBackgroundRGBCode();
-        StringBuffer sb = new StringBuffer("<p style=\"background-color:" + color + ";\"><font face=System size=-1>");
+        StringBuffer sb = new StringBuffer("<font size=5>Advisories: ");
+        ThreadLogic.appendAdvisoryLink(sb, hotcallPatternAdvsiory);
+        sb.append("</font><br><br>");
 
-        sb.append("Associated Advisory:" + hotcallPatternAdvsiory.getPattern()
-                + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Keyword: " + hotcallPatternAdvsiory.getKeyword()
-                + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Denotes: " + hotcallPatternAdvsiory.getDescrp()
-                + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;HealthLevel: " + hotcallPatternAdvsiory.getHealth()
-                + "<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Suggested Advice: " + hotcallPatternAdvsiory.getAdvice() + "<br><br>");
-        sb.append("</font></p>");
 
-        fil.setInfo(sb.toString() + "<BR> <pre> Multiple Threads are exhibiting following call execution pattern:\n"
+        fil.setInfo(sb.toString() + "<pre> Multiple Threads are exhibiting following call execution pattern:\n"
                 + hotcall.geThreadPattern() + "</pre>");
         nestedCategory.addToFilters(fil);
         count++;
