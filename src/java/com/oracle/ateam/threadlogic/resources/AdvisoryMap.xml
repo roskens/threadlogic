@@ -215,6 +215,24 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>OSB HTTP Proxy Execution</Descrp>
 		<Advice>Normal OSB Proxy Service inbound call</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>OSB Web Service callout waiting for response</Name>
+		<Health>NORMAL</Health>
+		<Keyword>PipelineContextImpl.SynchronousListener.waitForResponse</Keyword>
+		<Descrp>OSB Proxy waiting for WebSerice Callout Response</Descrp>
+		<Advice>Ensure backend can respond in timely fashion; When possible, use dedicated work manager and separate dispatch policy to handle calls for this proxy and avoid thread starvation if there are any loop-backs scenarios</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>OSB cached response lookup</Name>
+		<Health>WATCH</Health>
+		<Keyword>com.bea.wli.sb.service.resultcache.ResultCache.get</Keyword>
+		<Descrp>OSB attempting to lookup cached Response</Descrp>
+		<Advice>OSB is attempting to check for a cached service repsonse from Coherence</Advice>
+	</Advisory>
+  
+  
+  
+  
   <!--
 	<Advisory>
 		<Name>WLS JMS Paging</Name>
@@ -457,7 +475,7 @@ xmlns="http://java.net/projects/threadlogic">
 	</Advisory>
 	<Advisory>
 		<Name>Waiting for Event while blocking others</Name>
-		<Health>FATAL</Health>
+		<Health>WARNING</Health>
 		<Keyword>WaitWhileBlockingPattern</Keyword>
 		<Descrp>Multiple Threads blocking for a Lock while Lock Owner is waiting for an Event</Descrp>
 		<Advice>Ensure the owner thread is not waiting forever for an Event; if the desired Event never occurs, the lock will never get released and the blockers will be stuck in the same state forever.</Advice>
@@ -574,4 +592,19 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>Tibco EMS Message Consumer</Descrp>
 		<Advice>Normal behavior</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>Oracle DMS Aggregator</Name>
+		<Health>WATCH</Health>
+		<Keyword>oracle.dms.aggregator.Storage.getTables</Keyword>
+		<Descrp>Oracle DMS Aggregator running</Descrp>
+		<Advice>Ensure its not an overhead/drain on performance if multiple threads display this advisory, if needed, turn off DMS</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>JMX MBean Server Query</Name>
+		<Health>WATCH</Health>
+		<Keyword>DefaultMBeanServerInterceptor.queryMBeans, DefaultMBeanServerInterceptor.getMBean</Keyword>
+		<Descrp>Query of MBeans from the MBeanServer instance</Descrp>
+		<Advice>Ensure its not an overhead/drain on performance if multiple threads attempting to query/get/update the MBean Server</Advice>
+	</Advisory>
+  
 </tlogic:AdvisoryMap>
