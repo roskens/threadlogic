@@ -646,7 +646,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
 
     this.runAdvisory();
 
-    StringBuffer statData = new StringBuffer("<body bgcolor=\"#ffffff\"><font face=System "
+    StringBuffer statData = new StringBuffer("<font face=System "
         + "><table border=0><tr bgcolor=\"#dddddd\" ><td><font face=System "
         + ">Thread Dump Name</td><td width=\"150\"><b><font face=System>");
     statData.append(this.getName());

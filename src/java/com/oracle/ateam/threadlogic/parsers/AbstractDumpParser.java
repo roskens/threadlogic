@@ -289,7 +289,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           if (occurence >= (minOccurence - 1)) {
             threadCount++;
 
-            StringBuffer content = new StringBuffer("<body bgcolor=\"ffffff\"><b><font size=")
+            StringBuffer content = new StringBuffer("<b><font size=")
                 .append(ThreadLogic.getFontSizeModifier(-1)).append(">").append((String) keys.get(0))
                 .append("</b></font><hr><pre><font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">")
                 .append(fixMonitorLinks(ti0.getContent(), (String) keys.get(0)));
@@ -373,7 +373,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    * @return
    */
   private String getStatInfo(Vector keys, String prefix, int minOccurence, int threadCount) {
-    StringBuffer statData = new StringBuffer("<body bgcolor=\"#ffffff\"><font face=System><b><font face=System> ");
+    StringBuffer statData = new StringBuffer("<font face=System><b><font face=System> ");
 
     statData.append("<b>" + prefix + "</b><hr><p><i>");
     for (int i = 0; i < keys.size(); i++) {
@@ -1360,7 +1360,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
               // Second, initialize state for this new thread
               title = tempLine;
-              content = new StringBuffer("<body bgcolor=\"ffffff\"><pre><font size=" + ThreadLogic.getFontSizeModifier(-1)
+              content = new StringBuffer("<pre><font size=" + ThreadLogic.getFontSizeModifier(-1)
                   + ">");
               content.append(tempLine);
               content.append("\n");
@@ -1634,7 +1634,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       if (!found && !line.equals("")) {
         if (line.trim().startsWith("Found one Java-level deadlock")) {
           found = true;
-          dContent.append("<body bgcolor=\"ffffff\"><font size=").append(ThreadLogic.getFontSizeModifier(-1)).append("><b>");
+          dContent.append("<font size=").append(ThreadLogic.getFontSizeModifier(-1)).append("><b>");
           dContent.append("Found one Java-level deadlock");
           dContent.append("</b><hr></font><pre>\n");
         } else if (lineCounter >= getMaxCheckLines()) {

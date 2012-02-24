@@ -1230,7 +1230,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     }
     if (text != null) {
       htmlPane.setContentType("text/html");
-      htmlPane.setText(text);
+      htmlPane.setText("<html><body bgcolor=\"#ffffff\">" +text+ "</body></html>");
       htmlPane.setCaretPosition(0);
     } else {
       htmlPane.setText("");
