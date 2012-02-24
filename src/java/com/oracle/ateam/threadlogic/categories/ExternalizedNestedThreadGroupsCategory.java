@@ -525,6 +525,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
       ThreadAdvisory hotcallPatternAdvsiory = ThreadAdvisory.getHotPatternAdvisory();
       for (HotCallPattern hotcall : hotPatterns) {
         HotCallPatternFilter fil = new HotCallPatternFilter("Hot Call Pattern - " + count, hotcall.geThreadPattern());
+        //System.out.println("\nAdding Hot call pattern for Group:" + tg.getName() + ", and Hot call:" + hotcall.geThreadPattern() + "\n\n");
         String color = hotcallPatternAdvsiory.getHealth().getBackgroundRGBCode();
         StringBuffer sb = new StringBuffer("<p style=\"background-color:" + color + ";\"><font face=System size=-1>");
 

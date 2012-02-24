@@ -111,7 +111,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Inclusion>true</Inclusion>
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
-			<Pattern>com.tangosol.coherence.component.util.Daemon</Pattern>
+			<Pattern>com.tangosol.coherence.component.util.Daemon.run</Pattern>
 		</PatternList>
 	</SimpleGroup>
 	<SimpleGroup>

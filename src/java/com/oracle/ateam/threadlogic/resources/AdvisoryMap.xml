@@ -223,11 +223,11 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Ensure backend can respond in timely fashion; When possible, use dedicated work manager and separate dispatch policy to handle calls for this proxy and avoid thread starvation if there are any loop-backs scenarios</Advice>
 	</Advisory>
   <Advisory>
-		<Name>OSB cached response lookup</Name>
+		<Name>OSB Service Response cache lookup</Name>
 		<Health>WATCH</Health>
 		<Keyword>com.bea.wli.sb.service.resultcache.ResultCache.get</Keyword>
-		<Descrp>OSB attempting to lookup cached Response</Descrp>
-		<Advice>OSB is attempting to check for a cached service repsonse from Coherence</Advice>
+		<Descrp>OSB attempting to lookup cached service response from Coherence layer</Descrp>
+		<Advice>OSB is attempting to check for a cached service response from Coherence layer, should return immediately and not get into waiting or blocked state</Advice>
 	</Advisory>
   
   
@@ -520,7 +520,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>HotCallPattern</Keyword>
 		<Descrp>Multiple Threads executing same code path</Descrp>
-		<Advice>Ensure there are no blocking locks or bottlenecks, sufficient resources are available,remote service being invoked is responsive and scaling well to handle increased load</Advice>
+		<Advice>Ensure there are no blocking locks or bottlenecks, sufficient resources are available,remote service being invoked is responsive and scaling well to handle increased load; Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS Messaging Bridge</Name>

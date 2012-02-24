@@ -129,6 +129,7 @@ public class ThreadGroup extends ThreadLogicElement {
       String threadDumpSubset = ThreadAdvisory.getThreaddumpSubset(tholder,
           ThreadLogicConstants.MIN_THREADSTACK_LEN_TO_CONSIDER, ThreadLogicConstants.THREAD_STACK_OFFSET,
           ThreadLogicConstants.MAX_THREADSTACK_LEN_SUBSET);
+      
       if (threadDumpSubset != null) {
 
         HotCallPattern hotCallPattern = null;
@@ -170,7 +171,8 @@ public class ThreadGroup extends ThreadLogicElement {
       HotCallPattern hotCallPattern = threadStackCache.get(key);
       int noOfHits = hotCallPattern.threads.size();
 
-      // System.out.println("*************** Hot Patterns - hit:" + noOfHits);
+      //System.out.println("*************** Hot Patterns - hit:" + noOfHits + ", pattern: " + hotCallPattern.geThreadPattern());
+      
       // If similar pattern is seen frequently but is not associated with Muxer
       // or JVM GC threads, then flag that as worth WATCHing
       if (!threadGroupNameLower.contains("muxer") && !threadGroupNameLower.contains("jvm")
@@ -187,8 +189,8 @@ public class ThreadGroup extends ThreadLogicElement {
         }
 
         this.hotPatternList.add(hotCallPattern);
-        // System.out.println("Added a Hot call Pattern:" +
-        // hotCallPattern.threadPattern);
+        //System.out.println(this.threadGroupName + ": Added a Hot call Pattern:" +
+        //  hotCallPattern.threadPattern);
       }
     }
 

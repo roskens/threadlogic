@@ -471,7 +471,13 @@ public class ThreadAdvisory implements Comparable {
     for (int i = offset; (i < stackLines.size() && ((i - offset) < maxDepth)); i++) {
       sbuf.append(stackLines.get(i) + "\n");
     }
-    return sbuf.toString();
+    String subset = sbuf.toString();
+    
+    // Empty up the lock info as these can be unique and result in cache misses
+    subset = subset.replaceAll("<.*>", "");
+    //System.out.println("########Hot call after replacement:" + subset);
+    
+    return subset;
 
   }
 

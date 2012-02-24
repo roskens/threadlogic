@@ -34,8 +34,8 @@ public class HotCallPatternFilter extends Filter {
   }
 
   public boolean matches(ThreadInfo ti, boolean forceEnabled) {
-
-    boolean result = ti.getContent().contains(callPattern);
+    // Replace all Lock data with empty stuff so we can get match irrespective of lock ids...
+    boolean result = ti.getContent().replaceAll("<.*>", "").contains(callPattern);
     return result;
   }
 
