@@ -21,6 +21,45 @@
 
 # Patterns be code pattern (package.class.method), wild cards supported
 # Use . instead of / for the package names
+# There can be multiple Pattern entries or all merged with a | delimiter to form a choice
+
+Example:
+Using individual pattern entries for easier read:
+<SimpleGroup>
+		<Name>JVM</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>name</MatchLocation>
+		<PatternList>
+			<Pattern>GC task</Pattern>
+			<Pattern>Low Memory Detector</Pattern>
+			<Pattern>CompilerThread</Pattern>
+			<Pattern>Finalizer</Pattern>
+			<Pattern>VM Periodic Task</Pattern>
+			<Pattern>Attach Listener</Pattern>
+			<Pattern>Attach .andler</Pattern>
+			<Pattern>OperatingSystemMXBean</Pattern>
+			<Pattern>MemoryPoolMXBean</Pattern>
+			<Pattern>Code Generation Thread</Pattern>
+			<Pattern>Code Optimization Thread</Pattern>
+			<Pattern>VM Thread</Pattern>
+		</PatternList>
+	</SimpleGroup>      
+
+Or using | as delimiter to provide a choice of patterns:
+	<SimpleGroup>
+		<Name>WebLogic Muxer</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>EPollSocketMuxer|DevPollSocketMuxer|PosixSocketMuxer|NTSocketMuxer|JavaSocketMuxer|NIOSocketMuxer</Pattern>
+		</PatternList>
+  <ExcludedAdvisories>
+    <AdvisoryId>Socket Read</AdvisoryId>
+  </ExcludedAdvisories>    
+	</SimpleGroup>
+
 
 # MatchLocation used to locate for a matching pattern against thread stack or thread name : only allowed values are stack or name
 # There can be multiple patterns
@@ -72,7 +111,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Inclusion>true</Inclusion>
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
-			<Pattern>SocketMuxer</Pattern>
+			<Pattern>EPollSocketMuxer|DevPollSocketMuxer|PosixSocketMuxer|NTSocketMuxer|JavaSocketMuxer|NIOSocketMuxer</Pattern>
 		</PatternList>
   <ExcludedAdvisories>
     <AdvisoryId>Socket Read</AdvisoryId>
