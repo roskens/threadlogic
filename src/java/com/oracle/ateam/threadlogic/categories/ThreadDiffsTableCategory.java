@@ -126,10 +126,11 @@ public class ThreadDiffsTableCategory extends TableCategory {
     renderer.setHorizontalAlignment(JLabel.RIGHT);
 
     filteredTable.getColumnModel().getColumn(0).setPreferredWidth(300);
-    filteredTable.getColumnModel().getColumn(1).setPreferredWidth(70);
+    filteredTable.getColumnModel().getColumn(1).setPreferredWidth(100);
     filteredTable.getColumnModel().getColumn(2).setPreferredWidth(70);
-    filteredTable.getColumnModel().getColumn(3).setPreferredWidth(300);
+    filteredTable.getColumnModel().getColumn(3).setPreferredWidth(70);
+    filteredTable.getColumnModel().getColumn(4).setPreferredWidth(300);
     for (int i = 0; i < threadDumpArrList.size() - 1; i++)
-      filteredTable.getColumnModel().getColumn(i + 4).setPreferredWidth(70);
+      filteredTable.getColumnModel().getColumn(i + 5).setPreferredWidth(70);
   }
 }

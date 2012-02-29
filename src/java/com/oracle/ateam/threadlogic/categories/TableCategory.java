@@ -179,10 +179,11 @@ public class TableCategory extends AbstractCategory {
 
       if (tm.getColumnCount() > 3) {
         filteredTable.getColumnModel().getColumn(0).setPreferredWidth(300);
-        filteredTable.getColumnModel().getColumn(1).setPreferredWidth(70);
-        filteredTable.getColumnModel().getColumn(2).setPreferredWidth(300);
-        filteredTable.getColumnModel().getColumn(3).setPreferredWidth(20);
+        filteredTable.getColumnModel().getColumn(1).setPreferredWidth(100);
+        filteredTable.getColumnModel().getColumn(2).setPreferredWidth(70);
+        filteredTable.getColumnModel().getColumn(3).setPreferredWidth(300);
         filteredTable.getColumnModel().getColumn(4).setPreferredWidth(20);
+        filteredTable.getColumnModel().getColumn(5).setPreferredWidth(20);
 
         filteredTable.getColumnModel().getColumn(4).setCellRenderer(renderer);
         // filteredTable.getColumnModel().getColumn(5).setCellRenderer(renderer);

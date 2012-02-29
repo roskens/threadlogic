@@ -444,6 +444,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     // For the rest of the unknown type threads, add them to the unknown group
     for (ThreadInfo ti : pendingThreadList) {
       unknownThreadGroup.addThread(ti);
+      ti.setThreadGroup(unknownThreadGroup);
     }
     createThreadGroupNestedCategories(unknownThreadGroup, unknownCompositeFilter, nestedNonWLSCategory);
   }
@@ -477,6 +478,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
         if (filter.matches(ti)) {
           //System.out.println("Found Match against filter: " + filter.getName() + ", for Thread:" + ti.getName());
           tg.addThread(ti);
+          ti.setThreadGroup(tg);
           iterator.remove();
           foundAtleastOneThread = true;
         }

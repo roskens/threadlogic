@@ -68,7 +68,7 @@ public class ThreadsTableModel extends AbstractTableModel {
 
             ThreadInfo ti = (ThreadInfo) entry;
             if (ti.getTokens().length > 3) {
-              columnNames = new String[] { "Name", "Health", "Advisories", "Native-ID", "Thread-ID", "State", };
+              columnNames = new String[] { "Name", "Thread Group", "Health", "Advisories", "Native-ID", "Thread-ID", "State", };
             } else {
               columnNames = new String[] { "Name", "Thread-ID", "State" };
             }
@@ -99,37 +99,16 @@ public class ThreadsTableModel extends AbstractTableModel {
       // return new Long(columns[columnIndex]);
       // / } else {
 
-      if (columnIndex == 2) {
-        StringBuffer sbuf = new StringBuffer();
-        boolean firstEntry = true;
-        for (ThreadAdvisory tdadv : ti.getAdvisories()) {
-          // if (tdadv.getHealth().ordinal() >= HealthLevel.WATCH.ordinal()) {
-          if (!firstEntry)
-            sbuf.append(", ");
-          sbuf.append(tdadv.getPattern());
-          firstEntry = false;
-          // }
-        }
-        return sbuf.toString();
-      }
-
-      if (columnIndex == 1) {
-        return ti.getHealth();
-      }
-
-      if (columnIndex == 0) {
-        return columns[0];
-      }
-
-      // Discount for the two additional columns (Health & Advisory)
-      // and return the ThreadState
-      if (columnIndex == 5) {
-        return ti.getState();
-      }
-
-      return columns[columnIndex - 2];
-
-      // }
+      switch(columnIndex) {
+        case (0): return columns[0];
+        case (1): return ti.getThreadGroup().getThreadGroupName();  
+        case (2): return ti.getHealth();  
+        case (3): return getAdvisoryNames(ti);        
+        case (6): return ti.getState();
+        default:
+          return columns[columnIndex - 3];          
+      }      
+      
     } else {
       if (columnIndex == 1) {
         return new Long(columns[columnIndex]);
@@ -139,6 +118,20 @@ public class ThreadsTableModel extends AbstractTableModel {
     }
   }
 
+  private String getAdvisoryNames(ThreadInfo ti) {
+    StringBuffer sbuf = new StringBuffer();
+    boolean firstEntry = true;
+    for (ThreadAdvisory tdadv : ti.getAdvisories()) {
+      // if (tdadv.getHealth().ordinal() >= HealthLevel.WATCH.ordinal()) {
+      if (!firstEntry)
+        sbuf.append(", ");
+      sbuf.append(tdadv.getPattern());
+      firstEntry = false;
+      // }
+    }
+    return sbuf.toString();    
+  }
+  
   /**
    * get the thread info object at the specified line
    * 

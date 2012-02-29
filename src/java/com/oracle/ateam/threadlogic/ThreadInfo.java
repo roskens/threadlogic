@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
+import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
 
 /**
  * Info (name, content tuple) for thread dump display tree. Modified by Sabha to
@@ -41,6 +42,7 @@ public class ThreadInfo extends ThreadLogicElement {
   protected LockInfo blockedForLock;
   protected ArrayList<LockInfo> ownedLocks = new ArrayList<LockInfo>();
   protected ThreadDumpInfo tdi;
+  protected ThreadGroup tg;
 
   public ThreadInfo(String name, String info, String content, int stackLines, String[] tableTokens) {
     super(name);
@@ -322,6 +324,20 @@ public class ThreadInfo extends ThreadLogicElement {
       return this.getFilteredName().equals(cmp.getFilteredName());
     }
     return false;
+  }
+
+  /**
+   * @return the parent threadgroup
+   */
+  public ThreadGroup getThreadGroup() {
+    return tg;
+  }
+
+  /**
+   * @param tg the parent threadgroup to set
+   */
+  public void setThreadGroup(ThreadGroup tg) {
+    this.tg = tg;
   }
 
 }

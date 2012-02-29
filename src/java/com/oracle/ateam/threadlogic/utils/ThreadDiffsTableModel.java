@@ -91,14 +91,15 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     this.threadDumpArrList = threadDumpArrList;
     int noOfTDs = threadDumpArrList.size();
 
-    columnNames = new String[3 + noOfTDs];
+    columnNames = new String[4 + noOfTDs];
     columnNames[0] = "Name";
-    columnNames[1] = "Health";
+    columnNames[1] = "Thread Group";
+    columnNames[2] = "Health";
 
-    columnNames[2] = "State";
-    columnNames[3] = "Advisories";
+    columnNames[3] = "State";
+    columnNames[4] = "Advisories";
     for (int i = 0; i < noOfTDs - 1; i++) {
-      columnNames[i + 4] = threadDumpArrList.get(i).getName().replace("Dump ", "") + " Vs. "
+      columnNames[i + 5] = threadDumpArrList.get(i).getName().replace("Dump ", "") + " Vs. "
           + threadDumpArrList.get(i + 1).getName().replace("Dump ", "");
 
       // Search for the time portion as in HH:MM:SS -> same format for time compared to day/dates across all JVM Thread Dumps
@@ -129,7 +130,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
             break;
           }
       }
-      columnNames[i + 4] = columnNames[i + 4] + " [" + startTime + " to " + endTime + "]";
+      columnNames[i + 5] = columnNames[i + 5] + " [" + startTime + " to " + endTime + "]";
     }
     createProgressMatrixBetweenTDs();
   }
@@ -145,19 +146,23 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     ThreadInfo ti = ((ThreadInfo) elements.elementAt(rowIndex));
     String nameId = ti.getNameId();
     String filteredName = ti.getFilteredName();
+    int noOfThreadDumps = threadDumpArrList.size();
+    ThreadInfo actualThreadFromLastTDI = threadDumpArrList.get(noOfThreadDumps - 1).getThreadMap().get(nameId);
 
     switch (columnIndex) {
     case 0:
       return filteredName;
-    case 1:
-      return determineHealth(nameId);
+    case 1:      
+      return actualThreadFromLastTDI.getThreadGroup().getThreadGroupName();
     case 2:
-      return ti.getState();
+      return determineHealth(nameId);
     case 3:
+      return ti.getState();
+    case 4:
       return returnAdvisoryColumn(nameId);
 
     default:
-      return checkForDiffBetweenTDs(nameId, columnIndex - 4);
+      return checkForDiffBetweenTDs(nameId, columnIndex - 5);
     }
 
   }
