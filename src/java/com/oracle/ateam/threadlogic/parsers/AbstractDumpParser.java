@@ -1273,6 +1273,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         int singleLineCounter = 0;
         boolean concurrentSyncsFlag = false;
         Matcher matched = getDm().getLastMatch();
+        String parsedStartTime = null;
 
         while (getBis().ready() && !finished) {
           line = getNextLine();
@@ -1288,12 +1289,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 if (startTime != 0) {
                   startTime = 0;
                 } else if (matched != null && matched.matches()) {
-                  String parsedStartTime = null;
-                  try {
-                    parsedStartTime = matched.group(1);
-                  } catch(IndexOutOfBoundsException iobe) {
-                    parsedStartTime = matched.group(0);
-                  }
+                  
+                  parsedStartTime = matched.group(0);
+                  
                   System.out.println("ParsedTime0:" + parsedStartTime);
                   if (!getDm().isDefaultMatches() && isMillisTimeStamp()) {
                     try {
@@ -1335,10 +1333,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             // Problem with JRockit is the Timestamp occurs after the FULL THREAD DUMP tag
             // So the above logic fails as we wont get to parse for the date as its reverse for Hotspot (time occurs before Full Thread Dump marker)
             // So parse the timestamp here for jrockit....
-            if ((this instanceof JrockitParser) && !getDm().isPatternError() && (getDm().getRegexPattern() != null)) {
+            if ((this instanceof JrockitParser) && (parsedStartTime == null)  
+                    && !getDm().isPatternError() && (getDm().getRegexPattern() != null)) {
               Matcher m = getDm().checkForDateMatch(line);
               if (m != null) {                
-                String parsedStartTime = m.group(0);
+                 parsedStartTime = m.group(0);
                 overallTDI.setStartTime(parsedStartTime);                
               }
             }

@@ -213,6 +213,7 @@ public class IBMJDKParser extends AbstractDumpParser {
         int singleLineCounter = 0;
         boolean concurrentSyncsFlag = false;
         Matcher matched = getDm().getLastMatch();
+        String parsedStartTime = null;
 
         Hashtable<String, LockInfo> lockTable = new Hashtable<String, LockInfo>();
 
@@ -230,7 +231,7 @@ public class IBMJDKParser extends AbstractDumpParser {
                   startTime = 0;
                 } else if (matched != null && matched.matches()) {
 
-                  String parsedStartTime = matched.group(0);
+                  parsedStartTime = matched.group(0);
                   // Just use the relevant bits
                   // 1TIDATETIME    Date:                 2011/01/12 at 17:14:40
                   int index = parsedStartTime.indexOf("Date:");
