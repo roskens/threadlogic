@@ -69,6 +69,10 @@ public class DateMatcher {
     this.regexPattern = regexPattern;
   }
 
+  public void setDefaultPattern(Pattern regexPattern) {
+    this.defaultPattern = regexPattern;
+  }
+  
   public boolean isPatternError() {
     return patternError;
   }
@@ -95,6 +99,7 @@ public class DateMatcher {
         if (m.matches()) {
           setDefaultMatches(false);
           matched = m;
+          System.out.println("Saved as Matcher:" + m);
         }
       }
     } catch (Exception ex) {
@@ -105,11 +110,12 @@ public class DateMatcher {
   }
 
   public Matcher getLastMatch() {
+    System.out.println("Saved as LastMatcher:" + matched);
     return (matched);
   }
 
   public void resetLastMatch() {
-    matched = null;
+    matched = null;    
   }
 
   private void showErrorPane(String message) {

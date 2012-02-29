@@ -69,6 +69,9 @@ public class IBMJDKParser extends AbstractDumpParser {
     this.lineChecker.setWaitingToPattern("3LKWAITER\\s*(.*\").*");
     this.lineChecker.setLockedPattern("3LKMONOBJECT");
     this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|<EndOfDump>).*");
+    
+    resetDmPattern(bis, dm);
+    parseJvmVersion(bis);
   }
 
   protected void initVars() {
@@ -77,6 +80,56 @@ public class IBMJDKParser extends AbstractDumpParser {
     GENERAL_WAITING = "3LKWAITER\\s*(.*\")";
   }
 
+    /**
+   * @param bis the BufferedReader
+   */  
+  protected void resetDmPattern(BufferedReader bis, DateMatcher dm) {
+    boolean foundDate = false;
+    String dateEntry = "";
+    Pattern ibmDatePattern = Pattern.compile("1TIDATETIME\\s*Date:\\s*\\d\\d\\d\\d.\\d\\d.\\d\\d\\sat\\s\\d\\d:\\d\\d:\\d\\d");
+    dm.setDefaultPattern(ibmDatePattern);
+    
+    try {
+      bis.reset();
+      while (bis.ready()) {        
+        String line = bis.readLine();
+        if (!foundDate && (line != null) && (line !="")) {          
+          Matcher m = dm.checkForDateMatch(line);
+          if (m != null) {
+            dateEntry = line;
+            foundDate = true;
+            System.out.println("Timestamp:" + dateEntry);
+            return;
+          } 
+        }
+      }
+    } catch(Exception e) { }
+  }
+  
+  /**
+   * @param bis the BufferedReader
+   */
+  protected void parseJvmVersion(BufferedReader bis) {
+    
+    String IBM_VM_TAG = "1CIJAVAVERSION";
+    int len = IBM_VM_TAG.length();
+    try {
+      while (bis.ready()) {        
+        String line = bis.readLine();
+        if (line != null) {
+          int index = line.indexOf(IBM_VM_TAG);
+          if (index >= 0) {                        
+            index += len; 
+            super.setJvmVersion(line.substring(index).trim());
+            System.out.println("JVM Version:" + line);            
+            return;
+          }
+        }
+      }
+    } catch(Exception e) { }
+    
+  }
+  
   /*
    * public MutableTreeNode parseNext() { this.mmap = new MonitorMap(); return
    * super.parseNext(); }
@@ -114,6 +167,7 @@ public class IBMJDKParser extends AbstractDumpParser {
         Map threads = new HashMap();
         overallTDI = new ThreadDumpInfo("Dump No. " + counter++, 0);
         overallTDI.setIsIBMJVM();
+        overallTDI.setJvmVersion(this.getJvmVersion());
         
         if (withCurrentTimeStamp) {
           overallTDI.setStartTime((new Date(System.currentTimeMillis())).toString());
@@ -176,7 +230,14 @@ public class IBMJDKParser extends AbstractDumpParser {
                   startTime = 0;
                 } else if (matched != null && matched.matches()) {
 
-                  String parsedStartTime = matched.group(1);
+                  String parsedStartTime = matched.group(0);
+                  // Just use the relevant bits
+                  // 1TIDATETIME    Date:                 2011/01/12 at 17:14:40
+                  int index = parsedStartTime.indexOf("Date:");
+                  String tokens[] = parsedStartTime.substring(index + 5).trim().split(" ");
+                  
+                  parsedStartTime = tokens[0].replaceAll("/", "-") + " " + tokens[2];
+                  System.out.println("ParedStartTime:" + parsedStartTime);
                   if (!getDm().isDefaultMatches() && isMillisTimeStamp()) {
                     try {
                       // the factor is a hack for a bug in

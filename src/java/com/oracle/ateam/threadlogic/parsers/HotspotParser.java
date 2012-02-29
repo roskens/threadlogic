@@ -93,6 +93,8 @@ public class HotspotParser extends AbstractDumpParser {
     this.lineChecker.setWaitingToPattern("(.*- waiting to.*)");
     this.lineChecker.setLockedPattern("(.*- locked.*)");
     this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|<EndOfDump>).*");
+    
+    parseJvmVersion(bis);
   }
 
   /**
@@ -251,7 +253,7 @@ public class HotspotParser extends AbstractDumpParser {
    * @param threadDump
    * @return
    * @throws java.io.IOException
-   */
+   *
   public boolean checkThreadDumpStatData(ThreadDumpInfo tdi) throws IOException {
     boolean finished = false;
     boolean found = false;
@@ -280,10 +282,12 @@ public class HotspotParser extends AbstractDumpParser {
     }
     if (hContent.length() > 0) {
       tdi.setHeapInfo(new HeapInfo(hContent.toString()));
+      System.out.println("Found heap info:" + hContent.toString());
     }
 
     return (found);
   }
+   * */
 
   /**
    * check if any dead lock information is logged in the stream
@@ -460,6 +464,28 @@ public class HotspotParser extends AbstractDumpParser {
    */
   public static boolean checkForSupportedThreadDump(String logLine) {
     return (logLine.trim().indexOf("Full thread dump") >= 0);
+  }
+  
+  /**
+   * @param bis the BufferedReader
+   */
+  protected void parseJvmVersion(BufferedReader bis) {
+    
+    try {
+      bis.reset();
+      while (bis.ready()) {        
+        String line = bis.readLine();
+        if (line != null) {
+          int index = line.indexOf("Java HotSpot");
+          if (index > 0) {            
+            super.setJvmVersion(line.substring(index).trim().replaceAll(":", ""));
+            System.out.println("Found JVM Version:" + line);
+            return;
+          }
+        }
+      }
+    } catch(Exception e) { }
+    
   }
 
 }

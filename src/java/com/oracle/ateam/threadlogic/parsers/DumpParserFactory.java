@@ -96,15 +96,25 @@ public class DumpParserFactory {
 
       // reset current dump parser
       DateMatcher dm = new DateMatcher();
+      boolean foundDate = false;
+      String dateEntry = "";
       while (bis.ready() && (currentDumpParser == null)) {
         bis.mark(readAheadLimit);
         String line = bis.readLine();
-        dm.checkForDateMatch(line);
+        if (!foundDate) {
+          dm.checkForDateMatch(line);          
+          if (dm.isDefaultMatches()) {
+            dateEntry = line;
+            foundDate = true;
+            System.out.println("Timestamp:" + dateEntry);
+          } 
+        }
+        
         if (WrappedSunJDKParser.checkForSupportedThreadDump(line)) {
           currentDumpParser = new WrappedSunJDKParser(bis, threadStore, lineCounter, withCurrentTimeStamp,
               startCounter, dm);
         } else if (HotspotParser.checkForSupportedThreadDump(line)) {
-          currentDumpParser = new HotspotParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm);
+          currentDumpParser = new HotspotParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm);          
         } else if (JrockitParser.checkForSupportedThreadDump(line)) {
           currentDumpParser = new JrockitParser(bis, threadStore, lineCounter, dm);
         } else if (IBMJDKParser.checkForSupportedThreadDump(line)) {

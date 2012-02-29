@@ -100,6 +100,36 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     for (int i = 0; i < noOfTDs - 1; i++) {
       columnNames[i + 4] = threadDumpArrList.get(i).getName().replace("Dump ", "") + " Vs. "
           + threadDumpArrList.get(i + 1).getName().replace("Dump ", "");
+
+      // Search for the time portion as in HH:MM:SS -> same format for time compared to day/dates across all JVM Thread Dumps
+      // Sun Hotspot: 2012-02-17 10:35:02
+      // JRockit: Thu May 26 10:50:43 2011
+      // IBM: 2011/01/12 at 17:14:40
+
+      String startTime =  threadDumpArrList.get(i).getStartTime();
+      if (startTime == null) {
+        startTime = "N/A";
+      } else {
+        String[] tokens = startTime.split(" ");
+        for (String token: tokens)
+          if ( (token.length() == 8) && token.contains(":")) {
+            startTime = token;
+            break;
+          }
+      }
+      
+      String endTime =  threadDumpArrList.get(i + 1).getStartTime();
+      if (endTime == null) {
+        endTime = "N/A";
+      } else {
+        String[] tokens = endTime.split(" ");
+        for (String token: tokens)
+          if ( (token.length() == 8) && token.contains(":")) {
+            endTime = token;
+            break;
+          }
+      }
+      columnNames[i + 4] = columnNames[i + 4] + " [" + startTime + " to " + endTime + "]";
     }
     createProgressMatrixBetweenTDs();
   }

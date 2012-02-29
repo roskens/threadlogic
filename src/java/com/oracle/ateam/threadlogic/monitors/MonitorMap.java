@@ -67,13 +67,10 @@ public class MonitorMap implements Serializable {
    * Creates a new instance of MonitorMap
    */
   public MonitorMap() {
+    monitorMap = new HashMap();
   }
 
   public void addToMonitorMap(String key, Map[] objectSet) {
-    if (monitorMap == null) {
-      monitorMap = new HashMap();
-    }
-
     monitorMap.put(key, objectSet);
   }
 

@@ -55,6 +55,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   private int overallThreadsWaitingWithoutLocksCount;
 
   private String startTime;
+  private String jvmVersion;
   private String overview;
   private Analyzer dumpAnalyzer;
 
@@ -162,6 +163,13 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System"
         + ">Main Thread</td><td></td><td><b><font face=System>");
     statData.append(this.mainThread);
+    
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System"
+        + ">Timestamp</td><td></td><td><b><font face=System>");
+    statData.append( (this.startTime == null)? "Not Available":startTime);
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
+        + ">JVM Version</td><td></td><td><b><font face=System>");
+    statData.append((this.jvmVersion == null)? "Not Available":jvmVersion);
     
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System"
         + ">Overall Monitor Count</td><td></td><td><b><font face=System>");
@@ -577,7 +585,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     if (logLine > 0) {
       postFix.append(" at line " + getLogLine());
     }
-    if (startTime != null) {
+    if ((startTime != null) && (startTime != null)) {
       postFix.append(" around " + startTime);
     }
     return (getName() + postFix);
@@ -696,8 +704,8 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       statData
           .append("Analyze the reasons for deadlock - it could be caused by wrong order of obtaining locks or unnecessary synchronization<br>");
       statData
-          .append("Reduce contentions by changing code to avoid synchronized blocks, or change invocation path, or increase resources or caching<br>");
-      statData.append(" as well as modifying the order of locking.</font><br></td></tr>");
+          .append("Reduce contentions by changing code to avoid synchronized blocks, or change invocation path, or increase resources ");
+      statData.append("or caching as well as modifying the order of locking.</font><br></td></tr>");
       statData.append("</td></tr>");
       statData.append("<tr bgcolor=\"#ffffff\"><td></td></tr>");
     }
@@ -784,5 +792,19 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     sbuf.append(LockInfo.printDeadlockChain(getDeadlockedThreads()) + "<br></td></tr></table>");
 
     return sbuf.toString();
+  }
+
+  /**
+   * @return the jvmVersion
+   */
+  public String getJvmVersion() {
+    return jvmVersion;
+  }
+
+  /**
+   * @param jvmVersion the jvmVersion to set
+   */
+  public void setJvmVersion(String jvmVersion) {
+    this.jvmVersion = jvmVersion;
   }
 }

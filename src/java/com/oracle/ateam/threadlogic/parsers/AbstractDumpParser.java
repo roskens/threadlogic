@@ -91,10 +91,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   private int maxCheckLines = 10;
   private boolean millisTimeStamp = false;
   private transient DateMatcher dm = null;
+  
   /**
    * this counter counts backwards for adding class histograms to the thread
    * dumps beginning with the last dump.
-   */
+   */  
   private int dumpHistogramCounter = -1;
   protected transient LineChecker lineChecker;
   protected MonitorMap mmap;
@@ -109,6 +110,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   protected String BLOCKED_FOR_LOCK;
   protected String GENERAL_WAITING;
 
+  private String jvmVersion;
+  
   // Used for deserialization
   public AbstractDumpParser() {
     lineChecker = new LineChecker();
@@ -289,8 +292,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           if (occurence >= (minOccurence - 1)) {
             threadCount++;
 
+            String timeTaken0 = (tdiArrList.get(0).getStartTime() != null)?tdiArrList.get(0).getStartTime():"N/A";
             StringBuffer content = new StringBuffer("<b><font size=")
-                .append(ThreadLogic.getFontSizeModifier(-1)).append(">").append((String) keys.get(0))
+                .append(ThreadLogic.getFontSizeModifier(-1)).append(">").append(keys.get(0)  + ", Timestamp: " +  timeTaken0)
                 .append("</b></font><hr><pre><font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">")
                 .append(fixMonitorLinks(ti0.getContent(), (String) keys.get(0)));
 
@@ -299,14 +303,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
             for (int i = 1; i < dumps.length; i++) {
               if (tdiArrList.get(i).getThreadMap().containsKey(threadNameId)) {
-
+                String timeTaken = (tdiArrList.get(i).getStartTime() != null)?tdiArrList.get(i).getStartTime():"N/A";
                 Map<String, ThreadInfo> cmpThreadMap = tdiArrList.get(i).getThreadMap();
                 ThreadInfo cmpThreadInfo = cmpThreadMap.get(threadNameId);
 
                 content.append("\n\n</pre><b><font size=");
                 content.append(ThreadLogic.getFontSizeModifier(-1));
                 content.append(">");
-                content.append(keys.get(i));
+                content.append(keys.get(i) + ", Timestamp: " + timeTaken);
                 content.append("</font></b><hr><pre><font size=");
                 content.append(ThreadLogic.getFontSizeModifier(-1));
                 content.append(">");
@@ -1226,6 +1230,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         if (withCurrentTimeStamp) {
           overallTDI.setStartTime((new Date(System.currentTimeMillis())).toString());
         }
+        overallTDI.setJvmVersion(this.getJvmVersion());
+        
         threadDump = new DefaultMutableTreeNode(overallTDI);
 
         catThreads = new DefaultMutableTreeNode(new TableCategory("Threads", IconFactory.THREADS));
@@ -1272,7 +1278,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           line = getNextLine();
           lineCounter++;
           singleLineCounter++;
-          if (locked) {
+          if (locked) {            
+            
             if (lineChecker.getFullDump(line) != null) {
               locked = false;
               if (!withCurrentTimeStamp) {
@@ -1281,13 +1288,19 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 if (startTime != 0) {
                   startTime = 0;
                 } else if (matched != null && matched.matches()) {
-
-                  String parsedStartTime = matched.group(1);
+                  String parsedStartTime = null;
+                  try {
+                    parsedStartTime = matched.group(1);
+                  } catch(IndexOutOfBoundsException iobe) {
+                    parsedStartTime = matched.group(0);
+                  }
+                  System.out.println("ParsedTime0:" + parsedStartTime);
                   if (!getDm().isDefaultMatches() && isMillisTimeStamp()) {
                     try {
                       // the factor is a hack for a bug in
                       // oc4j timestamp printing (pattern
                       // timeStamp=2342342340)
+                      System.out.println("ParsedTime:" + parsedStartTime);
                       if (parsedStartTime.length() < 13) {
                         startTime = Long.parseLong(parsedStartTime)
                             * (long) Math.pow(10, 13 - parsedStartTime.length());
@@ -1295,12 +1308,15 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                         startTime = Long.parseLong(parsedStartTime);
                       }
                     } catch (NumberFormatException nfe) {
+                      nfe.printStackTrace();
                       startTime = 0;
                     }
                     if (startTime > 0) {
+                      System.out.println("ParsedTime2:" + startTime);
                       overallTDI.setStartTime((new Date(startTime)).toString());
                     }
                   } else {
+                    System.out.println("ParsedTime3:" + parsedStartTime);
                     overallTDI.setStartTime(parsedStartTime);
                   }
                   parsedStartTime = null;
@@ -1315,7 +1331,18 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 matched = m;
               }
             }
-          } else {
+          } else {            
+            // Problem with JRockit is the Timestamp occurs after the FULL THREAD DUMP tag
+            // So the above logic fails as we wont get to parse for the date as its reverse for Hotspot (time occurs before Full Thread Dump marker)
+            // So parse the timestamp here for jrockit....
+            if ((this instanceof JrockitParser) && !getDm().isPatternError() && (getDm().getRegexPattern() != null)) {
+              Matcher m = getDm().checkForDateMatch(line);
+              if (m != null) {                
+                String parsedStartTime = m.group(0);
+                overallTDI.setStartTime(parsedStartTime);                
+              }
+            }
+              
             if ((tempLine = lineChecker.getStackStart(line)) != null) {
 
               // SABHA - Commenting off the GC thread portion, we want to know
@@ -1427,8 +1454,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               }
 
               getBis().mark(getMarkSize());
+              System.out.println("Buf marked with Size:" + getMarkSize());
+            
               if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
-                getBis().reset();
+                getBis().reset();                
               }
             }
           }
@@ -1579,7 +1608,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    * @return
    * @throws java.io.IOException
    */
-  boolean checkThreadDumpStatData(ThreadDumpInfo tdi) throws IOException {
+  protected boolean checkThreadDumpStatData(ThreadDumpInfo tdi) throws IOException {
     boolean finished = false;
     boolean found = false;
     StringBuffer hContent = new StringBuffer();
@@ -1587,6 +1616,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     int lines = 0;
 
     while (getBis().ready() && !finished) {
+      getBis().mark(getMarkSize());
       String line = getNextLine();
       if (!found && !line.equals("")) {
         if (line.trim().startsWith("Heap")) {
@@ -1601,12 +1631,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           hContent.append(line).append("\n");
         } else {
           finished = true;
+          getBis().reset();
         }
         heapLineCounter++;
       }
     }
     if (hContent.length() > 0) {
       tdi.setHeapInfo(new HeapInfo(hContent.toString()));
+      System.out.println("Found heap info:" + hContent.toString());
     }
 
     return (found);
@@ -1709,6 +1741,20 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   }
 
   abstract String linkifyDeadlockInfo(String line);
+
+  /**
+   * @return the jvmVersion
+   */
+  public String getJvmVersion() {
+    return jvmVersion;
+  }
+
+  /**
+   * @param jvmVersion the jvmVersion to set
+   */
+  public void setJvmVersion(String jvmVersion) {
+    this.jvmVersion = jvmVersion;
+  }
 
   public class LineChecker implements DumpParser.lineChecker {
 

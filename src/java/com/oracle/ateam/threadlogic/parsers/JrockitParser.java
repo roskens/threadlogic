@@ -31,23 +31,18 @@
 
 package com.oracle.ateam.threadlogic.parsers;
 
+import com.oracle.ateam.threadlogic.ThreadDumpInfo;
 import com.oracle.ateam.threadlogic.monitors.JRockitMonitorMap;
 import com.oracle.ateam.threadlogic.parsers.AbstractDumpParser.LineChecker;
 import com.oracle.ateam.threadlogic.utils.DateMatcher;
-import com.oracle.ateam.threadlogic.utils.IconFactory;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
@@ -79,15 +74,66 @@ public class JrockitParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*-- Parking to wait for.*)");
     this.lineChecker.setWaitingToPattern("(.*-- Blocked trying to get lock.*)");
     this.lineChecker.setLockedPattern("(.*-- (Holding lock|Lock released while waiting).*)");
-    this.lineChecker.setEndOfDumpPattern("(.*(END OF THREAD DUMP|Blocked lock chains|Open lock chains).*)");
+    this.lineChecker.setEndOfDumpPattern("(.*(END OF THREAD DUMP|Blocked lock chains|Open lock chains).*)");    
+    
+    resetDmPattern(bis, dm);
+    parseJvmVersion(bis);
   }
 
   protected void initVars() {
     LOCKED = "-- Holding lock:";
     BLOCKED_FOR_LOCK = "-- Blocked trying to get lock:";
     GENERAL_WAITING = "- Waiting for notification:";
+  }  
+  
+  /**
+   * @param bis the BufferedReader
+   */  
+  protected void resetDmPattern(BufferedReader bis, DateMatcher dm) {
+    boolean foundDate = false;
+    String dateEntry = "";
+    Pattern jrockitDatePattern = Pattern.compile("[MTWFSa-z]{3}\\s[a-zA-Z]{3}\\s*\\d{1,2}\\s\\d\\d:\\d\\d:\\d\\d\\s\\d\\d\\d\\d");  
+    dm.setDefaultPattern(jrockitDatePattern);
+    
+    try {
+      bis.reset();
+      while (bis.ready()) {        
+        String line = bis.readLine();
+        if (!foundDate && (line != null) && (line !="")) {          
+          Matcher m = dm.checkForDateMatch(line);
+          if (m != null) {
+            dateEntry = line;
+            foundDate = true;
+            System.out.println("Timestamp:" + dateEntry);
+            return;
+          } 
+        }
+      }
+    } catch(Exception e) { }
+  }
+  
+  /**
+   * @param bis the BufferedReader
+   */
+  protected void parseJvmVersion(BufferedReader bis) {
+    
+    try {
+      while (bis.ready()) {        
+        String line = bis.readLine();
+        if (line != null) {
+          int index = line.indexOf("Oracle JRockit");
+          if (index >= 0) {            
+            System.out.println("JVM Version:" + line);
+            super.setJvmVersion(line.substring(index).trim());
+            return;
+          }
+        }
+      }
+    } catch(Exception e) { }
+    
   }
 
+  
   /**
    * parse the next thread dump from the stream passed with the constructor.
    * 
@@ -116,6 +162,11 @@ public class JrockitParser extends AbstractDumpParser {
 
   public boolean isFoundClassHistograms() {
     // bea parser doesn't support class histograms
+    return false;
+  }
+  
+  protected boolean checkThreadDumpStatData(ThreadDumpInfo tdi) throws IOException {
+    // bea parser doesn't support heap data
     return false;
   }
 
