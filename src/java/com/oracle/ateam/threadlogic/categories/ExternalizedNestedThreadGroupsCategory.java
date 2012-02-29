@@ -64,7 +64,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
                                                     2, false, false, true);
   
   private Filter allWLSThreadsFilter2 = new Filter("WLS Threads2", 
-                                                    "(Weblogic)|(orabpel)|(weblogic)|(oracle.dfw)|(JPS)|(WsMgmt)|(Fabric)", 
+                                                    "(Weblogic)|(orabpel)|(weblogic)|(oracle.dfw)|(JPS)|(WsMgmt)|(Fabric)|(Oracle Service Bus)", 
                                                     0, false, false, true);
   
   

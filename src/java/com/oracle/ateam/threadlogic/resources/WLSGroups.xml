@@ -154,8 +154,8 @@ xmlns="http://java.net/projects/threadlogic">
 		</PatternList>
 	</SimpleGroup>
 	<SimpleGroup>
-		<Name>Oracle Service Bus (OSB)</Name>
-		<Visible>true</Visible>
+		<Name>Oracle Service Bus Tmp1</Name>
+		<Visible>false</Visible>
 		<Inclusion>true</Inclusion>
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
@@ -163,6 +163,23 @@ xmlns="http://java.net/projects/threadlogic">
 			<Pattern>com.bea.wli.sb.pipeline</Pattern>
 		</PatternList>
 	</SimpleGroup>
+	<SimpleGroup>
+		<Name>Oracle Service Bus Tmp2</Name>
+		<Visible>false</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>name</MatchLocation>
+		<PatternList>
+			<Pattern>Oracle Service Bus</Pattern>
+		</PatternList>
+	</SimpleGroup>  
+	<ComplexGroup>
+		<Name>Oracle Service Bus (OSB)</Name>
+		<Visible>true</Visible>
+		<Inclusions>
+			<SimpleGroupId>Oracle Service Bus Tmp1</SimpleGroupId>
+      <SimpleGroupId>Oracle Service Bus Tmp2</SimpleGroupId>
+		</Inclusions>
+	</ComplexGroup>  
 	<SimpleGroup>
 		<Name>Oracle ADF</Name>
 		<Visible>true</Visible>

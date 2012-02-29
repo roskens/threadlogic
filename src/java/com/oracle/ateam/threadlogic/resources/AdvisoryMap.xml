@@ -54,13 +54,7 @@ For multi-line pattern, use PatternA.*PatternB to match against all lines that s
 with PatternA with some content in the middle and ending with PatternB.
 Use with caution as it can do greedy grab of everything within the specified patterns.
 Example:
-  <Advisory>
-		<Name>Test Wild card Advice</Name>
-		<Health>WATCH</Health>
-		<Keyword>WsCalloutRuntimeStep.*WrapperRuntimeStep</Keyword>
-		<Descrp>Test Wild card advice</Descrp>
-		<Advice>Test Wild card advice</Advice>
-	</Advisory>
+
   
 The Name of the advice can be used within the GroupDefns to downgrade certain advisories for specific thread groups.
 Ensure the Advice Name in AdvisoryMap matches with the AdvisoryId inside GroupDefns.
@@ -88,6 +82,7 @@ Note: Avoid using '&' as it would confuse the XML Parser and result in exception
 If '&' is really required, use &amp;
 
 -->
+
 
 <tlogic:AdvisoryMap xmlns:tlogic="http://java.net/projects/threadlogic" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
 xmlns="http://java.net/projects/threadlogic">
@@ -246,6 +241,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>OSB is attempting to check for a cached service response from Coherence layer, should return immediately and not get into waiting or blocked state</Advice>
 	</Advisory>
   
+  <Advisory>
+		<Name>OSB Service Response save in cache </Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.bea.wli.sb.service.resultcache.ServiceResultCacheImpl.addToCache</Keyword>
+		<Descrp>OSB is attempting to cache a service response inside Coherence layer</Descrp>
+		<Advice>OSB is attempting to a cache a service response into Coherence layer, should return immediately and not get into waiting or blocked state</Advice>
+	</Advisory>
   
   
   
