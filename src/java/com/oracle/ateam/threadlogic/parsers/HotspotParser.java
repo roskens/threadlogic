@@ -431,10 +431,12 @@ public class HotspotParser extends AbstractDumpParser {
       Pattern p = Pattern.compile(patternMask);
       Matcher m = p.matcher(name);
 
-      System.out.println(m.matches());
+      m.matches();
+      /*
       for (int iLoop = 1; iLoop < m.groupCount(); iLoop++) {
         System.out.println(iLoop + ": " + m.group(iLoop));
       }
+       */
     
       tokens = new String[7];
       tokens[0] = m.group(1); // name

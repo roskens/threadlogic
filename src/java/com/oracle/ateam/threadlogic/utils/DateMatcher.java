@@ -98,8 +98,7 @@ public class DateMatcher {
         m = getRegexPattern().matcher(line);
         if (m.matches()) {
           setDefaultMatches(false);
-          matched = m;
-          System.out.println("Saved as Matcher:" + m);
+          matched = m;          
         }
       }
     } catch (Exception ex) {
@@ -110,7 +109,6 @@ public class DateMatcher {
   }
 
   public Matcher getLastMatch() {
-    System.out.println("Saved as LastMatcher:" + matched);
     return (matched);
   }
 

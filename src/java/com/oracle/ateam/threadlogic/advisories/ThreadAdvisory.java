@@ -11,25 +11,23 @@
  */
 package com.oracle.ateam.threadlogic.advisories;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Hashtable;
-import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.LockInfo;
-import com.oracle.ateam.threadlogic.ThreadLogicElement;
-import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.ThreadState;
 import com.oracle.ateam.threadlogic.xml.AdvisoryMapParser;
-import com.oracle.ateam.threadlogic.xml.ComplexGroup;
-import com.oracle.ateam.threadlogic.xml.GroupsDefnParser;
-import com.oracle.ateam.threadlogic.xml.SimpleGroup;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ThreadAdvisory implements Comparable, Serializable {
 
@@ -38,6 +36,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
   HealthLevel health;
 
   public static String ADVISORY_PATH_SEPARATOR = "|";
+  public static String ADVISORY_EXT_DIRECTORY = "threadlogic.advisories";
 
   public static String DICTIONARY_KEYS;
   public static String THREADTYPEMAPPER_KEYS;
@@ -48,25 +47,100 @@ public class ThreadAdvisory implements Comparable, Serializable {
   public static final Hashtable<String, ThreadAdvisory> threadAdvisoryMapById = new Hashtable<String, ThreadAdvisory>();
 
   static {
-    createAdvisoryMap(ThreadLogicConstants.ADVISORY_MAP_XML);
+    DICTIONARY_KEYS = createAdvisoryMapFromExternalResources();
+    String internalKeys = createAdvisoryMapFromInternalResources(ThreadLogicConstants.ADVISORY_MAP_XML);
+    
+    if ((DICTIONARY_KEYS.length() > 0) &&  (internalKeys.length() > 0)) {
+      DICTIONARY_KEYS = DICTIONARY_KEYS + "|" + internalKeys;
+    } else if (DICTIONARY_KEYS.length() == 0) {
+      DICTIONARY_KEYS = internalKeys;
+    }
+    populateThreadTypeMapper();      
   }
 
-  private static void createAdvisoryMap(String advisoryMapXml) {
+  private static String createAdvisoryMapFromExternalResources() {
+    
+    AdvisoryMapParser advisoryMapParser = null;      
+    ArrayList<ThreadAdvisory> list = null; 
+
+    boolean empty = true;
+    StringBuffer sbuf = new StringBuffer();      
+    String externalAdvisoryDirectory = System.getProperty(ADVISORY_EXT_DIRECTORY, "advisories");
+      File folder = new File(externalAdvisoryDirectory);
+      if (folder.exists()) {              
+        File[] listOfFiles = folder.listFiles();
+        for(File file: listOfFiles) {
+        try {
+          System.out.println("\n\nReading advisories from: " + file.getAbsolutePath());
+          BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+          advisoryMapParser = new AdvisoryMapParser(bis);
+          advisoryMapParser.run();          
+          bis.close();
+          list = advisoryMapParser.getAdvisoryList(); 
+          String keywordList = populateAdvisories(list);
+          if (empty) {
+            empty = false;
+            sbuf.append(keywordList);          
+          } else {
+            sbuf.append("|" + keywordList);            
+          }
+        } catch(Exception ioe) {
+          System.out.println("Problem in reading advisories from file: " + externalAdvisoryDirectory);
+          ioe.printStackTrace();
+        }
+      }  
+    }
+      
+    return sbuf.toString();      
+  }
+
+  private static String createAdvisoryMapFromInternalResources(String advisoryMapXml) {
+    AdvisoryMapParser advisoryMapParser = null;      
+    ArrayList<ThreadAdvisory> list = null; 
+
+    boolean empty = true;
+    StringBuffer sbuf = new StringBuffer();     
     
     try {
+      System.out.println("\n\nAttempting to load Advisory Map from packaged threadlogic jar: " + advisoryMapXml);
       ClassLoader cl = ThreadLogicConstants.class.getClassLoader();
 
-      System.out.println("Attempting to load Advisory Map from file: " + advisoryMapXml);
-      AdvisoryMapParser advisoryMapParser = new AdvisoryMapParser(cl.getResourceAsStream(advisoryMapXml));
+      advisoryMapParser = new AdvisoryMapParser(cl.getResourceAsStream(advisoryMapXml));
       advisoryMapParser.run();
-      ArrayList<ThreadAdvisory> list = advisoryMapParser.getAdvisoryList(); 
+      list = advisoryMapParser.getAdvisoryList(); 
+      String keywordList = populateAdvisories(list);
+
+      if (empty) {
+        empty = false;
+        sbuf.append(keywordList);          
+      } else {
+        sbuf.append("|" + keywordList);
+      }
       
-      boolean empty = true;
-      StringBuffer sbuf = new StringBuffer();
-      
+    } catch (Exception e) {
+      System.out.println("Unable to load or parse the Advisory Map Resource:" + e.getMessage());
+      e.printStackTrace();
+    }
+    
+    return sbuf.toString();
+  }
+
+  /**
+   * 
+   * @param list List of ThreadAdvisories to be populated into known Advisories
+   * @return String of keywords with | as separator for pattern matching
+   */
+  protected static String populateAdvisories(ArrayList<ThreadAdvisory> list) {
+    boolean empty = true;
+    StringBuffer sbuf = new StringBuffer(1000);
+    
       for(ThreadAdvisory tadv: list) {
         String key = tadv.getKeyword();
         
+        if (threadAdvisoryMap.containsKey(key)) {
+          System.out.println("WARNING!! Keyword already exists:" + key + " from Advisory:" + threadAdvisoryMap.get(key) + ", use different keyword or update existing Advisory");
+          continue;
+        }
         threadAdvisoryMap.put(key, tadv);
         if (key.contains("*"))
           wildcardKeywordList.add(key);
@@ -82,6 +156,10 @@ public class ThreadAdvisory implements Comparable, Serializable {
         if (noOfKeywords > 1) {
           for(int i = 1; i < noOfKeywords; i++) {
             key = tadv.getKeywordList()[i];
+            if (threadAdvisoryMap.containsKey(key)) {
+              System.out.println("Keyword already exists:" + key + " from Advisory:" + threadAdvisoryMap.get(key) + ", use different keyword or update existing Advisory");
+              continue;
+            }
             threadAdvisoryMap.put(key, tadv);
             if (key.contains("*"))
               wildcardKeywordList.add(key);
@@ -89,17 +167,10 @@ public class ThreadAdvisory implements Comparable, Serializable {
           }
         }
       }
-      
-      DICTIONARY_KEYS = sbuf.toString();
-      System.out.println("Dictionary keys:" + DICTIONARY_KEYS);
-      populateThreadTypeMapper();
-      
-    } catch (Exception e) {
-      System.out.println("Unable to load or parse the Advisory Map Resource:" + e.getMessage());
-      e.printStackTrace();
-    }
+      // Return the keyword combination for pattern matching
+      return sbuf.toString();
+    
   }
-  
   
   public static void populateThreadTypeMapper() {
 

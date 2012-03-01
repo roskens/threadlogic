@@ -184,6 +184,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
 			<Pattern>netscape.ldap.LDAPConnThread</Pattern>
+      <Pattern>com.sun.jndi.ldap.Connection</Pattern>
 		</PatternList>
     <ExcludedAdvisories>
 			<AdvisoryId>Socket Read</AdvisoryId>

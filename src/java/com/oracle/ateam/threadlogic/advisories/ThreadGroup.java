@@ -184,10 +184,7 @@ public class ThreadGroup extends ThreadLogicElement {
         // Dont add this to the general advisories as this gets treated like the
         // standard advisory ThreadLogicConstants.HOT_CALL_PATTERN
         // Difficult to display the thread ids...
-        this.addAdvisory(hotThreadsAdvisory);
-        if (this.health.ordinal() < HealthLevel.WARNING.ordinal()) {
-          this.health = HealthLevel.WARNING;
-        }
+        this.addAdvisory(hotThreadsAdvisory);        
 
         this.hotPatternList.add(hotCallPattern);
         //System.out.println(this.threadGroupName + ": Added a Hot call Pattern:" +

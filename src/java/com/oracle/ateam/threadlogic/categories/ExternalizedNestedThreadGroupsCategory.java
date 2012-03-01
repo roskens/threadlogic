@@ -24,8 +24,10 @@ import com.oracle.ateam.threadlogic.advisories.ThreadGroup.HotCallPattern;
 import com.oracle.ateam.threadlogic.xml.ComplexGroup;
 import com.oracle.ateam.threadlogic.xml.GroupsDefnParser;
 import com.oracle.ateam.threadlogic.xml.SimpleGroup;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -57,22 +59,16 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   
   private Filter wlsJMSFilter = new Filter("WLS JMS Threads", "(weblogic.jms)|(weblogic.messaging)", 2, false, false, true);
   
-  private Filter allWLSThreadsFilter1 = new Filter("WLS Threads1", 
-                                                    "(weblogic)|(oracle.integration)|(com.octetstring.vde)|(orabpel)|(dms)|"
-                                                    + "(HTTPClient)|(oracle.integration)|(oracle.mds)|(oracle.ias)|(oracle)|"
-                                                    + "(com.tangosol.coherence)", 
-                                                    2, false, false, true);
-  
-  private Filter allWLSThreadsFilter2 = new Filter("WLS Threads2", 
-                                                    "(Weblogic)|(orabpel)|(weblogic)|(oracle.dfw)|(JPS)|(WsMgmt)|(Fabric)|(Oracle Service Bus)", 
-                                                    0, false, false, true);
+  private static Filter allWLSThreadStackFilter, allWLSThreadNameFilter;
   
   
-  public static String ADVISORY_PATH_SEPARATOR = "|";
   public static String DICTIONARY_KEYS;
   public static String THREADTYPEMAPPER_KEYS;
+  public static String PATH_SEPARATOR = "|";
+  public static String GROUPDEFS_EXT_DIRECTORY = "threadlogic.groups";
   public static final Hashtable<String, Filter> allKnownFilterMap = new Hashtable<String, Filter>();
-
+  public static String wlsThreadStackPattern, wlsThreadNamePattern;
+  
   static {
     init();
   }
@@ -81,32 +77,108 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   // instead of reading each time... for each TD 
   
   private static void init() {
-    allWLSStaticFilterList = createFilterList(ThreadLogicConstants.WLS_THREADGROUP_DEFN_XML);
-    allNonWLSStaticFilterList = createFilterList(ThreadLogicConstants.NONWLS_THREADGROUP_DEFN_XML);
+    createExternalFilterList();
+    if (allWLSStaticFilterList == null || allNonWLSStaticFilterList == null) {
+      allWLSStaticFilterList = createInternalFilterList(ThreadLogicConstants.WLS_THREADGROUP_DEFN_XML);
+      allNonWLSStaticFilterList = createInternalFilterList(ThreadLogicConstants.NONWLS_THREADGROUP_DEFN_XML);
+    }
+    
+    allWLSThreadStackFilter = new Filter("WLS Stack Threads", wlsThreadStackPattern, 2, false, false, true);  
+    allWLSThreadNameFilter = new Filter("WLS Name Threads", wlsThreadNamePattern, 0, false, false, true);
+    
+    System.out.println("WLS Thread Stack Pattern: " + wlsThreadStackPattern);
+    System.out.println("WLS Thread Name Pattern: " + wlsThreadNamePattern);
   }
-
-  private static ArrayList<Filter> createFilterList(String groupsDefnXml) {
+  
+  /**
+   * This method is expected to find two externally defined Group Defns. 
+   * One should be for WLS and other for Non-WLS
+   */
+ 
+  private static void createExternalFilterList() {
+    
+    String externalGroupDefnDirectory = System.getProperty(GROUPDEFS_EXT_DIRECTORY, "groupsdef");
+    File folder = new File(externalGroupDefnDirectory);
+    if (folder.exists()) {              
+      System.out.println("\n\nAttempting to load Groups Defn files from directory: " + externalGroupDefnDirectory);
+      System.out.println("Alert!! There can only be two files - WLSGroups.xml and NonWLSGroups.xml files within the above directory");
+      
+      File[] listOfFiles = folder.listFiles();
+      for(File file: listOfFiles) {
+        try {        
+          System.out.println("Attempting to load GroupsDefn from external resource: " + file.getAbsolutePath());
+          BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
+          
+          boolean isWLSGroup = !file.getName().toLowerCase().contains("nonwls");
+          System.out.println("Parsing file - " + file.getName() + " as a WLS Group Definition file??:" + isWLSGroup);
+          
+          ArrayList<Filter> filterList = parseFilterList(bis, isWLSGroup);    
+          if (filterList.size() > 0) {
+            if (isWLSGroup)
+              allWLSStaticFilterList = filterList;
+            else 
+              allNonWLSStaticFilterList = filterList;
+          }
+        } catch(Exception ioe) {
+          System.out.println("ERROR!! Problem in reading Group Defn from external file: " + ioe.getMessage());
+          ioe.printStackTrace();
+        }
+      }        
+    }
+    
+    return;
+  }
+  
+  private static ArrayList<Filter> createInternalFilterList(String groupsDefnXml) { 
+    
+    ClassLoader cl = ThreadLogicConstants.class.getClassLoader();
+    System.out.println("\n\nAttempting to load GroupsDefn from packaged threadlogic jar: " + groupsDefnXml);
+    boolean isWLSGroup = !(groupsDefnXml.toLowerCase().contains("nonwls"));
+    return parseFilterList(cl.getResourceAsStream(groupsDefnXml), isWLSGroup);    
+  }
+  
+      
+  private static ArrayList<Filter> parseFilterList(InputStream is, boolean isWLSGroup) { 
+    GroupsDefnParser groupsDefnParser = null;
     ArrayList<Filter> filterArr = new ArrayList<Filter>();
-    try {
-      ClassLoader cl = ThreadLogicConstants.class.getClassLoader();
-      
-      System.out.println("Attempting to load GroupsDefn from file: " + groupsDefnXml);
-      
-      GroupsDefnParser groupsDefnParser = new GroupsDefnParser(cl.getResourceAsStream(groupsDefnXml));
+    
+    try {           
+      groupsDefnParser = new GroupsDefnParser(is);
       groupsDefnParser.run();
       ArrayList<SimpleGroup> simpleGrpList = groupsDefnParser.getSimpleGrpList();
       ArrayList<ComplexGroup> complexGrpList = groupsDefnParser.getComplexGrpList();
 
+      boolean empty = true;
+      StringBuffer sbufStack = new StringBuffer(100);
+      StringBuffer sbufName = new StringBuffer(100);
+
+      sbufStack.append("(weblogic)|(Weblogic)");
+      sbufName.append("(weblogic)");
+
       for (SimpleGroup smpGrp : simpleGrpList) {
         generateSimpleFilter(smpGrp, filterArr);
+        boolean againstStack = smpGrp.getMatchLocation().equals("stack");
+        ArrayList<String> patternList = smpGrp.getPatternList();
+        for(String pattern: patternList) {
+         if (againstStack) {
+            sbufStack.append("|(" + pattern + ")");
+          } else {
+            sbufName.append("|(" + pattern + ")");
+          }                
+        }
       }
 
       for (ComplexGroup cmplxGrp : complexGrpList) {
-        generateCompositeFilter(cmplxGrp, filterArr);
+        generateCompositeFilter(cmplxGrp, filterArr);            
+      }
+
+      if (isWLSGroup) {
+        wlsThreadStackPattern = sbufStack.toString();
+        wlsThreadNamePattern = sbufName.toString();
       }
 
     } catch (Exception e) {
-      System.out.println("Unable to load or parse the Group Definition Resource:" + e.getMessage());
+      System.out.println("ERROR!! Unable to load or parse the Group Definition Resource:" + e.getMessage());
       e.printStackTrace();
     }
     return filterArr;
@@ -145,8 +217,12 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     simpleFilter.setExcludedAdvisories(smpGrp.getExcludedAdvisories());
     simpleFilter.setInfo(filterName);
 
-    //System.out.println("SimpleFilter:" + filterName + ", patternList:" + pattern);    
-    allKnownFilterMap.put(filterName, simpleFilter);
+    //System.out.println("SimpleFilter:" + filterName + ", patternList:" + pattern);  
+    if (allKnownFilterMap.containsKey(filterName)) {
+       System.out.println("Group Definition already exists:" + filterName + ", use different name or update existing Group Defintion");       
+    } else {
+      allKnownFilterMap.put(filterName, simpleFilter);
+    }
 
     if (smpGrp.isVisible()) {
       filterList.add(simpleFilter);
@@ -349,8 +425,8 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     nonwlsCompositeFilter.setInfo("Non-WebLogic Thread Groups");
 
     // Exclude all wls related threads for it
-    nonwlsCompositeFilter.addFilter(allWLSThreadsFilter1, false);
-    nonwlsCompositeFilter.addFilter(allWLSThreadsFilter2, false);
+    nonwlsCompositeFilter.addFilter(allWLSThreadStackFilter, false);
+    nonwlsCompositeFilter.addFilter(allWLSThreadNameFilter, false);
 
     addToFilters(nonwlsCompositeFilter);
 
@@ -387,8 +463,8 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     wlsCompositeFilter.setInfo("WebLogic Thread Groups");
 
     // Include all wls related threads for it
-    wlsCompositeFilter.addFilter(allWLSThreadsFilter1, true);
-    wlsCompositeFilter.addFilter(allWLSThreadsFilter2, true);
+    wlsCompositeFilter.addFilter(allWLSThreadStackFilter, true);
+    wlsCompositeFilter.addFilter(allWLSThreadNameFilter, true);
 
     addToFilters(wlsCompositeFilter);
 
@@ -400,8 +476,8 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     nestedWLSCategory.addToFilters(wlsJMSThreadsFilter);
 
     CompositeFilter wlsThreadsFilter = new CompositeFilter("WLS Threads");
-    wlsThreadsFilter.addFilter(allWLSThreadsFilter1, true);
-    wlsThreadsFilter.addFilter(allWLSThreadsFilter2, true);
+    wlsThreadsFilter.addFilter(allWLSThreadStackFilter, true);
+    wlsThreadsFilter.addFilter(allWLSThreadNameFilter, true);
     // Exclude wls jms from pure wls related group
     wlsThreadsFilter.addFilter(wlsJMSFilter, false);
     nestedWLSCategory.addToFilters(wlsThreadsFilter);
@@ -464,9 +540,9 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
       if (excludedAdvisories != null && excludedAdvisories.size() > 0) {
         for(String advisoryId: filter.getExcludedAdvisories()) {
 
-          System.out.println(name + " > Adding exclusion for:" + advisoryId);
+          //System.out.println(name + " > Adding exclusion for:" + advisoryId);
           ThreadAdvisory tadv = ThreadAdvisory.lookupThreadAdvisoryByName(advisoryId);
-          System.out.println("Found ThreadAdvisory :" + tadv);
+          //System.out.println("Found ThreadAdvisory :" + tadv);
           if (tadv != null)
             tg.addToExclusionList(tadv);
         }      

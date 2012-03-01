@@ -284,7 +284,7 @@ xmlns="http://java.net/projects/threadlogic">
 	<Advisory>
 		<Name>Database Query Execution</Name>
 		<Health>WATCH</Health>    
-    <Keyword>PreparedStatement.execute, Statement.executeQuery</Keyword>
+    <Keyword>Statement.execute</Keyword>
 		<Descrp>Executing operation or query on DB</Descrp>
 		<Advice>Check/Monitor Database SQL Executions if it takes longer and also check for socket connection disruption to database if thread continues to show same pattern</Advice>
 	</Advisory>

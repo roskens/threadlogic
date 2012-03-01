@@ -1292,13 +1292,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   
                   parsedStartTime = matched.group(0);
                   
-                  System.out.println("ParsedTime0:" + parsedStartTime);
                   if (!getDm().isDefaultMatches() && isMillisTimeStamp()) {
                     try {
                       // the factor is a hack for a bug in
                       // oc4j timestamp printing (pattern
                       // timeStamp=2342342340)
-                      System.out.println("ParsedTime:" + parsedStartTime);
                       if (parsedStartTime.length() < 13) {
                         startTime = Long.parseLong(parsedStartTime)
                             * (long) Math.pow(10, 13 - parsedStartTime.length());
@@ -1310,11 +1308,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                       startTime = 0;
                     }
                     if (startTime > 0) {
-                      System.out.println("ParsedTime2:" + startTime);
                       overallTDI.setStartTime((new Date(startTime)).toString());
                     }
                   } else {
-                    System.out.println("ParsedTime3:" + parsedStartTime);
                     overallTDI.setStartTime(parsedStartTime);
                   }
                   parsedStartTime = null;
@@ -1453,8 +1449,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               }
 
               getBis().mark(getMarkSize());
-              System.out.println("Buf marked with Size:" + getMarkSize());
-            
+              
               if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
                 getBis().reset();                
               }
