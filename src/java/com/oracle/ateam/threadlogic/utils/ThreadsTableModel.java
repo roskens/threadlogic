@@ -32,10 +32,10 @@
  */
 package com.oracle.ateam.threadlogic.utils;
 
-import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
 
+import java.math.BigInteger;
 import java.util.Vector;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -100,18 +100,27 @@ public class ThreadsTableModel extends AbstractTableModel {
       // / } else {
 
       switch(columnIndex) {
-        case (0): return columns[0];
+        case (0): 
+          String scrubbedName = columns[0].replaceAll("\\[.*\\] ", ""); 
+          return scrubbedName;
         case (1): return ti.getThreadGroup().getThreadGroupName();  
         case (2): return ti.getHealth();  
         case (3): return getAdvisoryNames(ti);        
         case (6): return ti.getState();
         default:
-          return columns[columnIndex - 3];          
+          String val = columns[columnIndex - 3];
+          if (val== null || val.equals("?"))
+            return null;
+          
+          if (val.startsWith("0x"))
+            return new BigInteger(val.substring(2), 16);
+          
+          return new BigInteger(val);
       }      
       
     } else {
       if (columnIndex == 1) {
-        return new Long(columns[columnIndex]);
+        return new BigInteger(columns[columnIndex]);
       } else {
         return columns[columnIndex];
       }
@@ -147,8 +156,8 @@ public class ThreadsTableModel extends AbstractTableModel {
    * @inherited
    */
   public Class getColumnClass(int columnIndex) {
-    if (columnIndex > 3 && columnIndex < 7) {
-      return Integer.class;
+    if (columnIndex > 3 && columnIndex < 6) {
+      return BigInteger.class;
     } else {
       return String.class;
     }
@@ -167,7 +176,11 @@ public class ThreadsTableModel extends AbstractTableModel {
     int i = startRow;
     boolean found = false;
     while (!found && (i < getRowCount())) {
-      found = ((ThreadInfo) getInfoObjectAtRow(i++)).getTokens()[0].indexOf(name) >= 0;
+      ThreadInfo ti = ((ThreadInfo) getInfoObjectAtRow(i++));
+      if (ti == null)
+        continue;
+      found = ti.getName().indexOf(name) >= 0;
+      
     }
 
     return (found ? i - 1 : -1);

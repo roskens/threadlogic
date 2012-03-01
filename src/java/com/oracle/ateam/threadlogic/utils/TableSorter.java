@@ -321,10 +321,15 @@ public class TableSorter extends AbstractTableModel {
           comparison = -1;
         } else if (o2 == null) {
           comparison = 1;
+        } else if (o1.getClass() == String.class) {
+          String s1 = (String) o1;
+          String s2 = (String) o2;
+          comparison = s1.compareTo(s2);
         } else {
           comparison = getComparator(column).compare(o1, o2);
-        }
+        }        
         if (comparison != 0) {
+          //System.out.println("Cmp Result: " + comparison + ", between " + o1 + " and " + o2);
           return directive.direction == DESCENDING ? -comparison : comparison;
         }
       }

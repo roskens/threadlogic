@@ -16,7 +16,7 @@ import com.oracle.ateam.threadlogic.ThreadLogicElement;
 
 public class HealthLevelFilter extends Filter {
   
-  private HealthLevel health = HealthLevel.WATCH;
+  private HealthLevel health = HealthLevel.IGNORE;
   
   public HealthLevelFilter() {
     setName("Minimum Health Level Filter");

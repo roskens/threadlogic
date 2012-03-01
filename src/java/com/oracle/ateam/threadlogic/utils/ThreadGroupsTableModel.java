@@ -111,7 +111,11 @@ public class ThreadGroupsTableModel extends ThreadsTableModel {
     int i = startRow;
     boolean found = false;
     while (!found && (i < getRowCount())) {
-      found = ((ThreadGroup) getInfoObjectAtRow(i++)).getThreadGroupName().indexOf(name) >= 0;
+      ThreadGroup tg = (ThreadGroup) getInfoObjectAtRow(i++);
+      if (tg == null)
+        continue;
+      
+      found = tg.getThreadGroupName().indexOf(name) >= 0;
     }
     return (found ? i - 1 : -1);
   }

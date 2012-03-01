@@ -204,6 +204,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>afjca15.AbstractResourceAdapter.endpointDeactivation</Keyword>
 		<Descrp>IWay Adapter Endpoint Deactivation invoked</Descrp>
 		<Advice>IWay Adapter endpoint is getting deactivated, there would be service disruption, ensure the call completes by checking in successive thread dumps</Advice>
+	</Advisory>  
+  <Advisory>
+		<Name>Stellent WCM</Name>
+		<Health>NORMAL</Health>
+		<Keyword>oracle.stellent.wcm</Keyword>
+		<Descrp>Stellent web content management</Descrp>
+		<Advice>Web application is using stellent web content management, review against Stellent WCM related best practices</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS JMS Msg Receive</Name>
@@ -390,7 +397,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Name>NIO Select</Name>
 		<Health>IGNORE</Health>
 		<Keyword>sun.nio.ch.SelectorImpl.select</Keyword>
-		<Descrp>Using Native IO via Select or Poll</Descrp>
+		<Descrp>Using Java Native IO (NIO) via Select or Poll option</Descrp>
 		<Advice>Ignore</Advice>
 	</Advisory>
 	<Advisory>

@@ -57,7 +57,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   private ArrayList<Filter> allWLSFilterList, allNonWLSFilterList;
   private static ArrayList<Filter> allNonWLSStaticFilterList, allWLSStaticFilterList;
   
-  private Filter wlsJMSFilter = new Filter("WLS JMS Threads", "(weblogic.jms)|(weblogic.messaging)", 2, false, false, true);
+  private Filter wlsJMSFilter = new Filter("WLS JMS", "(weblogic.jms)|(weblogic.messaging)", 2, false, false, true);
   
   private static Filter allWLSThreadStackFilter, allWLSThreadNameFilter;
   
@@ -83,8 +83,8 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
       allNonWLSStaticFilterList = createInternalFilterList(ThreadLogicConstants.NONWLS_THREADGROUP_DEFN_XML);
     }
     
-    allWLSThreadStackFilter = new Filter("WLS Stack Threads", wlsThreadStackPattern, 2, false, false, true);  
-    allWLSThreadNameFilter = new Filter("WLS Name Threads", wlsThreadNamePattern, 0, false, false, true);
+    allWLSThreadStackFilter = new Filter("WLS Stack", wlsThreadStackPattern, 2, false, false, true);  
+    allWLSThreadNameFilter = new Filter("WLS Name", wlsThreadNamePattern, 0, false, false, true);
     
     System.out.println("WLS Thread Stack Pattern: " + wlsThreadStackPattern);
     System.out.println("WLS Thread Name Pattern: " + wlsThreadNamePattern);
@@ -186,7 +186,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
 
   private static void generateSimpleFilter(SimpleGroup smpGrp, ArrayList<Filter> filterList) {
 
-    String filterName = smpGrp.getName() + " Threads";
+    String filterName = smpGrp.getName();
     ArrayList<String> patternList = smpGrp.getPatternList();
 
     String pattern = "";
@@ -232,14 +232,14 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   }
 
   private static void generateCompositeFilter(ComplexGroup cmplxGrp, ArrayList<Filter> filterList) {
-    String filterName = cmplxGrp.getName() + " Threads";
+    String filterName = cmplxGrp.getName();
 
     CompositeFilter compositeFilter = new CompositeFilter(filterName);
     compositeFilter.setExcludedAdvisories(cmplxGrp.getExcludedAdvisories());
     compositeFilter.setInfo(filterName);
 
     for (String simpleGrpKey : cmplxGrp.getInclusionList()) {
-      Filter simpleFilter = allKnownFilterMap.get(simpleGrpKey + " Threads");
+      Filter simpleFilter = allKnownFilterMap.get(simpleGrpKey);
       if (simpleFilter == null) {
         System.out.println("ERROR: Simple Group referred by name:" + simpleGrpKey + " not declared previously or name mismatch!!, Fix the error");
         Thread.dumpStack();
@@ -250,7 +250,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     }
 
     for (String simpleGrpKey : cmplxGrp.getExclusionList()) {
-      Filter simpleFilter = allKnownFilterMap.get(simpleGrpKey + " Threads");
+      Filter simpleFilter = allKnownFilterMap.get(simpleGrpKey);
       if (simpleFilter == null) {
         System.out.println("ERROR: Simple Group referred by name:" + simpleGrpKey + " not declared previously or name mismatch!!, Fix the error");
         Thread.dumpStack();
@@ -273,7 +273,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
 
     String[] nameDefinition = groupDefinition.split("=");
 
-    String filterName = nameDefinition[0] + " Threads";
+    String filterName = nameDefinition[0];
     String filterDefinition = nameDefinition[1];
 
     String[] tokens = filterDefinition.split(":");
@@ -342,7 +342,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     for (String group : simpleGroups) {
       // Include or Exclude the filter associated with that referred simple group
       String[] simpleGrpTokens = group.split(":");
-      Filter simpleFilter = allKnownFilterMap.get(simpleGrpTokens[0] + " Threads");
+      Filter simpleFilter = allKnownFilterMap.get(simpleGrpTokens[0]);
       if (simpleFilter == null) {
         System.out.println("ERROR: Simple Filter referred by name:" + simpleGrpTokens[0] + " not declared previously or name mismatch!!, Fix the error");
         Thread.dumpStack();
@@ -441,7 +441,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
 
   private void addUnknownThreadGroupFilter() {
 
-    unknownCompositeFilter = new CompositeFilter("Unknown or Custom Threads");
+    unknownCompositeFilter = new CompositeFilter("Unknown or Custom");
     unknownThreadGroup = ThreadGroupFactory.createThreadGroup(unknownCompositeFilter.getName());
     threadGroupList.add(unknownThreadGroup);
 
@@ -471,11 +471,11 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     nestedWLSCategory = getSubCategory(wlsCompositeFilter.getName());
 
     // Create a new filter for captuing just the wls & wls jms threads that dont fall under any known wls thread groups
-    CompositeFilter wlsJMSThreadsFilter = new CompositeFilter("WLS JMS Threads");
+    CompositeFilter wlsJMSThreadsFilter = new CompositeFilter("WLS JMS");
     wlsJMSThreadsFilter.addFilter(wlsJMSFilter, true);
     nestedWLSCategory.addToFilters(wlsJMSThreadsFilter);
 
-    CompositeFilter wlsThreadsFilter = new CompositeFilter("WLS Threads");
+    CompositeFilter wlsThreadsFilter = new CompositeFilter("Rest of WLS");
     wlsThreadsFilter.addFilter(allWLSThreadStackFilter, true);
     wlsThreadsFilter.addFilter(allWLSThreadNameFilter, true);
     // Exclude wls jms from pure wls related group

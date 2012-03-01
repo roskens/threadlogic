@@ -331,7 +331,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             sb.append("</font><br><br>");
             sb.append(content.toString());
             content = sb;
-
             ThreadInfo threadInfo = new ThreadInfo(originalThreadKey, null, content.toString(), maxLines, getThreadTokens(originalThreadKey));
             threadInfo.setHealth(lastThreadInMerge.getHealth());
             addToCategory(catMerge, threadInfo);
@@ -1632,7 +1631,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     }
     if (hContent.length() > 0) {
       tdi.setHeapInfo(new HeapInfo(hContent.toString()));
-      System.out.println("Found heap info:" + hContent.toString());
+      //System.out.println("Found heap info:" + hContent.toString());
     }
 
     return (found);

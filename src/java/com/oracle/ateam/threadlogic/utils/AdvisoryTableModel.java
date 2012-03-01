@@ -104,7 +104,11 @@ public class AdvisoryTableModel extends ThreadsTableModel {
     int i = startRow;
     boolean found = false;
     while (!found && (i < getRowCount())) {
-      found = ((ThreadAdvisory) getInfoObjectAtRow(i++)).getKeyword().indexOf(name) >= 0;
+      ThreadAdvisory tadv = (ThreadAdvisory) getInfoObjectAtRow(i++);
+      if (tadv == null)
+        continue;
+      
+      found = ((tadv.getKeyword().indexOf(name) >= 0) || (tadv.getPattern().indexOf(name) >= 0));
     }
     return (found ? i - 1 : -1);
   }

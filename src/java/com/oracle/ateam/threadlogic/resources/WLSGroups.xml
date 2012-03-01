@@ -242,12 +242,16 @@ xmlns="http://java.net/projects/threadlogic">
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
 			<Pattern>oracle.dfw</Pattern>
+      <!--
 			<Pattern>oracle.dms</Pattern>
+      -->
 			<Pattern>oracle.core.ojdl</Pattern>
 			<Pattern>oracle.ias.cache</Pattern>
 			<Pattern>oracle.as</Pattern>
 			<Pattern>oracle.core</Pattern>
+      <!--
 			<Pattern>oracle.security.jps</Pattern>
+      -->
 			<Pattern>OracleTimeoutPollingThread</Pattern>
 			<Pattern>oracle.integration.platform</Pattern>
 		</PatternList>

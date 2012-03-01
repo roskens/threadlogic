@@ -151,7 +151,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
 
     switch (columnIndex) {
     case 0:
-      return filteredName;
+      return filteredName.replaceAll("\\[.*\\] ", "").replaceAll("\"", "");
     case 1:      
       return actualThreadFromLastTDI.getThreadGroup().getThreadGroupName();
     case 2:
@@ -198,7 +198,10 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     int i = startRow;
     boolean found = false;
     while (!found && (i < getRowCount())) {
-      found = ((ThreadInfo) getInfoObjectAtRow(i++)).getTokens()[0].indexOf(name) >= 0;
+      ThreadInfo ti = (ThreadInfo) getInfoObjectAtRow(i++);
+      if (ti == null)
+        continue;
+      found = ti.getName().indexOf(name) >= 0;
     }
 
     return (found ? i - 1 : -1);
