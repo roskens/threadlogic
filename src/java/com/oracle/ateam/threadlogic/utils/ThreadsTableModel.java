@@ -32,8 +32,12 @@
  */
 package com.oracle.ateam.threadlogic.utils;
 
+import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.ThreadInfo;
+
+import com.oracle.ateam.threadlogic.ThreadState;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
+import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
 
 import java.math.BigInteger;
 import java.util.Vector;
@@ -46,6 +50,119 @@ import javax.swing.tree.DefaultMutableTreeNode;
  * @author irockel
  */
 public class ThreadsTableModel extends AbstractTableModel {
+  
+  class ThreadData {
+
+    private String scrubbedName, nameId;
+    private String threadGroupName;  
+    private HealthLevel health;  
+    private String advisoryNames;        
+    private ThreadState state;
+    private BigInteger tid;
+    private BigInteger nid;
+
+    public ThreadData(ThreadInfo ti) {
+        scrubbedName = ti.getFilteredName();
+        nameId = ti.getNameId();
+        
+        ThreadGroup tg = ti.getThreadGroup();
+        if (tg != null) {
+          threadGroupName = tg.getThreadGroupName();  
+        }
+        
+        health = ti.getHealth();                  
+        state = ti.getState();
+        
+        advisoryNames = getAdvisoryNames(ti);
+        System.out.println(nameId + ": ParsedAdvisories: " + advisoryNames);
+        String[] columns = ti.getTokens();
+        tid = parseNumbers(columns[1]);
+        nid = parseNumbers(columns[2]);
+    }
+    
+    private BigInteger parseNumbers(String val) {
+      if (val == null || val.equals("?")) {
+        return null;          
+      } else if (val.startsWith("0x")) {
+        return new BigInteger(val.substring(2), 16);
+      }
+    
+      return new BigInteger(val);      
+    }
+    
+    private String getAdvisoryNames(ThreadInfo ti) {
+      StringBuffer sbuf = new StringBuffer();
+      boolean firstEntry = true;
+      for (ThreadAdvisory tdadv : ti.getAdvisories()) {
+        // if (tdadv.getHealth().ordinal() >= HealthLevel.WATCH.ordinal()) {
+        if (!firstEntry)
+          sbuf.append(", ");
+        sbuf.append(tdadv.getPattern());
+        firstEntry = false;
+        // }
+      }
+      return sbuf.toString();    
+    }
+
+    /**
+     * @return the scrubbedName
+     */
+    public String getName() {
+      return scrubbedName;
+    }
+
+    /**
+     * @return the threadGroupName
+     */
+    public String getThreadGroupName() {
+      return threadGroupName;
+    }
+
+    /**
+     * @return the health
+     */
+    public HealthLevel getHealth() {
+      return health;
+    }
+
+    /**
+     * @return the advisoryNames
+     */
+    public String getAdvisoryNames() {
+      return advisoryNames;
+    }
+
+    /**
+     * @return the state
+     */
+    public ThreadState getState() {
+      return state;
+    }
+
+    /**
+     * @return the tid
+     */
+    public BigInteger getTid() {
+      return tid;
+    }
+
+    /**
+     * @return the nid
+     */
+    public BigInteger getNid() {
+      return nid;
+    }
+
+    /**
+     * @return the nameId
+     */
+    public String getNameId() {
+      return nameId;
+    }
+    
+    
+  }
+  
 
   protected Vector elements;
 
@@ -57,25 +174,25 @@ public class ThreadsTableModel extends AbstractTableModel {
    */
   public ThreadsTableModel(DefaultMutableTreeNode rootNode) {
     // transform child nodes in proper vector.
+    System.out.println("Entered ThreadTableModel");
     if (rootNode != null) {
       elements = new Vector();
+      
       for (int i = 0; i < rootNode.getChildCount(); i++) {
         DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) rootNode.getChildAt(i);
-        elements.add(childNode.getUserObject());
-        if (columnNames == null) {
-          Object entry = childNode.getUserObject();
-          if (entry instanceof ThreadInfo) {
-
-            ThreadInfo ti = (ThreadInfo) entry;
-            if (ti.getTokens().length > 3) {
-              columnNames = new String[] { "Name", "Thread Group", "Health", "Advisories", "Native-ID", "Thread-ID", "State", };
-            } else {
-              columnNames = new String[] { "Name", "Thread-ID", "State" };
-            }
-          }
+        Object entry = childNode.getUserObject();
+        if (entry instanceof ThreadInfo) {
+          ThreadInfo ti = (ThreadInfo) entry;
+          columnNames = new String[] { "Name", "Thread Group", "Health", "Advisories", "Native-ID", "Thread-ID", "State"};
+          
+          // Create the data once inside ThreadData isntead of repeatedly parsing and recreating data...from advisories/tid/nids...
+          elements.add(new ThreadData(ti));  
+        } else {
+          elements.add(childNode.getUserObject());
         }
       }
     }
+    System.out.println("Finished ThreadTableModel");
   }
 
   public String getColumnName(int col) {
@@ -91,55 +208,22 @@ public class ThreadsTableModel extends AbstractTableModel {
   }
 
   public Object getValueAt(int rowIndex, int columnIndex) {
-    ThreadInfo ti = ((ThreadInfo) elements.elementAt(rowIndex));
+    ThreadData tidata = ((ThreadData) elements.elementAt(rowIndex));
 
-    String[] columns = ti.getTokens();
-    if (getColumnCount() > 3) {
-      // if (columnIndex > 1 && columnIndex < 5) {
-      // return new Long(columns[columnIndex]);
-      // / } else {
-
-      switch(columnIndex) {
-        case (0): 
-          String scrubbedName = columns[0]; 
-          return scrubbedName;
-        case (1): return ti.getThreadGroup().getThreadGroupName();  
-        case (2): return ti.getHealth();  
-        case (3): return getAdvisoryNames(ti);        
-        case (6): return ti.getState();
-        default:
-          String val = columns[columnIndex - 3];
-          if (val== null || val.equals("?"))
-            return null;
-          
-          if (val.startsWith("0x"))
-            return new BigInteger(val.substring(2), 16);
-          
-          return new BigInteger(val);
-      }      
-      
-    } else {
-      if (columnIndex == 1) {
-        return new BigInteger(columns[columnIndex]);
-      } else {
-        return columns[columnIndex];
-      }
-    }
+    switch(columnIndex) {
+      case (0): return tidata.getName();
+      case (1): return tidata.getThreadGroupName();  
+      case (2): return tidata.getHealth();  
+      case (3): return tidata.getAdvisoryNames(); 
+      case (4): return tidata.getTid(); 
+      case (5): return tidata.getNid(); 
+      case (6): return tidata.getState();
+      default:
+        return null;
+    } 
   }
 
-  private String getAdvisoryNames(ThreadInfo ti) {
-    StringBuffer sbuf = new StringBuffer();
-    boolean firstEntry = true;
-    for (ThreadAdvisory tdadv : ti.getAdvisories()) {
-      // if (tdadv.getHealth().ordinal() >= HealthLevel.WATCH.ordinal()) {
-      if (!firstEntry)
-        sbuf.append(", ");
-      sbuf.append(tdadv.getPattern());
-      firstEntry = false;
-      // }
-    }
-    return sbuf.toString();    
-  }
+  
   
   /**
    * get the thread info object at the specified line

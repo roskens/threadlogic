@@ -331,8 +331,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             sb.append("</font><br><br>");
             sb.append(content.toString());
             content = sb;
+            
             ThreadInfo threadInfo = new ThreadInfo(originalThreadKey, null, content.toString(), maxLines, getThreadTokens(originalThreadKey));
             threadInfo.setHealth(lastThreadInMerge.getHealth());
+            threadInfo.setAdvisories(lastThreadInMerge.getAdvisories());
             addToCategory(catMerge, threadInfo);
           }
         }

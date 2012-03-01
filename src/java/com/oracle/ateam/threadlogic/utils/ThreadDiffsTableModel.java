@@ -90,6 +90,8 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     super(rootNode);
     this.threadDumpArrList = threadDumpArrList;
     int noOfTDs = threadDumpArrList.size();
+    
+    System.out.println("Entered ThreadsDiffTableModel");
 
     columnNames = new String[4 + noOfTDs];
     columnNames[0] = "Name";
@@ -132,6 +134,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
       }
       columnNames[i + 5] = columnNames[i + 5] + " [" + startTime + " to " + endTime + "]";
     }
+    System.out.println("Finished ThreadDiffTableModel");
     createProgressMatrixBetweenTDs();
   }
 
@@ -143,9 +146,9 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
   }
 
   public Object getValueAt(int rowIndex, int columnIndex) {
-    ThreadInfo ti = ((ThreadInfo) elements.elementAt(rowIndex));
-    String nameId = ti.getNameId();
-    String filteredName = ti.getFilteredName();
+    ThreadData tidata = ((ThreadData) elements.elementAt(rowIndex));
+    String nameId = tidata.getNameId();
+    String filteredName = tidata.getName();
     int noOfThreadDumps = threadDumpArrList.size();
     ThreadInfo actualThreadFromLastTDI = threadDumpArrList.get(noOfThreadDumps - 1).getThreadMap().get(nameId);
 
@@ -157,7 +160,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     case 2:
       return determineHealth(nameId);
     case 3:
-      return ti.getState();
+      return tidata.getState();
     case 4:
       return returnAdvisoryColumn(nameId);
 
