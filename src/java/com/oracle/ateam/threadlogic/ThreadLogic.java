@@ -38,6 +38,7 @@ import com.oracle.ateam.threadlogic.utils.StatusBar;
 import com.oracle.ateam.threadlogic.utils.SwingWorker;
 import com.oracle.ateam.threadlogic.utils.TableSorter;
 import com.oracle.ateam.threadlogic.utils.ThreadsTableModel;
+import com.oracle.ateam.threadlogic.utils.ThreadsTableModel.ThreadData;
 import com.oracle.ateam.threadlogic.utils.ThreadsTableSelectionModel;
 import com.oracle.ateam.threadlogic.utils.TipOfDay;
 import com.oracle.ateam.threadlogic.utils.TreeRenderer;
@@ -97,7 +98,6 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.NumberFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -1063,8 +1063,10 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
     int[] rows = ttsm.getTable().getSelectedRows();
     StringBuffer sb = new StringBuffer();
+    ThreadsTableModel threadsModel = (ThreadsTableModel) ts.getTableModel();
     for (int i = 0; i < rows.length; i++) {
-      appendThreadInfo(sb, ((ThreadsTableModel) ts.getTableModel()).getInfoObjectAtRow(ts.modelIndex(rows[i])));
+      int index = ts.modelIndex(rows[i]);
+      appendThreadInfo(sb, threadsModel.getInfoObjectAtRow(index));
     }
     displayContent(sb.toString());
     setThreadDisplay(true);
@@ -1084,12 +1086,15 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         + advisory.getPattern() + "</a>&nbsp;&nbsp;");
   }
   
-  private void appendThreadInfo(StringBuffer sb, Object nodeInfo) {
+  private void appendThreadInfo(StringBuffer sb, Object data) {
     // Modified to handle ThreadAdvisory in addition to ThreadInfo
+    Object nodeInfo = data;
+    if (data instanceof ThreadData) {
+      nodeInfo = ((ThreadData)data).getAssocThreadInfo();
+    }
+     
     if (nodeInfo instanceof ThreadInfo) {
       ThreadInfo ti = (ThreadInfo) nodeInfo;
-
-      
       if (ti.getAdvisories() != null && ti.getAdvisories().size() > 0) {
         sb.append("<font size=5>Advisories: ");
         for (Iterator<ThreadAdvisory> iter = ti.getAdvisories().iterator(); iter.hasNext();) {

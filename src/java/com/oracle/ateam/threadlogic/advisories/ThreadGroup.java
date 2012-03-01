@@ -229,13 +229,13 @@ public class ThreadGroup extends ThreadLogicElement {
    * creates the overview information for this thread group.
    */
   protected void createOverview() {
-    setOverview( getBaseOverview() + getCritOverview());
+    setOverview( getBaseOverview() + getEndOfBaseOverview() + getCritOverview());
   }
   
   protected String getBaseOverview() {
     StringBuffer statData = new StringBuffer("<font face=System "
         + "><table border=0><tr bgcolor=\"#dddddd\" ><td><font face=System "
-        + ">Thread Group Name</td><td width=\"150\"><b><font face=System>");
+        + ">Thread Group Name</td><td><b><font face=System>");
     statData.append(this.getThreadGroupName());
 
     
@@ -261,13 +261,19 @@ public class ThreadGroup extends ThreadLogicElement {
         + ">Number of Hot Patterns Found </td><td><b><font face=System>");
     statData.append(this.hotPatternList.size());
 
-    statData.append("</b></td></tr>\n\n");
-          
+    statData.append("</b></td></tr>\n\n");    
     return statData.toString();
   }
   
+  protected String getEndOfBaseOverview() {
+    return "</table>";
+  }
+  
   protected String getCritOverview() {
-    StringBuffer statData = new StringBuffer();
+    
+    StringBuffer statData = new StringBuffer("<font face=System "
+        + "><table border=0>");
+    
     statData.append("<tr bgcolor=\"#ffffff\"><td></td></tr>");
 
     int percentageRunning = (int) (getNoOfRunningThreads() * 100.0 / this.threads.size());

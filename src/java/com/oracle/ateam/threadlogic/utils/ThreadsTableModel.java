@@ -51,7 +51,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 public class ThreadsTableModel extends AbstractTableModel {
   
-  class ThreadData {
+  public static class ThreadData {
 
     private String scrubbedName, nameId;
     private String threadGroupName;  
@@ -60,10 +60,12 @@ public class ThreadsTableModel extends AbstractTableModel {
     private ThreadState state;
     private BigInteger tid;
     private BigInteger nid;
+    private ThreadInfo assocThreadInfo;
 
     public ThreadData(ThreadInfo ti) {
         scrubbedName = ti.getFilteredName();
         nameId = ti.getNameId();
+        assocThreadInfo = ti;
         
         ThreadGroup tg = ti.getThreadGroup();
         if (tg != null) {
@@ -74,7 +76,6 @@ public class ThreadsTableModel extends AbstractTableModel {
         state = ti.getState();
         
         advisoryNames = getAdvisoryNames(ti);
-        System.out.println(nameId + ": ParsedAdvisories: " + advisoryNames);
         String[] columns = ti.getTokens();
         tid = parseNumbers(columns[1]);
         nid = parseNumbers(columns[2]);
@@ -159,6 +160,20 @@ public class ThreadsTableModel extends AbstractTableModel {
     public String getNameId() {
       return nameId;
     }
+
+    /**
+     * @return the assocThreadInfo
+     */
+    public ThreadInfo getAssocThreadInfo() {
+      return assocThreadInfo;
+    }
+
+    /**
+     * @param assocThreadInfo the assocThreadInfo to set
+     */
+    public void setAssocThreadInfo(ThreadInfo assocThreadInfo) {
+      this.assocThreadInfo = assocThreadInfo;
+    }
     
     
   }
@@ -174,7 +189,6 @@ public class ThreadsTableModel extends AbstractTableModel {
    */
   public ThreadsTableModel(DefaultMutableTreeNode rootNode) {
     // transform child nodes in proper vector.
-    System.out.println("Entered ThreadTableModel");
     if (rootNode != null) {
       elements = new Vector();
       
@@ -191,8 +205,7 @@ public class ThreadsTableModel extends AbstractTableModel {
           elements.add(childNode.getUserObject());
         }
       }
-    }
-    System.out.println("Finished ThreadTableModel");
+    }    
   }
 
   public String getColumnName(int col) {

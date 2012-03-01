@@ -134,7 +134,6 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
       }
       columnNames[i + 5] = columnNames[i + 5] + " [" + startTime + " to " + endTime + "]";
     }
-    System.out.println("Finished ThreadDiffTableModel");
     createProgressMatrixBetweenTDs();
   }
 

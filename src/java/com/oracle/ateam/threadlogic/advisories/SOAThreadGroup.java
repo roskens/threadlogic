@@ -79,6 +79,6 @@ public class SOAThreadGroup extends ThreadGroup {
    */
   protected void createOverview() {
   
-  setOverview(getBaseOverview() + getSOAOverview() + getCritOverview());
+  setOverview(getBaseOverview() + getSOAOverview() + getEndOfBaseOverview() + getCritOverview());
 }
 }

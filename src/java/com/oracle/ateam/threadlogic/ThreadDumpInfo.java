@@ -157,22 +157,22 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   private void createOverview() {
     StringBuffer statData = new StringBuffer("<body bgcolor=\"#ffffff\"><font face=System "
         + "><table border=0><tr bgcolor=\"#dddddd\"><td><font face=System "
-        + ">Overall Thread Count</td><td width=\"150\"></td><td><b><font face=System>");
+        + ">Overall Thread Count</td><td width=\"150\"></td><td colspan=3><b><font face=System>");
     statData.append(getThreads() == null ? 0 : getThreads().getNodeCount());
     
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System"
-        + ">Main Thread</td><td></td><td><b><font face=System>");
+        + ">Main Thread</td><td></td><td colspan=3><b><font face=System>");
     statData.append(this.mainThread);
     
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System"
-        + ">Timestamp</td><td></td><td><b><font face=System>");
+        + ">Timestamp</td><td></td><td colspan=3><b><font face=System>");
     statData.append( (this.startTime == null)? "Not Available":startTime);
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
-        + ">JVM Version</td><td></td><td><b><font face=System>");
+        + ">JVM Version</td><td></td><td colspan=3><b><font face=System>");
     statData.append((this.jvmVersion == null)? "Not Available":jvmVersion);
     
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System"
-        + ">Overall Monitor Count</td><td></td><td><b><font face=System>");
+        + ">Overall Monitor Count</td><td></td><td colspan=3><b><font face=System>");
     statData.append(getMonitors() == null ? 0 : getMonitors().getNodeCount());
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
         + ">Number of threads waiting for a monitor</td><td></td><td><b><font face=System>");
@@ -198,6 +198,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
         + ">Number of Monitors without locking threads</td><td></td><td><b><font face=System>");
     statData.append(getMonitorsWithoutLocks() == null ? 0 : getMonitorsWithoutLocks().getNodeCount());
     statData.append("</b></td></tr>");
+    statData.append("</table>");    
 
     // add hints concerning possible hot spots found in this thread dump.
     statData.append(getDumpAnalyzer().analyzeDump());
@@ -205,8 +206,6 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     if (getHeapInfo() != null) {
       statData.append(getHeapInfo());
     }
-
-    statData.append("</table>");
 
     setOverview(statData.toString());
 
@@ -693,8 +692,10 @@ public class ThreadDumpInfo extends ThreadLogicElement {
         + ">Number of busy (not waiting or blocked) threads </td><td><b><font face=System>");
     statData.append(this.noOfRunningThreads);
 
-    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr>");
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr></table>");
 
+    statData.append("<font face=System><table border=0>");
+    
     if (this.hasDeadlock) {
       statData.append("<tr bgcolor=\"#cccccc\" ><td width=\"300\" colspan=2><font face=System"
           + "><p><font style=color:Red><b>Deadlock Found !!!</b></font><p><br>");

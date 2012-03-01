@@ -334,7 +334,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             
             ThreadInfo threadInfo = new ThreadInfo(originalThreadKey, null, content.toString(), maxLines, getThreadTokens(originalThreadKey));
             threadInfo.setHealth(lastThreadInMerge.getHealth());
-            threadInfo.setAdvisories(lastThreadInMerge.getAdvisories());
             addToCategory(catMerge, threadInfo);
           }
         }
@@ -1622,7 +1621,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           lines++;
         }
       } else if (found) {
-        if (heapLineCounter < 7) {
+        if (!line.equals("")) {
           hContent.append(line).append("\n");
         } else {
           finished = true;

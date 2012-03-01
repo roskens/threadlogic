@@ -97,6 +97,6 @@ public class JVMThreadGroup extends ThreadGroup {
    */
   protected void createOverview() {
   
-  setOverview(getBaseOverview() + getJVMOverview() + getCritOverview());
+  setOverview(getBaseOverview() + getJVMOverview() + getEndOfBaseOverview() + getCritOverview());
 }
 }
