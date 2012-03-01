@@ -322,8 +322,8 @@ public class TableSorter extends AbstractTableModel {
         } else if (o2 == null) {
           comparison = 1;
         } else if (o1.getClass() == String.class) {
-          String s1 = (String) o1;
-          String s2 = (String) o2;
+          String s1 = ((String) o1).replaceAll("\\[.*\\] ", "");
+          String s2 = ((String) o2).replaceAll("\\[.*\\] ", "");
           comparison = s1.compareTo(s2);
         } else {
           comparison = getComparator(column).compare(o1, o2);

@@ -101,7 +101,7 @@ public class ThreadsTableModel extends AbstractTableModel {
 
       switch(columnIndex) {
         case (0): 
-          String scrubbedName = columns[0].replaceAll("\\[.*\\] ", ""); 
+          String scrubbedName = columns[0]; 
           return scrubbedName;
         case (1): return ti.getThreadGroup().getThreadGroupName();  
         case (2): return ti.getHealth();  

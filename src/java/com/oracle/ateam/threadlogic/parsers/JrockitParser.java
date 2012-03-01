@@ -217,11 +217,45 @@ public class JrockitParser extends AbstractDumpParser {
 
       System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name  );
       e.printStackTrace();
+      return doHardParsing(name);
     }
 
     return (tokens);
   }
 
+  /**
+   * check and parse manually the thread label
+   * 
+   * @param nameEntry
+   *          the thread name line
+   */
+   private String[] doHardParsing(String nameEntry) {
+     
+      String[] tokens = new String[4];
+      int index = nameEntry.indexOf("\"", 1);
+      if (index > 1) {
+        tokens[0] = nameEntry.substring(1, index);
+      } else {
+        tokens[0] = nameEntry.substring(1);
+        return tokens;
+      }
+      
+      String[] remainingTokens = nameEntry.substring(index + 1).trim().split(" ");
+      for(int i = 0; i < remainingTokens.length; i++) {
+        if (remainingTokens[i].indexOf("=") < 0)
+          break;
+        
+        String label = remainingTokens[i].replaceAll(".*=", "");
+        if (i == 0) // nid
+          tokens[2] = label;
+        else if (i == 1) // tid
+          tokens[1] = label;
+        else if (i == 2) // State
+          tokens[3] = label;
+      }
+      return tokens;
+  }
+   
   @Override
   public boolean checkForClassHistogram(DefaultMutableTreeNode threadDump) throws IOException {
     return false;
