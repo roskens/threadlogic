@@ -71,7 +71,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
         File[] listOfFiles = folder.listFiles();
         for(File file: listOfFiles) {
         try {
-          System.out.println("\n\nReading advisories from: " + file.getAbsolutePath());
+          System.out.println("\n\nReading advisories from External resources: " + file.getAbsolutePath()+ "\n");
           BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
           advisoryMapParser = new AdvisoryMapParser(bis);
           advisoryMapParser.run();          
@@ -102,7 +102,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
     StringBuffer sbuf = new StringBuffer();     
     
     try {
-      System.out.println("\n\nAttempting to load Advisory Map from packaged threadlogic jar: " + advisoryMapXml);
+      System.out.println("\n\nAttempting to load Advisory Map from packaged threadlogic jar: " + advisoryMapXml + "\n");
       ClassLoader cl = ThreadLogicConstants.class.getClassLoader();
 
       advisoryMapParser = new AdvisoryMapParser(cl.getResourceAsStream(advisoryMapXml));
@@ -157,7 +157,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
           for(int i = 1; i < noOfKeywords; i++) {
             key = tadv.getKeywordList()[i];
             if (threadAdvisoryMap.containsKey(key)) {
-              System.out.println("Keyword already exists:" + key + " from Advisory:" + threadAdvisoryMap.get(key) + ", use different keyword or update existing Advisory");
+              System.out.println("WARNING!! Keyword already exists:" + key + " from Advisory:" + threadAdvisoryMap.get(key) + ", use different keyword or update existing Advisory");
               continue;
             }
             threadAdvisoryMap.put(key, tadv);

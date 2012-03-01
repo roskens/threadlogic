@@ -206,11 +206,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     super(new BorderLayout());
 
     if (System.getProperty("threadlogic.advisories") == null) {
-      System.out.println("Customized Advisories!!\n Use -Dthreadlogic.advisories=directory... command line argument to pick your own set of custom\n advisories from a specific directory to be used along with ones packaged within Threadlogic jar file. \nExtract the AdvisoryMap.xml from com/oracle/ateam/threadlogic/resources package in the jar\n and use that as a template to create custom advisories. Use unique keywords and names to avoid conflicts.\n\n");
+      System.out.println("Customized Advisories!!\nUse -Dthreadlogic.advisories=directory... command line argument to pick your own set of custom \nadvisories from a specific directory to be used in ADDITION TO the ones packaged within Threadlogic jar file.\nExtract the AdvisoryMap.xml from com/oracle/ateam/threadlogic/resources package in the jar \nand use that as a template to create custom advisories. Use unique keywords and names to avoid conflicts.\n\tExample:  -Dthreadlogic.advisories=/user/tlogic/advisories\n\n");
     }
     
     if (System.getProperty("threadlogic.groups") == null) {
-    System.out.println("Customized Grouping!!\n Use -Dthreadlogic.groups=directory... command line argument to pick your customized set of group\n definitions from a specific directory instead of ones packaged within Threadlogic jar file. \nExtract the NonWLSGroups.xml & WLSGroups.xml from com/oracle/ateam/threadlogic/resources package\n in the jar and use that as a template to customize or create custom Groups. \nEnsure the names for the files are retained as its needed for forming WLS & NonWLS parent groups.\n\n");
+    System.out.println("Customized Grouping!!\nUse -Dthreadlogic.groups=directory... command line argument to pick your customized set of group \ndefinitions from a specific directory INSTEAD OF ones packaged within Threadlogic jar file. \nExtract the NonWLSGroups.xml & WLSGroups.xml from com/oracle/ateam/threadlogic/resources package \nin the jar and use that as a template to customize or create custom Groups. \nEnsure the names for the files are retained as its needed for forming WLS & NonWLS parent groups.\n\tExample:  -Dthreadlogic.groups=/user/tlogic/groups\n\n");
     }
 
     if (setLF) {

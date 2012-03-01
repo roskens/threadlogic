@@ -485,7 +485,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>OSB Configuration is being updated via an active session, ensure the activation goes through and the thread does not reach blocked state</Advice>
 	</Advisory>
 	<Advisory>
-		<Name>Large # of Paralllel GC Threads</Name>
+		<Name>Large # of Parallel GC Threads</Name>
 		<Health>WARNING</Health>
 		<Keyword>ParallelGCThreads</Keyword>
 		<Descrp>Large number of Parallel GC Threads used by JVM</Descrp>
