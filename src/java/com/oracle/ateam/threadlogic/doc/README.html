@@ -14,6 +14,8 @@ This is a pre-release version.
 <h3>Changes since 0.9 </h3>
 
 <ul>
+<li>Full support for partial thread dumps that miss beginning markers (like Full Thread Dump or FULL THREAD DUMP) that would normally result in failures</li>
+<li>Support for WLST generated thread dumps</li>
 <li>Cache the thread data instead of reparsing thread repeatedly so that sorting does not suffer for names/advisories</li>
 <li>Clean up Thread Dump & ThreadGroup overview page display</li>
 <li>Excluding [ACTIVE]/[STUCK] labels during by thread names</li>
