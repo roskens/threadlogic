@@ -13,7 +13,7 @@
 Advisory is used to tag threads that match or display certain characteristics
 The behavior might be coming from the thread (name/stack/state) or a combination of conditions (like multiple threads blocked for same lock or it got marked as STUCK etc). Each of the advisory has an associated health level that can be used to filter/analyze or build on for further analysis.
 
-Each Advisory entry has a Name, Health, Keyword (pattern to search against), Decrirption and Advice
+Each Advisory entry has a Name, Health, Keyword (pattern to search against), Description and Advice
 The Name is used as short id/reference to an Advice 
 The Health can be one of the following - IGNORE, NORMAL, WATCH, WARNING, FATAL (increasing level of severity)
 The Thread with a certain set of advisories is marked with the health level that matches the most severe of its tagged advisories.

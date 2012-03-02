@@ -89,10 +89,8 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
   public ThreadDiffsTableModel(DefaultMutableTreeNode rootNode, ArrayList<ThreadDumpInfo> threadDumpArrList) {
     super(rootNode);
     this.threadDumpArrList = threadDumpArrList;
-    int noOfTDs = threadDumpArrList.size();
+    int noOfTDs = threadDumpArrList.size();    
     
-    System.out.println("Entered ThreadsDiffTableModel");
-
     columnNames = new String[4 + noOfTDs];
     columnNames[0] = "Name";
     columnNames[1] = "Thread Group";
