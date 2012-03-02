@@ -33,6 +33,7 @@
 
 package com.oracle.ateam.threadlogic.dialogs;
 
+import com.oracle.ateam.threadlogic.ThreadLogic;
 import com.oracle.ateam.threadlogic.utils.Browser;
 
 import java.awt.BorderLayout;
@@ -84,7 +85,7 @@ public class HelpOverviewDialog extends JDialog {
 
   private void initPanel() {
     try {
-      URL tutURL = HelpOverviewDialog.class.getResource(getFile());
+      URL tutURL = ThreadLogic.class.getResource(getFile());
       htmlView = new JEditorPane(tutURL);
     } catch (MalformedURLException ex) {
       ex.printStackTrace();
