@@ -283,7 +283,7 @@ xmlns="http://java.net/projects/threadlogic">
 	</Advisory>
 	<Advisory>
 		<Name>Cluster MessageReceiver Thread</Name>
-		<Health>WATCH</Health>
+		<Health>NORMAL</Health>
 		<Keyword>MessageReceiverRunning</Keyword>
 		<Descrp>Cluster MessageReceiver Thread</Descrp>
 		<Advice>This thread should be very quick in processing and scheduling appropriate work. If this thread continues to be RUNNING across thread dumps, there is likely a bug somewhere.</Advice>

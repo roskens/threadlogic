@@ -1747,7 +1747,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    * @param jvmVersion the jvmVersion to set
    */
   public void setJvmVersion(String jvmVersion) {
-    this.jvmVersion = jvmVersion;
+    this.jvmVersion = jvmVersion;    
   }
 
   public class LineChecker implements DumpParser.lineChecker {
