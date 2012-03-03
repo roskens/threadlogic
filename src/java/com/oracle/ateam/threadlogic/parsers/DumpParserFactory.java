@@ -69,9 +69,9 @@ public class DumpParserFactory {
   
   private static final int[] VM_ID_LIST = { HOTSPOT_VM, JROCKIT_VM, IBM_VM };
   
-  private static final String DEFAULT_HOTSPOT_MARKER = "Full thread dump Java HotSpot(TM)\n\n";
+  private static final String DEFAULT_HOTSPOT_MARKER = "\n\nFull thread dump Java HotSpot(TM)\n\n";
 
-  private static final String DEFAULT_JROCKIT_MARKER = "===== FULL THREAD DUMP ===============\n\n";
+  private static final String DEFAULT_JROCKIT_MARKER = "\n\n===== FULL THREAD DUMP ===============\n\n";
   
   // Pass the Sun Markers also for IBM as its difficult for normal IBM parser to parse threads without full details normally present in IBM dump
   private static final String[] DEFAULT_MARKERS = { DEFAULT_HOTSPOT_MARKER, DEFAULT_JROCKIT_MARKER, DEFAULT_HOTSPOT_MARKER };
@@ -150,6 +150,7 @@ public class DumpParserFactory {
   private DumpParser getDumpParserForLogfile(InputStream dumpFileStream, Map threadStore, boolean withCurrentTimeStamp,
       int startCounter, boolean retryWithMarkers, int nativeVMType) {  
     BufferedReader bis = null;
+    
     int readAheadLimit = PrefManager.get().getStreamResetBuffer();
     int lineCounter = 0;
     DumpParser currentDumpParser = null;
@@ -157,8 +158,12 @@ public class DumpParserFactory {
     // Default to Hotspot unless we find any jrockit or ibm tags..
     int vmType = HOTSPOT_VM;
     boolean determinedJVMType = false;
+    int avail = 0;
     
     try {
+      avail = dumpFileStream.available();      
+      dumpFileStream.mark(readAheadLimit);
+      
       bis = new BufferedReader(new InputStreamReader(dumpFileStream));
 
       // reset current dump parser
@@ -207,7 +212,7 @@ public class DumpParserFactory {
       }
       // System.out.println("Selected Dump Parser: " +
       // currentDumpParser.getClass().getName());
-      if ((currentDumpParser != null) && (bis != null)) {
+      if ((currentDumpParser != null) && (bis != null)) {        
         bis.reset();
       }
     } catch (IOException ex) {
@@ -216,7 +221,7 @@ public class DumpParserFactory {
     
     if ((currentDumpParser == null) && (!retryWithMarkers)) {
       
-      System.out.println("Unable to find any associated markers from the thread dumps to parse the given thread dump");
+      System.out.println("WARNING!! Unable to find any associated markers from the thread dumps to parse the given thread dump");
       System.out.println("Will Attempt to add additional markers to help with parsing based on details from thread dump");
       String jvmTypeStr = "Sun Hotspot";
       switch(vmType) {
@@ -224,14 +229,21 @@ public class DumpParserFactory {
         case IBM_VM: jvmTypeStr = "IBM"; break;
       }
     
-    System.out.println("Creating temporary markers to match Thread Dumps of JVM Type: " + jvmTypeStr);
+    System.out.println("Creating temporary file with Header markers to match Thread Dumps of JVM Type: " + jvmTypeStr);
     System.out.println("\nWARNING!!!Wont be able to accurately parse and report on locks/dates/jvm versions due to limitations\n");
+    System.out.println("WARNING!!!If the tool does not succeed with parsing the threads even after adding additional markers,\n"
+              + "increase the Stream Reset buffer size (in bytes) under Preference option to a larger size\n"
+              + "so we can re-read the file back from beginning while adding back missing markers\n");
+    System.out.println("Total size of dump file: " + avail + ", current Stream reset limit is: " + readAheadLimit + "\n\n");
     
       try {
         dumpFileStream.reset();
+        } catch(IOException ie) { ie.printStackTrace(); }   
+      
+      try {
         InputStream recreatedStream = cloneStreamWithMarkers(vmType, dumpFileStream);
         return getDumpParserForLogfile(recreatedStream, threadStore, withCurrentTimeStamp, startCounter, true, vmType);
-      } catch(IOException ie) { }   
+      } catch(IOException ie) { ie.printStackTrace(); }   
     }
     return currentDumpParser;
   }
@@ -259,6 +271,7 @@ public class DumpParserFactory {
       }
       bos.flush();
       bos.close();
+      bos = null;
 
       BufferedInputStream bis = new BufferedInputStream(new FileInputStream(tmpFile));    
       return bis;

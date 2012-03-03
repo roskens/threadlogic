@@ -88,6 +88,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -881,10 +882,15 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    */
   private void addDumpFiles(String[] files) {
     for (int i = 0; i < files.length; i++) {
+      
+      dumpCounter = 1;
       try {
-        dumpCounter = 1;
-        addDumpStream(new FileInputStream(files[i]), files[i], true);
-      } catch (FileNotFoundException ex) {
+        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(files[i]));
+        bis.mark(bis.available());
+
+        addDumpStream(bis, files[i], true);
+      } catch(IOException ex) {
+
         JOptionPane.showMessageDialog(this.getRootPane(), "Error opening " + ex.getMessage() + ".",
             "Error opening file", JOptionPane.ERROR_MESSAGE);
       }
@@ -892,6 +898,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   }
 
   private void addDumpStream(InputStream inputStream, String file, boolean withLogfile) {
+    
     final InputStream parseFileStream = new ProgressMonitorInputStream(this, "Parsing " + file, inputStream);
 
     // Create the nodes.
@@ -2501,5 +2508,5 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
     }
   }
-
+  
 }

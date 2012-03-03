@@ -93,7 +93,7 @@ public class HotspotParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*- parking to wait.*)");
     this.lineChecker.setWaitingToPattern("(.*- waiting to.*)");
     this.lineChecker.setLockedPattern("(.*- locked.*)");
-    this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|<EndOfDump>).*");
+    this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|Full thread dump|<EndOfDump>).*");
     
     parseJvmVersion(bis);
   }
@@ -460,8 +460,8 @@ public class HotspotParser extends AbstractDumpParser {
 
     } catch(Exception e) { 
       
-      System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name);           
-      e.printStackTrace();
+      System.out.println("WARNING!! Parsing problem with Thread name:" + name);           
+      //e.printStackTrace();
       if (isNativeHotspot)
         return doHardParsing(name);
       else
@@ -557,7 +557,8 @@ public class HotspotParser extends AbstractDumpParser {
     
     try {
       bis.reset();
-      while (bis.ready()) {        
+      int count = 0;
+      while (bis.ready() && count++ < 2) {        
         String line = bis.readLine();
         if (line != null) {
           int index = line.indexOf("Java HotSpot");

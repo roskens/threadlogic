@@ -1277,6 +1277,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
         while (getBis().ready() && !finished) {
           line = getNextLine();
+          //System.out.println("Reading line:" + line);
           lineCounter++;
           singleLineCounter++;
           if (locked) {            

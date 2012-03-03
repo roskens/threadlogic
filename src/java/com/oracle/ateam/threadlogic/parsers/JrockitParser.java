@@ -97,7 +97,8 @@ public class JrockitParser extends AbstractDumpParser {
     
     try {
       bis.reset();
-      while (bis.ready()) {        
+      int count = 0;
+      while (bis.ready() && count++ < 2) {        
         String line = bis.readLine();
         if (!foundDate && (line != null) && (line !="")) {          
           Matcher m = dm.checkForDateMatch(line);
@@ -116,19 +117,20 @@ public class JrockitParser extends AbstractDumpParser {
    * @param bis the BufferedReader
    */
   protected void parseJvmVersion(BufferedReader bis) {
-    
+    int count = 0;
     try {
-      while (bis.ready()) {        
+      while (bis.ready() && count++ < 2) {        
         String line = bis.readLine();
         if (line != null) {
           int index = line.indexOf("Oracle JRockit");
           if (index >= 0) {            
             System.out.println("JVM Version:" + line);
-            super.setJvmVersion(line.substring(index).trim());
+            setJvmVersion(line.substring(index).trim());
             return;
           }
         }
       }
+      this.setJvmVersion("Oracle JRockit");
     } catch(Exception e) { }
     
   }
@@ -216,7 +218,7 @@ public class JrockitParser extends AbstractDumpParser {
     } catch(Exception e) { 
 
       System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name  );
-      e.printStackTrace();
+      //e.printStackTrace();
       return doHardParsing(name);
     }
 
