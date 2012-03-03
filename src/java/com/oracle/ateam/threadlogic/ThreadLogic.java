@@ -1392,13 +1392,17 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       int lineNumber = ti.getLogLine();
 
       // find log file node.
-      TreePath selPath = tree.getSelectionPath();
+      TreePath lastSavedPath, selPath;
+      lastSavedPath = selPath = tree.getSelectionPath();
+      
       while (selPath != null
           && !checkNameFromNode((DefaultMutableTreeNode) selPath.getLastPathComponent(), File.separator)) {
-
+        lastSavedPath = selPath;
         selPath = selPath.getParentPath();
       }
-
+      if (selPath == null)
+        selPath = lastSavedPath;
+      
       tree.setSelectionPath(selPath);
       tree.scrollPathToVisible(selPath);
 

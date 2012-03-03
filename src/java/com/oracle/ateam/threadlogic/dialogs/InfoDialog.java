@@ -68,7 +68,7 @@ public class InfoDialog extends JDialog {
     upperLayout.setVgap(10);
     upperLayout.setHgap(10);
     JPanel upperPane = new JPanel(upperLayout);
-    upperPane.add(new JLabel(ThreadLogic.createImageIcon("tda-threadlogic-logo.png")), BorderLayout.CENTER);
+    upperPane.add(new JLabel(ThreadLogic.createImageIcon("logo-threadlogic.png")), BorderLayout.CENTER);
     upperPane.add(new JLabel(" "), BorderLayout.EAST);
     upperPane.add(new JLabel(" "), BorderLayout.WEST);
     upperPane.add(new JLabel(""), BorderLayout.NORTH);

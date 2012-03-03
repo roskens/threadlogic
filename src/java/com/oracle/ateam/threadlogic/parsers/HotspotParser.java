@@ -93,7 +93,7 @@ public class HotspotParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*- parking to wait.*)");
     this.lineChecker.setWaitingToPattern("(.*- waiting to.*)");
     this.lineChecker.setLockedPattern("(.*- locked.*)");
-    this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|Full thread dump|<EndOfDump>).*");
+    this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|Full thread dump|^\\d\\d\\d\\d-\\d\\d-\\d\\d|<EndOfDump>).*");
     
     parseJvmVersion(bis);
   }
@@ -433,7 +433,7 @@ public class HotspotParser extends AbstractDumpParser {
   public String[] getThreadTokens(String name) {
     
     if (!isNativeHotspot)
-      return doIBMParsing(name);
+      return doWLSTParsing(name);
     
     String patternMask = "^.*\"([^\\\"]+)\".*tid=([^ ]+|).*nid=([^ ]+) *([^\\[]*).*";
     name = name.replace("- Thread t@", "tid=");
@@ -460,12 +460,12 @@ public class HotspotParser extends AbstractDumpParser {
 
     } catch(Exception e) { 
       
-      System.out.println("WARNING!! Parsing problem with Thread name:" + name);           
+      //System.out.println("WARNING!! Parsing problem with Thread name:" + name);           
       //e.printStackTrace();
-      if (isNativeHotspot)
+      if (isNativeHotspot && (name.indexOf("=") > 0))
         return doHardParsing(name);
       else
-        return doIBMParsing(name);
+        return doWLSTParsing(name);
     }
     
     return (tokens);
@@ -510,7 +510,7 @@ public class HotspotParser extends AbstractDumpParser {
    * @param nameEntry
    *          the thread name line
    */
-   private String[] doIBMParsing(String nameEntry) {
+   private String[] doWLSTParsing(String nameEntry) {
      
       String[] tokens = new String[4];
       int index = nameEntry.indexOf("\"", 1);

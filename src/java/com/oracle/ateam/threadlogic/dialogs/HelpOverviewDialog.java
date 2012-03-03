@@ -70,6 +70,7 @@ public class HelpOverviewDialog extends JDialog {
    */
   public HelpOverviewDialog(JFrame owner, String title, String file, Image icon) {
     super(owner, title);
+    System.out.println("Setting file to:" + file);
     setFile(file);
     if (icon != null) {
       try {
