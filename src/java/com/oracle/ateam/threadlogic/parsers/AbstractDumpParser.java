@@ -1473,7 +1473,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             // last thread reached?
             if ((tempLine = lineChecker.getEndOfDump(line)) != null) {
               finished = true;
-              getBis().mark(getMarkSize());
+              //getBis().mark(getMarkSize());
               if ((checkForDeadlocks(threadDump)) == 0) {
                 // no deadlocks found, set back original
                 // position.
@@ -1489,6 +1489,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
                 getBis().reset();                
               }
+            } else if (startedThreadParsing) {
+              // Mark the end of current known thread stack
+              // so even if we read past the trailing markers for thread dump, we can go back....
+              getBis().mark(getMarkSize());
             }
           }
         }
