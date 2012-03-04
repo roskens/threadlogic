@@ -87,6 +87,7 @@ public class HotspotParser extends AbstractDumpParser {
     this.lineChecker = new LineChecker();
     this.lineChecker.setFullDumpPattern("(.*Full thread dump.*)");
     this.lineChecker.setAtPattern("(.*at.*)");
+    this.lineChecker.setLabelContinuePattern("(.*( \\[0xffff| \\[0x0000|WAITING| RUNNABLE).*)");
     this.lineChecker.setThreadStatePattern("(.*java.lang.Thread.State.*)");
     this.lineChecker.setLockedOwnablePattern("(.*Locked ownable synchronizers:.*)");
     this.lineChecker.setWaitingOnPattern("(.*- waiting on.*)");

@@ -70,6 +70,7 @@ public class JrockitParser extends AbstractDumpParser {
     this.lineChecker = new LineChecker();
     this.lineChecker.setFullDumpPattern("(.*FULL THREAD DUMP.*)");
     this.lineChecker.setAtPattern("(.*at.*)");
+    this.lineChecker.setLabelContinuePattern(".*(, native|, daemon|WAITING| RUNNABLE).*");
     this.lineChecker.setWaitingOnPattern("(.*-- Waiting for notification on.*)");
     this.lineChecker.setParkingToWaitPattern("(.*-- Parking to wait for.*)");
     this.lineChecker.setWaitingToPattern("(.*-- Blocked trying to get lock.*)");

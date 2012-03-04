@@ -508,6 +508,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    */
   protected void addToCategory(DefaultMutableTreeNode category, ThreadDumpInfo tdi, String title, StringBuffer info,
       String content, int lineCount, boolean parseTokens) {
+    
     DefaultMutableTreeNode threadInfo = null;    
     String[] tokens = parseTokens ? getThreadTokens(title) : null;
     if (parseTokens && ((tokens == null) || (tokens.length == 0)) ) {      
@@ -1275,11 +1276,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         Matcher matched = getDm().getLastMatch();
         String parsedStartTime = null;
         boolean stillInTitleParsing = false;
-        StringBuffer titleBuffer = null;
+        StringBuffer titleBuffer = null;        
         boolean startedThreadParsing = false;
-        
-        if (getBis().ready())
-          getBis().reset();
 
         while (getBis().ready() && !finished) {
           line = getNextLine();
@@ -1336,7 +1334,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             // Problem with JRockit is the Timestamp occurs after the FULL THREAD DUMP tag
             // So the above logic fails as we wont get to parse for the date as its reverse for Hotspot (time occurs before Full Thread Dump marker)
             // So parse the timestamp here for jrockit....
-            if (!startedThreadParsing && (this instanceof JrockitParser) && (parsedStartTime == null)  
+            if ( !startedThreadParsing && (this instanceof JrockitParser) && (parsedStartTime == null)  
                     && !getDm().isPatternError() && (getDm().getRegexPattern() != null)) {
               Matcher m = getDm().checkForDateMatch(line);
               if (m != null) {                
@@ -1345,124 +1343,133 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               }
             }
             
-            if (line.trim().length() > 0) {
-              if ((tempLine = lineChecker.getStackStart(line)) != null) {
-                
-                startedThreadParsing = true;
+            if (line.trim().length() <= 0) 
+              continue;
+            
+            if ((tempLine = lineChecker.getStackStart(line)) != null) {
 
-                // SABHA - Commenting off the GC thread portion, we want to know
-                // how many GC threads are in the jvm.. so we can provide relevant
-                // advisory.
-                /*
-                 * if (lineChecker.getGCThread(line) != null) { // skip GC Threads
-                 * continue; }
-                 */
+              // SABHA - Commenting off the GC thread portion, we want to know
+              // how many GC threads are in the jvm.. so we can provide relevant
+              // advisory.
+              /*
+               * if (lineChecker.getGCThread(line) != null) { // skip GC Threads
+               * continue; }
+               */
 
-                // We are starting a group of lines for a different
-                // thread
-                // First, flush state for the previous thread (if
-                // any)
-                concurrentSyncsFlag = false;
-                
-                if (!stillInTitleParsing ) {
-                  
-                  String stringContent = content != null ? content.toString() : null;
-                  if (title != null) {
-                    threads.put(title, content.toString());
-                    content.append("</pre></pre>");
-                    addToCategory(catThreads, overallTDI, title, null, stringContent, singleLineCounter, true);
-                    threadCount++;
-                  }                
-                  if (inWaiting) {
-                    addToCategory(catWaiting, overallTDI, title, null, stringContent, singleLineCounter, true);
-                    inWaiting = false;
-                    waiting++;
-                  }
-                  if (inSleeping) {
-                    addToCategory(catSleeping, overallTDI, title, null, stringContent, singleLineCounter, true);
-                    inSleeping = false;
-                    sleeping++;
-                  }
-                  if (inLocking) {
-                    addToCategory(catLocking, overallTDI, title, null, stringContent, singleLineCounter, true);
-                    inLocking = false;
-                    locking++;
-                  }
-                  singleLineCounter = 0;
-                  while (!monitorStack.empty()) {
-                    mmap.parseAndAddThread((String) monitorStack.pop(), title, content.toString());
-                  }
+              // We are starting a group of lines for a different
+              // thread
+              // First, flush state for the previous thread (if
+              // any)
+              concurrentSyncsFlag = false;
+              startedThreadParsing = true;
 
-                  titleBuffer = new StringBuffer();
-                  content = new StringBuffer("<pre><font size=" + ThreadLogic.getFontSizeModifier(-1)
-                    + ">");  
+              if (!stillInTitleParsing) {
+
+                String stringContent = content != null ? content.toString() : null;
+                if (title != null) {
+                  threads.put(title, content.toString());
+                  content.append("</pre></pre>");
+                  addToCategory(catThreads, overallTDI, title, null, stringContent, singleLineCounter, true);
+                  threadCount++;
+                }                
+                if (inWaiting) {
+                  addToCategory(catWaiting, overallTDI, title, null, stringContent, singleLineCounter, true);
+                  inWaiting = false;
+                  waiting++;
                 }
-                
-                //Added to handle multi-line thread titles which screws up parsing of the complete thread...
-                // Continue to store in TitleBuffer till we see the title has ended (assuming it uses "ThreadName"...)
-                titleBuffer.append(tempLine.trim().replace("\\n*", ""));
-                content.append(tempLine);
-                content.append("\n");
-                
-                if ( !stillInTitleParsing && (tempLine.trim().indexOf("\"", 2) < 0)) {
-                  stillInTitleParsing = true;
-                } else if (stillInTitleParsing) {
-                  // Check if the thread title has ended...
-                  stillInTitleParsing = !(tempLine.trim().indexOf("\"") >= 0);
+                if (inSleeping) {
+                  addToCategory(catSleeping, overallTDI, title, null, stringContent, singleLineCounter, true);
+                  inSleeping = false;
+                  sleeping++;
                 }
-                
-                if ((titleBuffer != null) && !stillInTitleParsing) {
-                  title = titleBuffer.toString();
-                  titleBuffer = null;
+                if (inLocking) {
+                  addToCategory(catLocking, overallTDI, title, null, stringContent, singleLineCounter, true);
+                  inLocking = false;
+                  locking++;
                 }
-                
-              } else if ((tempLine = lineChecker.getThreadState(line)) != null) {
-                content.append(tempLine);
-                content.append("\n");
-                /*
-                 * Commented off by Sabha on 3/3/12
-                 * We want to parse further to see if the thread state appears on a different line
-                 *
-                if (title.indexOf("t@") > 0) {
-                  // in this case the title line is missing state
-                  // informations
-                  String state = tempLine.substring(tempLine.indexOf(':') + 1).trim();
-                  if (state.indexOf(' ') > 0) {
-                    title += " nid=none " + state.substring(0, state.indexOf(' '));
-                  } else {
-                    title += " nid=none " + state;
-                  }
+                singleLineCounter = 0;
+                while (!monitorStack.empty()) {
+                  mmap.parseAndAddThread((String) monitorStack.pop(), title, content.toString());
                 }
-                 * 
-                 */
-              //} else if (content != null && (tempLine = lineChecker.getLockedOwnable(line)) != null) {
-              //  concurrentSyncsFlag = true;
-              //  content.append(tempLine);
-              //  content.append("\n");
-              } else if (content != null && (tempLine = lineChecker.getWaitingOn(line)) != null) {
-                content.append(linkifyMonitor(tempLine));
-                monitorStack.push(tempLine);
-                inSleeping = true;
-                content.append("\n");
-              } else if (content != null && (tempLine = lineChecker.getParkingToWait(line)) != null) {
-                content.append(linkifyMonitor(tempLine));
-                monitorStack.push(tempLine);
-                inSleeping = true;
-                content.append("\n");
-              } else if (content != null && (tempLine = lineChecker.getWaitingTo(line)) != null) {
-                content.append(linkifyMonitor(tempLine));
-                monitorStack.push(tempLine);
-                inWaiting = true;
-                content.append("\n");
-              } else if (content != null && (tempLine = lineChecker.getLocked(line)) != null) {
-                content.append(linkifyMonitor(tempLine));
-                inLocking = true;
-                monitorStack.push(tempLine);
-                content.append("\n");
-              } else if (content != null && (tempLine = lineChecker.getAt(line)) != null) {
-                content.append(tempLine);
-                content.append("\n");
+
+                titleBuffer = new StringBuffer();
+                content = new StringBuffer("<pre><font size=" + ThreadLogic.getFontSizeModifier(-1)
+                  + ">");  
               }
+
+              titleBuffer.append(tempLine.trim().replace("\\n*", "") + " ");
+              content.append(tempLine);
+              content.append("\n");
+
+              // If we are still in title parsing, check if the thread label has ended...
+              // Otherwise continue to treat as still in title parsing                  
+              stillInTitleParsing = ( lineChecker.getLabelEnd(line) == null);              
+                      
+              if ((titleBuffer != null) && !stillInTitleParsing) {
+                title = titleBuffer.toString();
+                titleBuffer = null;
+              }
+
+
+            } else if (stillInTitleParsing) {
+              
+              titleBuffer.append(line + " ");
+              content.append(line);
+              content.append("\n");
+              
+              stillInTitleParsing = (lineChecker.getLabelEnd(line) == null);
+              
+              if ((titleBuffer != null) && !stillInTitleParsing) {
+                title = titleBuffer.toString();
+                titleBuffer = null;
+              }
+              
+            } else if ((tempLine = lineChecker.getThreadState(line)) != null) {
+              content.append(tempLine);
+              content.append("\n");
+              /*
+               * Commented off by Sabha on 3/3/12
+               * We want to parse further to see if the thread state appears on a different line
+               *
+              if (title.indexOf("t@") > 0) {
+                // in this case the title line is missing state
+                // informations
+                String state = tempLine.substring(tempLine.indexOf(':') + 1).trim();
+                if (state.indexOf(' ') > 0) {
+                  title += " nid=none " + state.substring(0, state.indexOf(' '));
+                } else {
+                  title += " nid=none " + state;
+                }
+              }
+               * 
+               */
+            //} else if (content != null && (tempLine = lineChecker.getLockedOwnable(line)) != null) {
+            //  concurrentSyncsFlag = true;
+            //  content.append(tempLine);
+            //  content.append("\n");
+            } else if (content != null && (tempLine = lineChecker.getWaitingOn(line)) != null) {
+              content.append(linkifyMonitor(tempLine));
+              monitorStack.push(tempLine);
+              inSleeping = true;
+              content.append("\n");
+            } else if (content != null && (tempLine = lineChecker.getParkingToWait(line)) != null) {
+              content.append(linkifyMonitor(tempLine));
+              monitorStack.push(tempLine);
+              inSleeping = true;
+              content.append("\n");
+            } else if (content != null && (tempLine = lineChecker.getWaitingTo(line)) != null) {
+              content.append(linkifyMonitor(tempLine));
+              monitorStack.push(tempLine);
+              inWaiting = true;
+              content.append("\n");
+            } else if (content != null && (tempLine = lineChecker.getLocked(line)) != null) {
+              content.append(linkifyMonitor(tempLine));
+              inLocking = true;
+              monitorStack.push(tempLine);
+              content.append("\n");
+            } else if (content != null && (tempLine = lineChecker.getAt(line)) != null) {
+              content.append(tempLine);
+              content.append("\n");
             }
             
             /*
@@ -1473,7 +1480,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             // last thread reached?
             if ((tempLine = lineChecker.getEndOfDump(line)) != null) {
               finished = true;
-              //getBis().mark(getMarkSize());
+
               if ((checkForDeadlocks(threadDump)) == 0) {
                 // no deadlocks found, set back original
                 // position.
@@ -1484,19 +1491,18 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 // no statistical data found, set back original
                 // position.
                 getBis().reset();
-              } 
-              
+              }
+
+              getBis().mark(getMarkSize());
+
               if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
                 getBis().reset();                
               }
-            } else if (startedThreadParsing) {
-              // Mark the end of current known thread stack
-              // so even if we read past the trailing markers for thread dump, we can go back....
+            } else {
               getBis().mark(getMarkSize());
             }
           }
         }
-        
         // last thread
         String stringContent = content != null ? content.toString() : null;
         if (title != null) {
@@ -1572,7 +1578,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           threadDump.add(catMonitorsLocks);
         }
 
-        
         Category unsortedThreadCategory = (Category) catThreads.getUserObject();
         Category sortedThreads = sortThreadsByHealth(unsortedThreadCategory);
         overallTDI.setThreads(sortedThreads);
@@ -1651,7 +1656,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     int heapLineCounter = 0;
     int lines = 0;
 
-    while (getBis().ready() && !finished) {
+    while (getBis().ready() && !finished) {      
       String line = getNextLine();
       if (!found && !line.equals("")) {
         if (line.trim().startsWith("Heap")) {
@@ -1795,7 +1800,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
     Pattern fullDumpPattern;
     Pattern stackStartPattern = createPattern("\\s*(\".*)");
-    Pattern titleContinuePattern = createPattern("\\s*(\".*[^\"].*)");
+    Pattern threadLabelContinuePattern;
     Pattern atPattern;
     Pattern threadStatePattern;
     Pattern lockedOwnablePattern;
@@ -1818,14 +1823,12 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       return null;
     }
 
-    public String getTitleContinue(String line) {
-      if (titleContinuePattern != null) {
-        Matcher matcher = titleContinuePattern.matcher(line);
-        if (matcher.matches()) {
-          return matcher.group(1);
-        }
+    public String getLabelEnd(String line) {
+      if (threadLabelContinuePattern != null) {
+        Matcher matcher = threadLabelContinuePattern.matcher(line);
+        return (matcher.matches()?line:null);
       }
-      return null;
+      return line;
     }
     
     public String getStackStart(String line) {
@@ -1954,6 +1957,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
     public void setStackStartPattern(String pattern) {
       stackStartPattern = createPattern(pattern);
+    }
+    
+    public void setLabelContinuePattern(String pattern) {
+      threadLabelContinuePattern = createPattern(pattern);
     }
 
     @Override
