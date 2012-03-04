@@ -91,6 +91,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   private int maxCheckLines = 10;
   private boolean millisTimeStamp = false;
   private transient DateMatcher dm = null;
+  private boolean parsingWLSTGeneratedDump = false;
   
   /**
    * this counter counts backwards for adding class histograms to the thread
@@ -1228,6 +1229,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       try {
         Map threads = new HashMap();
         overallTDI = new ThreadDumpInfo("Dump No. " + counter++, 0);
+        
         if (withCurrentTimeStamp) {
           overallTDI.setStartTime((new Date(System.currentTimeMillis())).toString());
         }
@@ -1331,14 +1333,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               }
             }
           } else {            
-            // Problem with JRockit is the Timestamp occurs after the FULL THREAD DUMP tag
+            // Problem with JRockit or WLST generated dump is the Timestamp occurs after the FULL THREAD DUMP tag
             // So the above logic fails as we wont get to parse for the date as its reverse for Hotspot (time occurs before Full Thread Dump marker)
-            // So parse the timestamp here for jrockit....
-            if ( !startedThreadParsing && (this instanceof JrockitParser) && (parsedStartTime == null)  
+            
+            if ( !startedThreadParsing && (parsedStartTime == null)  
                     && !getDm().isPatternError() && (getDm().getRegexPattern() != null)) {
               Matcher m = getDm().checkForDateMatch(line);
               if (m != null) {                
-                 parsedStartTime = m.group(0);
+                 parsedStartTime = (m.groupCount() == 1)? m.group(1): m.group(0);
                 overallTDI.setStartTime(parsedStartTime);                
               }
             }
@@ -1397,7 +1399,17 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   + ">");  
               }
 
-              titleBuffer.append(tempLine.trim().replace("\\n*", "") + " ");
+              String useFiller = "";
+              int len = titleBuffer.length();
+              if (len > 0) {
+                char endChar = titleBuffer.charAt(len - 1);
+                char beginChar = tempLine.charAt(0);
+                boolean prevEndWasNumeric = (endChar >= '0' && endChar <= '9');
+                boolean newStartWasNumeric = (beginChar >= '0' && beginChar <= '9');
+                useFiller = (prevEndWasNumeric && !newStartWasNumeric)?" ":"";                
+              }
+            
+              titleBuffer.append(useFiller + tempLine.replace("\\n*", ""));
               content.append(tempLine);
               content.append("\n");
 
@@ -1413,7 +1425,17 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
             } else if (stillInTitleParsing) {
               
-              titleBuffer.append(line + " ");
+              String useFiller = "";
+              int len = titleBuffer.length();
+              if (len > 0) {
+                char endChar = titleBuffer.charAt(len - 1);
+                char beginChar = line.charAt(0);
+                boolean prevEndWasNumeric = (endChar >= '0' && endChar <= '9');
+                boolean newStartWasNumeric = (beginChar >= '0' && beginChar <= '9');
+                useFiller = (prevEndWasNumeric && !newStartWasNumeric)?" ":"";                
+              }
+
+              titleBuffer.append(useFiller + line);
               content.append(line);
               content.append("\n");
               
@@ -1578,6 +1600,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           threadDump.add(catMonitorsLocks);
         }
 
+        overallTDI.setGeneratedViaWLST(this.isParsingWLSTGeneratedDump());
+        
         Category unsortedThreadCategory = (Category) catThreads.getUserObject();
         Category sortedThreads = sortThreadsByHealth(unsortedThreadCategory);
         overallTDI.setThreads(sortedThreads);
@@ -1796,11 +1820,25 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     this.jvmVersion = jvmVersion;    
   }
 
+  /**
+   * @return the parsingWLSTGeneratedDump
+   */
+  public boolean isParsingWLSTGeneratedDump() {
+    return parsingWLSTGeneratedDump;
+  }
+
+  /**
+   * @param parsingWLSTGeneratedDump the parsingWLSTGeneratedDump to set
+   */
+  public void setParsingWLSTGeneratedDump(boolean parsingWLSTGeneratedDump) {
+    this.parsingWLSTGeneratedDump = parsingWLSTGeneratedDump;
+  }
+
   public class LineChecker implements DumpParser.lineChecker {
 
     Pattern fullDumpPattern;
     Pattern stackStartPattern = createPattern("\\s*(\".*)");
-    Pattern threadLabelContinuePattern;
+    Pattern threadLabelEndPattern;
     Pattern atPattern;
     Pattern threadStatePattern;
     Pattern lockedOwnablePattern;
@@ -1824,9 +1862,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     }
 
     public String getLabelEnd(String line) {
-      if (threadLabelContinuePattern != null) {
-        Matcher matcher = threadLabelContinuePattern.matcher(line);
-        return (matcher.matches()?line:null);
+      if (threadLabelEndPattern != null) {
+        Matcher matcher = threadLabelEndPattern.matcher(line);
+        return (matcher.matches() ? line : null);
       }
       return line;
     }
@@ -1856,7 +1894,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       if (atPattern != null) {
         Matcher matcher = atPattern.matcher(line);
         if (matcher.matches()) {
-          return format(matcher.group(1));
+          //return format(matcher.group(1));
+          return format(line);
         }
       }
       return null;
@@ -1960,7 +1999,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     }
     
     public void setLabelContinuePattern(String pattern) {
-      threadLabelContinuePattern = createPattern(pattern);
+      threadLabelEndPattern = createPattern(pattern);
     }
 
     @Override

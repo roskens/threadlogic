@@ -198,7 +198,29 @@ public class ThreadDumpInfo extends ThreadLogicElement {
         + ">Number of Monitors without locking threads</td><td></td><td><b><font face=System>");
     statData.append(getMonitorsWithoutLocks() == null ? 0 : getMonitorsWithoutLocks().getNodeCount());
     statData.append("</b></td></tr>");
-    statData.append("</table>");    
+    
+    if (this.isGeneratedViaWLST()) {    
+      statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
+        + ">Was generated via WLST</td><td></td><td><b><font face=System+1>");    
+      statData.append("<p><font style=color:Red><b> YES </b></font><p><br>");
+    }   
+    
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr></table>");
+
+    statData.append("<font face=System><table border=0>");
+    
+    if (this.isGeneratedViaWLST()) {
+      
+      statData.append("<tr bgcolor=\"#cccccc\" ><td colspan=2><font face=System"
+          + "><p><font style=color:Red><b>WARNING!!!</b></font><p><br>");
+      
+      statData.append("<font style=color:Red>WLST generated thread dumps wont indicate Thread IDs or locking information between threads <br>");
+      statData.append("(except for JRockit). ThreadLogic won't be able to analyze or report existence of deadlocks or other blocked conditions, <br>");
+      statData.append("bottlenecks due to missing lock data. Also WLST might not be successful if server is in hung situation<br><br>");
+      statData.append("Strongly Recommendation: Use other system options (kill -3 or jrcmd or jstack) to generate thread dumps for real monitor/lock information and detailed analysis!!");
+      statData.append("</font><br></p></td></tr>");
+      statData.append("<tr bgcolor=\"#ffffff\"><td></td></tr>");
+    }    
 
     // add hints concerning possible hot spots found in this thread dump.
     statData.append(getDumpAnalyzer().analyzeDump());
@@ -657,7 +679,8 @@ public class ThreadDumpInfo extends ThreadLogicElement {
         + "><table border=0><tr bgcolor=\"#dddddd\" ><td><font face=System "
         + ">Thread Dump Name</td><td width=\"150\"><b><font face=System>");
     statData.append(this.getName());
-
+    statData.append("<tr bgcolor=\"#ffffff\"><td></td></tr>");
+        
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
         + ">Thread Dump Main Thread </td><td><b><font face=System size>");
     statData.append(this.mainThread);
@@ -691,13 +714,32 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
         + ">Number of busy (not waiting or blocked) threads </td><td><b><font face=System>");
     statData.append(this.noOfRunningThreads);
-
+    
+    if (this.isGeneratedViaWLST()) {    
+      statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
+        + ">Was generated via WLST</td><td></td><td><b><font face=System+1>");    
+      statData.append("<p><font style=color:Red><b> YES </b></font><p><br>");
+    }   
+    
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr></table>");
 
     statData.append("<font face=System><table border=0>");
     
+    if (this.isGeneratedViaWLST()) {
+      
+      statData.append("<tr bgcolor=\"#cccccc\" ><td colspan=2><font face=System"
+          + "><p><font style=color:Red><b>WARNING!!!</b></font><p><br>");
+      
+      statData.append("<font style=color:Red>WLST generated thread dumps wont indicate Thread IDs or locking information between threads <br>");
+      statData.append("(except for JRockit). ThreadLogic won't be able to analyze or report existence of deadlocks or other blocked conditions, <br>");
+      statData.append("bottlenecks due to missing lock data. Also WLST might not be successful if server is in hung situation<br><br>");
+      statData.append("Strongly Recommendation: Use other system options (kill -3 or jrcmd or jstack) to generate thread dumps for real monitor/lock information and detailed analysis!!");
+      statData.append("</font><br></p></td></tr>");
+      statData.append("<tr bgcolor=\"#ffffff\"><td></td></tr>");
+    }
+    
     if (this.hasDeadlock) {
-      statData.append("<tr bgcolor=\"#cccccc\" ><td width=\"300\" colspan=2><font face=System"
+      statData.append("<tr bgcolor=\"#cccccc\" ><td colspan=2><font face=System"
           + "><p><font style=color:Red><b>Deadlock Found !!!</b></font><p><br>");
       statData.append(LockInfo.printDeadlockChain(this.deadlockEntry.getDeadlockChain()) + "<br>");
       statData
@@ -707,7 +749,6 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       statData
           .append("Reduce contentions by changing code to avoid synchronized blocks, or change invocation path, or increase resources ");
       statData.append("or caching as well as modifying the order of locking.</font><br></td></tr>");
-      statData.append("</td></tr>");
       statData.append("<tr bgcolor=\"#ffffff\"><td></td></tr>");
     }
 

@@ -138,9 +138,12 @@ public class ThreadAdvisory implements Comparable, Serializable {
         String key = tadv.getKeyword();
         
         if (threadAdvisoryMap.containsKey(key)) {
-          System.out.println("WARNING!! Keyword already exists:" + key + " from Advisory:" + threadAdvisoryMap.get(key) + ", use different keyword or update existing Advisory");
+          System.out.println("WARNING!! Keyword already exists:" + key + ", use different keyword or update existing Advisory");
           continue;
         }
+        
+        System.out.println("Parsed Advisory: " + tadv);
+    
         threadAdvisoryMap.put(key, tadv);
         if (key.contains("*"))
           wildcardKeywordList.add(key);

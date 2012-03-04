@@ -73,6 +73,8 @@ public class HotspotParser extends AbstractDumpParser {
   private boolean foundClassHistograms = false;
   private boolean withCurrentTimeStamp = false;
   private boolean isNativeHotspot = true;
+  
+  private boolean isWLSTGenerated = false;
 
   /**
    * Creates a new instance of SunJDKParser
@@ -86,8 +88,9 @@ public class HotspotParser extends AbstractDumpParser {
     this.counter = startCounter;
     this.lineChecker = new LineChecker();
     this.lineChecker.setFullDumpPattern("(.*Full thread dump.*)");
-    this.lineChecker.setAtPattern("(.*at.*)");
-    this.lineChecker.setLabelContinuePattern("(.*( \\[0xffff| \\[0x0000|WAITING| RUNNABLE).*)");
+    //this.lineChecker.setAtPattern("(.*at.*)");
+    this.lineChecker.setAtPattern(".*\\..*\\(.*\\)\\s*");
+    this.lineChecker.setLabelContinuePattern("(.*( \\[0xffff| \\[0x0000|WAITING| RUNNABLE| native$).*)");
     this.lineChecker.setThreadStatePattern("(.*java.lang.Thread.State.*)");
     this.lineChecker.setLockedOwnablePattern("(.*Locked ownable synchronizers:.*)");
     this.lineChecker.setWaitingOnPattern("(.*- waiting on.*)");
@@ -106,8 +109,20 @@ public class HotspotParser extends AbstractDumpParser {
       if (isNonHotspot) {
         this.setJvmVersion("IBM");
         isNativeHotspot = false;
+        defaultToWLSTMarkers();
       }
     }
+  
+  
+  protected void defaultToWLSTMarkers() {    
+    // WLST only reports on waiting to lock
+    // the lock holders are not reported...
+    // Also we cannot look for at package.class.method(..) anymore with wlst...    
+    this.lineChecker.setAtPattern(".*\\..*\\(.*\\)\\s*");
+    this.setParsingWLSTGeneratedDump(true);
+  }        
+  
+          
   /**
    * @returns true, if a class histogram was found and added during parsing.
    */
@@ -433,14 +448,13 @@ public class HotspotParser extends AbstractDumpParser {
    */
   public String[] getThreadTokens(String name) {
     
-    if (!isNativeHotspot)
+    if (!isNativeHotspot || isWLSTGenerated)
       return doWLSTParsing(name);
     
     String patternMask = "^.*\"([^\\\"]+)\".*tid=([^ ]+|).*nid=([^ ]+) *([^\\[]*).*";
     name = name.replace("- Thread t@", "tid=");
     
     String[] tokens = new String[] {};
-   
     try {
       Pattern p = Pattern.compile(patternMask);
       Matcher m = p.matcher(name);
@@ -458,11 +472,12 @@ public class HotspotParser extends AbstractDumpParser {
       tokens[1] = m.group(3); // tid
       tokens[2] = m.group(2); // nid
       tokens[3] = m.group(4); // State
-
+      
     } catch(Exception e) { 
       
-      //System.out.println("WARNING!! Parsing problem with Thread name:" + name);           
-      //e.printStackTrace();
+      System.out.println("WARNING!! Parsing problem with Thread name:" + name);           
+      e.printStackTrace();
+      
       if (isNativeHotspot && (name.indexOf("=") > 0))
         return doHardParsing(name);
       else
@@ -512,7 +527,11 @@ public class HotspotParser extends AbstractDumpParser {
    *          the thread name line
    */
    private String[] doWLSTParsing(String nameEntry) {
-     
+      if (!isWLSTGenerated) {
+        this.isWLSTGenerated = true;
+        defaultToWLSTMarkers();
+      }
+      
       String[] tokens = new String[4];
       int index = nameEntry.indexOf("\"", 1);
       if (index > 1) {
@@ -527,8 +546,9 @@ public class HotspotParser extends AbstractDumpParser {
       nameEntry = nameEntry.substring(index + 1).trim();
       if (nameEntry.contains("RUNNABLE"))
         tokens[3] = "RUNNING";
+      // in WLST generated thread dump, waiting for lock is used for general waiting
       else if (nameEntry.contains("waiting for lock"))
-        tokens[3] = "b";
+        tokens[3] = "waiting";
       else if (nameEntry.contains("TIMED_WAITING"))
         tokens[3] = "sleeping";
       else if (nameEntry.contains(" WAITING"))

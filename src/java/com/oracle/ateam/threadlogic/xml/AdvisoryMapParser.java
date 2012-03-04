@@ -104,8 +104,6 @@ public class AdvisoryMapParser extends DefaultDomParser{
     if (list!= null && list.length > 1)
       tadv.setKeywordList(list);
     
-    System.out.println("Parsed: " + tadv);
-    
 		return tadv;
     } catch (Exception e) { System.out.println("Error while creating ThreadAdvisory: " + e.getMessage());
       throw e;

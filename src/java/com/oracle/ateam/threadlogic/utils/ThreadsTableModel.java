@@ -77,8 +77,13 @@ public class ThreadsTableModel extends AbstractTableModel {
         
         advisoryNames = getAdvisoryNames(ti);
         String[] columns = ti.getTokens();
+        try {
         tid = parseNumbers(columns[1]);
         nid = parseNumbers(columns[2]);
+        } catch(Exception e) {
+          System.out.println("Error in parsing Thread tid/nid: " + ti.getFilteredName());
+          e.printStackTrace();
+        }
     }
     
     private BigInteger parseNumbers(String val) {
