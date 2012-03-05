@@ -83,11 +83,11 @@ public class GroupsDefnParser extends DefaultDomParser{
 
 
 	private SimpleGroup getSimpleGroup(Element grpEl) throws Exception {
-		
+		String name = null;
     try {
       //for each <SimpleGroup> element get text or int values of 
       //name, visibility, inclusion and location
-      String name = getTextValue(grpEl,"Name");
+      name = getTextValue(grpEl,"Name");
       boolean visible = getBooleanValue(grpEl,"Visible");
       boolean inclusionType  = getBooleanValue(grpEl,"Inclusion");
       String matchLocation = getTextValue(grpEl,"MatchLocation");
@@ -109,19 +109,20 @@ public class GroupsDefnParser extends DefaultDomParser{
       
       return smpGrp;
     } catch(Exception e) {
-      System.out.println("Error during parsing of Simple Group Definition: " + e.getMessage());
+      System.out.println("Error parsing SimpleGroup definition with name: " + name 
+              + ", associated error: " + e.getMessage());
       e.printStackTrace();
       throw e;
     }    
 	}
   
   private ComplexGroup getComplexGroup(Element grpEl)  throws Exception {
-		
+		String name = null;
     try {
       
       //for each <ComplexGroup> element get text or int values of 
       //name, visibility
-      String name = getTextValue(grpEl,"Name");
+      name = getTextValue(grpEl,"Name");
       boolean visible = getBooleanValue(grpEl,"Visible");
       //System.out.println("Parsing ComplexElement:" + name);
       ComplexGroup complexGrp = new ComplexGroup(name, visible);
@@ -145,7 +146,8 @@ public class GroupsDefnParser extends DefaultDomParser{
 
       return complexGrp;
     } catch(Exception e) {
-      System.out.println("Error during parsing of Complex Group Definition: " + e.getMessage());
+      System.out.println("Error parsing ComplexGroup definition with name: " + name 
+          + ", associated error: " + e.getMessage());
       e.printStackTrace();
       throw e;
     } 

@@ -214,7 +214,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       statData.append("<tr bgcolor=\"#cccccc\" ><td colspan=2><font face=System"
           + "><p><font style=color:Red><b>WARNING!!!</b></font><p><br>");
       
-      statData.append("<font style=color:Red>WLST generated thread dumps wont indicate Thread IDs or locking information between threads <br>");
+      statData.append("<font style=color:Red>WLST or WLS Admin Console generated thread dumps wont indicate Thread IDs or locking information between threads <br>");
       statData.append("(except for JRockit). ThreadLogic won't be able to analyze or report existence of deadlocks or other blocked conditions, <br>");
       statData.append("bottlenecks due to missing lock data. Also WLST might not be successful if server is in hung situation<br><br>");
       statData.append("Strongly Recommendation: Use other system options (kill -3 or jrcmd or jstack) to generate thread dumps for real monitor/lock information and detailed analysis!!");
@@ -730,7 +730,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       statData.append("<tr bgcolor=\"#cccccc\" ><td colspan=2><font face=System"
           + "><p><font style=color:Red><b>WARNING!!!</b></font><p><br>");
       
-      statData.append("<font style=color:Red>WLST generated thread dumps wont indicate Thread IDs or locking information between threads <br>");
+      statData.append("<font style=color:Red>WLST or WLS Admin Console generated thread dumps wont indicate Thread IDs or locking information between threads <br>");
       statData.append("(except for JRockit). ThreadLogic won't be able to analyze or report existence of deadlocks or other blocked conditions, <br>");
       statData.append("bottlenecks due to missing lock data. Also WLST might not be successful if server is in hung situation<br><br>");
       statData.append("Strongly Recommendation: Use other system options (kill -3 or jrcmd or jstack) to generate thread dumps for real monitor/lock information and detailed analysis!!");

@@ -53,6 +53,7 @@ public class AdvisoryMapParser extends DefaultDomParser{
 	
 	// Parse the AdvisoryMap.xml and create ThreadAdvisory from the Advisory Elements
 	protected void parseDocument(String xmlElementName ){
+    Element el = null;
     try {
 		
       Element docEle = dom.getDocumentElement();		
@@ -62,13 +63,14 @@ public class AdvisoryMapParser extends DefaultDomParser{
         for(int i = 0 ; i < nl.getLength();i++) {
 
           //get the group element
-          Element el = (Element)nl.item(i);
+          el = (Element)nl.item(i);
 
           ThreadAdvisory tadv = getThreadAdvisory(el);
           advisoryList.add(tadv);
         }
       }
     } catch(Exception e) {
+      System.out.println("Error in parsing of advisory element definition: " + el);
       e.printStackTrace();
     }
 	}
@@ -76,8 +78,9 @@ public class AdvisoryMapParser extends DefaultDomParser{
 
 	private ThreadAdvisory getThreadAdvisory(Element grpEl) throws Exception {
 		
+    String name = null;
     try {
-		String pattern = getTextValue(grpEl,"Name");		
+		name = getTextValue(grpEl,"Name");		
     String descrp = getTextValue(grpEl,"Descrp");
     String advice = getTextValue(grpEl,"Advice").replaceAll(";", ".<BR/>");;
     String health = getTextValue(grpEl,"Health");
@@ -99,13 +102,13 @@ public class AdvisoryMapParser extends DefaultDomParser{
     }
     
     //Create a new ThreadAdvisory with the value read from the xml nodes
-		ThreadAdvisory tadv = new ThreadAdvisory(keyword, HealthLevel.valueOf(health), pattern, descrp, advice);
+		ThreadAdvisory tadv = new ThreadAdvisory(keyword, HealthLevel.valueOf(health), name, descrp, advice);
     
     if (list!= null && list.length > 1)
       tadv.setKeywordList(list);
     
 		return tadv;
-    } catch (Exception e) { System.out.println("Error while creating ThreadAdvisory: " + e.getMessage());
+    } catch (Exception e) { System.out.println("Error parsing ThreadAdvisory with name: " + name + ", associated error: " + e.getMessage());
       throw e;
     }
 	}
