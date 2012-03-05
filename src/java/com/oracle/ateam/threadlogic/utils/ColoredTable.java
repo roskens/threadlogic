@@ -58,6 +58,7 @@ public class ColoredTable extends JTable {
   private DefaultTableCellRenderer redRenderer;
   private DefaultTableCellRenderer orangeRenderer;
   private DefaultTableCellRenderer paleOrangeRenderer;
+  private DefaultTableCellRenderer siennaRenderer;
 
   private DefaultTableCellRenderer blueRenderer;
 
@@ -101,6 +102,11 @@ public class ColoredTable extends JTable {
       paleGreenRenderer = new DefaultTableCellRenderer();
       paleGreenRenderer.setBackground(new Color(148, 247, 49));
     }
+    
+    if (siennaRenderer == null) {
+      siennaRenderer = new DefaultTableCellRenderer();
+      siennaRenderer.setBackground(new Color(248, 116, 49));
+    }
 
     if (yellowRenderer == null) {
       yellowRenderer = new DefaultTableCellRenderer();
@@ -138,6 +144,10 @@ public class ColoredTable extends JTable {
     if (model != null) {
       Object o = model.getValueAt(row, column);
       if (o != null) {
+        if (o instanceof ThreadDiffsTableModel.STATE_CHANGE) {
+          return ((ThreadDiffsTableModel.STATE_CHANGE)o).getRenderer();
+        }
+        
         String s = o.toString();
         if (s.length() < 10) {
 

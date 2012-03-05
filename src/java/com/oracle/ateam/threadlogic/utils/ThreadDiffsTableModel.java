@@ -32,14 +32,15 @@
  */
 package com.oracle.ateam.threadlogic.utils;
 
+
 import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.ThreadDumpInfo;
-import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
-
 import java.awt.Color;
+import com.oracle.ateam.threadlogic.ThreadInfo;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
@@ -49,15 +50,39 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 public class ThreadDiffsTableModel extends ThreadsTableModel {
 
+
   public enum STATE_CHANGE {
 
-    EMPTY, NO_CHANGE, PROGRESS;
+    EMPTY, NO_CHANGE, PROGRESS, NO_CHANGE_WARNING;
 
+    private static DefaultTableCellRenderer whiteRenderer, greenRenderer;
+    private static DefaultTableCellRenderer yellowRenderer, siennaRenderer;
+
+    static {
+      init();
+    }
+    
+    private static void init() {
+    
+      whiteRenderer = new DefaultTableCellRenderer();
+      whiteRenderer.setBackground(Color.WHITE);
+      
+      greenRenderer = new DefaultTableCellRenderer();
+      greenRenderer.setBackground(new Color(148, 247, 49));
+      
+      yellowRenderer = new DefaultTableCellRenderer();
+      yellowRenderer.setBackground(Color.YELLOW);
+      
+      siennaRenderer = new DefaultTableCellRenderer();
+      siennaRenderer.setBackground(new Color(247, 181, 49));
+    }
+    
     public String toString() {
       switch (this) {
       case PROGRESS:
         return "Progress";
       case NO_CHANGE:
+      case NO_CHANGE_WARNING:
         return "No Change";
       default:
         return "Empty";
@@ -66,17 +91,33 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
 
     public Color getColor() {
       switch (this) {
+      case NO_CHANGE_WARNING:
+        // Sienna
+        return new Color(247, 181, 49);
       case PROGRESS:
         // pale green
         return new Color(148, 247, 49);
-      case NO_CHANGE:
-        // yellow
+      case NO_CHANGE:  
         return Color.YELLOW;
       default:
         return Color.WHITE;
       }
     }
-
+    
+    public DefaultTableCellRenderer getRenderer() {      
+      
+      switch (this) {
+        case NO_CHANGE_WARNING:
+          // Sienna
+          return siennaRenderer;
+        case PROGRESS:
+          // pale green
+          return greenRenderer;
+        case NO_CHANGE:  
+          return yellowRenderer;
+      }      
+      return whiteRenderer;
+    }
   };
 
   ArrayList<ThreadDumpInfo> threadDumpArrList;
@@ -207,7 +248,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     return (found ? i - 1 : -1);
   }
 
-  private String checkForDiffBetweenTDs(String nameId, int columnIndex) {
+  private STATE_CHANGE checkForDiffBetweenTDs(String nameId, int columnIndex) {
 
     // Thread name is "ExecuteThread: '1' for queue: 'weblogic.socket.Muxer'"
     // id=29 idx=0xc0 tid=19931 prio=5 alive, blocked, native_blocked, daemon
@@ -236,7 +277,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
      * if (!threadContent.equals(compareAgainst)) return PROGRESS;
      */
 
-    return progressIndicatorList.get(columnIndex).toString();
+    return progressIndicatorList.get(columnIndex);
   }
 
   private void createProgressMatrixBetweenTDs() {
@@ -275,8 +316,14 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
 
         if (!threadContent.equals(compareAgainst))
           progressIndicatorList.add(STATE_CHANGE.PROGRESS);
-        else
-          progressIndicatorList.add(STATE_CHANGE.NO_CHANGE);
+        else {
+          // Highlight in a different color if thread is already in watch or higher level
+          // compared to threads in normal/ignore levels
+          if (newFrame.getHealth().ordinal() >= HealthLevel.WATCH.ordinal())
+            progressIndicatorList.add(STATE_CHANGE.NO_CHANGE_WARNING);
+          else
+            progressIndicatorList.add(STATE_CHANGE.NO_CHANGE);
+        }
       }
 
       progressMatrix.put(threadId, progressIndicatorList);
