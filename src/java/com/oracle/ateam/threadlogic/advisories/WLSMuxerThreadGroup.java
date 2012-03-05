@@ -41,6 +41,10 @@ public class WLSMuxerThreadGroup extends ThreadGroup {
     if (getThreads().size() > 6) {
       ThreadAdvisory advisory = ThreadAdvisory.lookupThreadAdvisory("WebLogicMuxerThreads");
       addAdvisory(advisory);
+      
+      for(ThreadInfo ti: threads) {
+        ti.addAdvisory(advisory);
+      }      
     }
   } 
   

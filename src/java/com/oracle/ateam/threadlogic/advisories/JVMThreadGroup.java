@@ -62,6 +62,11 @@ public class JVMThreadGroup extends ThreadGroup {
     if (gcThreads > 20) {
       ThreadAdvisory advisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.PARALLEL_GC_THREADS);
       advisories.add(advisory);
+      for(ThreadInfo ti: threads) {
+        if (ti.getName().toUpperCase().contains("GC ")) {
+          ti.addAdvisory(advisory);
+        }
+      }
     }
     
     this.addAdvisories(advisories);
