@@ -36,17 +36,11 @@ package com.oracle.ateam.threadlogic.parsers;
 import com.oracle.ateam.threadlogic.utils.DateMatcher;
 import com.oracle.ateam.threadlogic.utils.PrefManager;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
-import java.util.Vector;
 
 /**
  * Factory for the dump parsers.
@@ -55,29 +49,6 @@ import java.util.Vector;
  */
 public class DumpParserFactory {
   private static DumpParserFactory instance = null;
-  private static final int HOTSPOT_VM = 0;
-  private static final int JROCKIT_VM = 1;
-  private static final int IBM_VM = 2;
-  
-  // Search for keyword jrockit or ibm specific tags in thread dumps if search for markers fail
-  // Default to Hotspot for everything for else
-  private static final String JROCKIT_TAG = "jrockit";
-  
-  // Even if there are ibm markers, harder to parse a wlst generated IBM Thread dump with the IBMParser
-  // use the Sun HotspotParser still as special case as adding the whole file/markers is difficult...
-  private static final String IBM_TAG = "com.ibm.misc.SignalDispatcher";
-  
-  private static final int[] VM_ID_LIST = { HOTSPOT_VM, JROCKIT_VM, IBM_VM };
-  
-  private static final String DEFAULT_HOTSPOT_MARKER = "\n\nFull thread dump Java HotSpot(TM)\n\n";
-
-  private static final String DEFAULT_JROCKIT_MARKER = "\n\n===== FULL THREAD DUMP ===============\n\n";
-  
-  // Pass the Sun Markers also for IBM as its difficult for normal IBM parser to parse threads without full details normally present in IBM dump
-  private static final String[] DEFAULT_MARKERS = { DEFAULT_HOTSPOT_MARKER, DEFAULT_JROCKIT_MARKER, DEFAULT_HOTSPOT_MARKER };
-  
-  private static final Vector<File> tempFileList = new Vector<File>();
-
 
   /**
    * singleton private constructor
@@ -97,18 +68,6 @@ public class DumpParserFactory {
 
     return (instance);
   }
-  
-  protected void addToTempFileList(File tempFile) {
-    tempFileList.add(tempFile);
-  }
-  
-  protected void finalize() {
-    // Clean up all temporary files created with additional markers...
-    for(File tmpFile: tempFileList) {
-      tmpFile.delete();      
-    }
-    tempFileList.clear();
-  }
 
   /**
    * parses the given logfile for thread dumps and return a proper jdk parser
@@ -127,43 +86,12 @@ public class DumpParserFactory {
    */
   public DumpParser getDumpParserForLogfile(InputStream dumpFileStream, Map threadStore, boolean withCurrentTimeStamp,
       int startCounter) {
-    return getDumpParserForLogfile(dumpFileStream, threadStore, withCurrentTimeStamp, startCounter, false, -1);
-  }
-    
-  /**
-   * parses the given logfile for thread dumps and return a proper jdk parser
-   * (either for Sun VM's or for JRockit/Bea VM's) and initializes the
-   * DumpParser with the stream.
-   * 
-   * @param dumpFileStream
-   *          the file stream to use for dump parsing.
-   * @param threadStore
-   *          the map to store the found thread dumps.
-   * @param withCurrentTimeStamp
-   *          only used by SunJDKParser for running in JConsole-Plugin-Mode, it
-   *          then uses the current time stamp instead of a parsed one.
-   * @param retryWithMarkers
-   *          Add additional markers based on JVM Type and recreate stream if earlier try failed due to absence of markers
-   * @return a proper dump parser for the given log file, null if no proper
-   *         parser was found.
-   */    
-  private DumpParser getDumpParserForLogfile(InputStream dumpFileStream, Map threadStore, boolean withCurrentTimeStamp,
-      int startCounter, boolean retryWithMarkers, int nativeVMType) {  
     BufferedReader bis = null;
-    
     int readAheadLimit = PrefManager.get().getStreamResetBuffer();
     int lineCounter = 0;
     DumpParser currentDumpParser = null;
 
-    // Default to Hotspot unless we find any jrockit or ibm tags..
-    int vmType = HOTSPOT_VM;
-    boolean determinedJVMType = false;
-    int avail = 0;
-    
     try {
-      avail = dumpFileStream.available();      
-      dumpFileStream.mark(readAheadLimit);
-      
       bis = new BufferedReader(new InputStreamReader(dumpFileStream));
 
       // reset current dump parser
@@ -182,27 +110,11 @@ public class DumpParserFactory {
           } 
         }
         
-        if (!determinedJVMType) {
-          if (line.indexOf(JROCKIT_TAG) > 0) {                
-            vmType = JROCKIT_VM;
-            determinedJVMType = true;
-          } else if (line.indexOf(IBM_TAG) > 0) {
-            vmType = IBM_VM;
-            determinedJVMType = true;
-          }
-           
-        }
-          
         if (WrappedSunJDKParser.checkForSupportedThreadDump(line)) {
           currentDumpParser = new WrappedSunJDKParser(bis, threadStore, lineCounter, withCurrentTimeStamp,
               startCounter, dm);
         } else if (HotspotParser.checkForSupportedThreadDump(line)) {
-          if (nativeVMType  == IBM_VM ) {
-            boolean isNonNativeHotspot = true;
-            currentDumpParser = new HotspotParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm, isNonNativeHotspot);          
-          } else {
-            currentDumpParser = new HotspotParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm);          
-          }
+          currentDumpParser = new HotspotParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm);          
         } else if (JrockitParser.checkForSupportedThreadDump(line)) {
           currentDumpParser = new JrockitParser(bis, threadStore, lineCounter, dm);
         } else if (IBMJDKParser.checkForSupportedThreadDump(line)) {
@@ -212,77 +124,12 @@ public class DumpParserFactory {
       }
       // System.out.println("Selected Dump Parser: " +
       // currentDumpParser.getClass().getName());
-      if ((currentDumpParser != null) && (bis != null)) {        
+      if ((currentDumpParser != null) && (bis != null)) {
         bis.reset();
       }
     } catch (IOException ex) {
       ex.printStackTrace();
     }
-    
-    if ((currentDumpParser == null) && (!retryWithMarkers)) {
-      
-      System.out.println("WARNING!! Unable to find any associated markers from the thread dumps to parse the given thread dump");
-      System.out.println("Will Attempt to add additional markers to help with parsing based on details from thread dump");
-      String jvmTypeStr = "Sun Hotspot";
-      switch(vmType) {
-        case JROCKIT_VM: jvmTypeStr = "JRockit"; break;
-        case IBM_VM: jvmTypeStr = "IBM"; break;
-      }
-    
-    System.out.println("Creating temporary file with Header markers to match Thread Dumps of JVM Type: " + jvmTypeStr);
-    System.out.println("\nWARNING!!!Wont be able to accurately parse and report on locks/dates/jvm versions due to limitations\n");
-    System.out.println("WARNING!!!If the tool does not succeed with parsing the threads even after adding additional markers,\n"
-              + "increase the Stream Reset buffer size (in bytes) under Preference option to a larger size\n"
-              + "so we can re-read the file back from beginning while adding back missing markers\n");
-    System.out.println("Total size of dump file: " + avail + ", current Stream reset limit is: " + readAheadLimit + "\n\n");
-    
-      try {
-        dumpFileStream.reset();
-        } catch(IOException ie) { ie.printStackTrace(); }   
-      
-      try {
-        InputStream recreatedStream = cloneStreamWithMarkers(vmType, dumpFileStream);
-        return getDumpParserForLogfile(recreatedStream, threadStore, withCurrentTimeStamp, startCounter, true, vmType);
-      } catch(IOException ie) { ie.printStackTrace(); }   
-    }
     return currentDumpParser;
   }
-  
-  
-  /**
-   * Clone the stream and add additional markers to treat as full thread dump
-   * for cases where the markers are missing
-   */
-  public InputStream cloneStreamWithMarkers(int VM_TYPE, InputStream is) throws IOException {
-    try {
-      File tmpFile = File.createTempFile("tlogic.tmp.", ".log");
-      tmpFile.deleteOnExit();
-      addToTempFileList(tmpFile);
-      
-      // Add the markers based on VM Type
-      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tmpFile));
-      bos.write(DEFAULT_MARKERS[VM_TYPE].getBytes());
-      
-      int read = 0;
-      byte[] barr = new byte[5120];      
-      while ( (read = is.read(barr, 0, 5120)) > 0) {
-        bos.write(barr);
-        bos.flush();
-      }
-      bos.flush();
-      bos.close();
-      bos = null;
-
-      BufferedInputStream bis = new BufferedInputStream(new FileInputStream(tmpFile));    
-      return bis;
-    } catch(IOException e) {
-      System.out.println("Unable to create a temporary file to wrap original content with additional markers: " + e.getMessage());
-      e.printStackTrace();
-      throw e;
-    }
-    
-    
-
-  }
-  
 }

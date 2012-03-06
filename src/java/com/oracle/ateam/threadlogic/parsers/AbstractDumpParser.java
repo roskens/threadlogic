@@ -91,7 +91,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   private int maxCheckLines = 10;
   private boolean millisTimeStamp = false;
   private transient DateMatcher dm = null;
-  private boolean parsingWLSTGeneratedDump = false;
   
   /**
    * this counter counts backwards for adding class histograms to the thread
@@ -296,8 +295,17 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             String timeTaken0 = (tdiArrList.get(0).getStartTime() != null)?tdiArrList.get(0).getStartTime():"N/A";
             StringBuffer content = new StringBuffer("<b><font size=")
                 .append(ThreadLogic.getFontSizeModifier(-1)).append(">").append(keys.get(0)  + ", Timestamp: " +  timeTaken0)
-                .append("</b></font><hr><pre><font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">")
-                .append(fixMonitorLinks(ti0.getContent(), (String) keys.get(0)));
+                .append("</b></font><hr><pre><font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">");
+                    
+                if (ti0.getAdvisories().size() > 0) {
+                  content.append("<font size=4>Advisories: ");
+                  for (Iterator<ThreadAdvisory> iter = ti0.getAdvisories().iterator(); iter.hasNext();) {
+                    ThreadAdvisory adv = iter.next();
+                    ThreadLogic.appendAdvisoryLink(content, adv);
+                  }
+                  content.append("</font><br><br>");
+                }
+                content.append(fixMonitorLinks(ti0.getContent(), (String) keys.get(0)));
 
             int maxLines = 0;
             ThreadInfo lastThreadInMerge = ti0;
@@ -315,6 +323,17 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 content.append("</font></b><hr><pre><font size=");
                 content.append(ThreadLogic.getFontSizeModifier(-1));
                 content.append(">");
+                
+                // Embed advisories for the given thread from each of the dumps
+                if (cmpThreadInfo.getAdvisories().size() > 0) {
+                  content.append("<font size=4>Advisories: ");
+                  for (Iterator<ThreadAdvisory> iter = cmpThreadInfo.getAdvisories().iterator(); iter.hasNext();) {
+                    ThreadAdvisory adv = iter.next();
+                    ThreadLogic.appendAdvisoryLink(content, adv);
+                  }
+                  content.append("</font><br><br>");
+                }
+                
                 content.append(fixMonitorLinks(cmpThreadInfo.getContent(), (String) keys.get(i)));
                 int countLines = countLines(cmpThreadInfo.getContent());
                 maxLines = maxLines > countLines ? maxLines : countLines;
@@ -322,16 +341,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 lastThreadInMerge = cmpThreadInfo;
               }
             }
-
-            StringBuffer sb = new StringBuffer("<font size=5>Advisories: ");
-            for (Iterator<ThreadAdvisory> iter = lastThreadInMerge.getAdvisories().iterator(); iter.hasNext();) {
-              ThreadAdvisory adv = iter.next();
-              ThreadLogic.appendAdvisoryLink(sb, adv);
-            }
-            
-            sb.append("</font><br><br>");
-            sb.append(content.toString());
-            content = sb;
             
             ThreadInfo threadInfo = new ThreadInfo(originalThreadKey, null, content.toString(), maxLines, getThreadTokens(originalThreadKey));
             threadInfo.setHealth(lastThreadInMerge.getHealth());
@@ -509,8 +518,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    */
   protected void addToCategory(DefaultMutableTreeNode category, ThreadDumpInfo tdi, String title, StringBuffer info,
       String content, int lineCount, boolean parseTokens) {
-    
-    DefaultMutableTreeNode threadInfo = null;    
+    DefaultMutableTreeNode threadInfo = null;
     String[] tokens = parseTokens ? getThreadTokens(title) : null;
     if (parseTokens && ((tokens == null) || (tokens.length == 0)) ) {      
       return;
@@ -1229,7 +1237,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       try {
         Map threads = new HashMap();
         overallTDI = new ThreadDumpInfo("Dump No. " + counter++, 0);
-        
         if (withCurrentTimeStamp) {
           overallTDI.setStartTime((new Date(System.currentTimeMillis())).toString());
         }
@@ -1277,13 +1284,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         boolean concurrentSyncsFlag = false;
         Matcher matched = getDm().getLastMatch();
         String parsedStartTime = null;
-        boolean stillInTitleParsing = false;
-        StringBuffer titleBuffer = null;        
-        boolean startedThreadParsing = false;
 
         while (getBis().ready() && !finished) {
           line = getNextLine();
-          //System.out.println("Reading line:" + line);
           lineCounter++;
           singleLineCounter++;
           if (locked) {            
@@ -1333,21 +1336,18 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               }
             }
           } else {            
-            // Problem with JRockit or WLST generated dump is the Timestamp occurs after the FULL THREAD DUMP tag
+            // Problem with JRockit is the Timestamp occurs after the FULL THREAD DUMP tag
             // So the above logic fails as we wont get to parse for the date as its reverse for Hotspot (time occurs before Full Thread Dump marker)
-            
-            if ( !startedThreadParsing && (parsedStartTime == null)  
+            // So parse the timestamp here for jrockit....
+            if ((this instanceof JrockitParser) && (parsedStartTime == null)  
                     && !getDm().isPatternError() && (getDm().getRegexPattern() != null)) {
               Matcher m = getDm().checkForDateMatch(line);
               if (m != null) {                
-                 parsedStartTime = (m.groupCount() == 1)? m.group(1): m.group(0);
+                 parsedStartTime = m.group(0);
                 overallTDI.setStartTime(parsedStartTime);                
               }
             }
-            
-            if (line.trim().length() <= 0) 
-              continue;
-            
+              
             if ((tempLine = lineChecker.getStackStart(line)) != null) {
 
               // SABHA - Commenting off the GC thread portion, we want to know
@@ -1363,96 +1363,42 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               // First, flush state for the previous thread (if
               // any)
               concurrentSyncsFlag = false;
-              startedThreadParsing = true;
-
-              if (!stillInTitleParsing) {
-
-                String stringContent = content != null ? content.toString() : null;
-                if (title != null) {
-                  threads.put(title, content.toString());
-                  content.append("</pre></pre>");
-                  addToCategory(catThreads, overallTDI, title, null, stringContent, singleLineCounter, true);
-                  threadCount++;
-                }                
-                if (inWaiting) {
-                  addToCategory(catWaiting, overallTDI, title, null, stringContent, singleLineCounter, true);
-                  inWaiting = false;
-                  waiting++;
-                }
-                if (inSleeping) {
-                  addToCategory(catSleeping, overallTDI, title, null, stringContent, singleLineCounter, true);
-                  inSleeping = false;
-                  sleeping++;
-                }
-                if (inLocking) {
-                  addToCategory(catLocking, overallTDI, title, null, stringContent, singleLineCounter, true);
-                  inLocking = false;
-                  locking++;
-                }
-                singleLineCounter = 0;
-                while (!monitorStack.empty()) {
-                  mmap.parseAndAddThread((String) monitorStack.pop(), title, content.toString());
-                }
-
-                titleBuffer = new StringBuffer();
-                content = new StringBuffer("<pre><font size=" + ThreadLogic.getFontSizeModifier(-1)
-                  + ">");  
+              String stringContent = content != null ? content.toString() : null;
+              if (title != null) {
+                threads.put(title, content.toString());
+                content.append("</pre></pre>");
+                addToCategory(catThreads, overallTDI, title, null, stringContent, singleLineCounter, true);
+                threadCount++;
+              }
+              if (inWaiting) {
+                addToCategory(catWaiting, overallTDI, title, null, stringContent, singleLineCounter, true);
+                inWaiting = false;
+                waiting++;
+              }
+              if (inSleeping) {
+                addToCategory(catSleeping, overallTDI, title, null, stringContent, singleLineCounter, true);
+                inSleeping = false;
+                sleeping++;
+              }
+              if (inLocking) {
+                addToCategory(catLocking, overallTDI, title, null, stringContent, singleLineCounter, true);
+                inLocking = false;
+                locking++;
+              }
+              singleLineCounter = 0;
+              while (!monitorStack.empty()) {
+                mmap.parseAndAddThread((String) monitorStack.pop(), title, content.toString());
               }
 
-              String useFiller = "";
-              int len = titleBuffer.length();
-              if (len > 0) {
-                char endChar = titleBuffer.charAt(len - 1);
-                char beginChar = tempLine.charAt(0);
-                boolean prevEndWasNumeric = (endChar >= '0' && endChar <= '9');
-                boolean newStartWasNumeric = (beginChar >= '0' && beginChar <= '9');
-                useFiller = (prevEndWasNumeric && !newStartWasNumeric)?" ":"";                
-              }
-            
-              titleBuffer.append(useFiller + tempLine.replace("\\n*", ""));
+              // Second, initialize state for this new thread
+              title = tempLine;
+              content = new StringBuffer("<pre><font size=" + ThreadLogic.getFontSizeModifier(-1)
+                  + ">");
               content.append(tempLine);
               content.append("\n");
-
-              // If we are still in title parsing, check if the thread label has ended...
-              // Otherwise continue to treat as still in title parsing                  
-              stillInTitleParsing = ( lineChecker.getLabelEnd(line) == null);              
-                      
-              if ((titleBuffer != null) && !stillInTitleParsing) {
-                title = titleBuffer.toString();
-                titleBuffer = null;
-              }
-
-
-            } else if (stillInTitleParsing) {
-              
-              String useFiller = "";
-              int len = titleBuffer.length();
-              if (len > 0) {
-                char endChar = titleBuffer.charAt(len - 1);
-                char beginChar = line.charAt(0);
-                boolean prevEndWasNumeric = (endChar >= '0' && endChar <= '9');
-                boolean newStartWasNumeric = (beginChar >= '0' && beginChar <= '9');
-                useFiller = (prevEndWasNumeric && !newStartWasNumeric)?" ":"";                
-              }
-
-              titleBuffer.append(useFiller + line);
-              content.append(line);
-              content.append("\n");
-              
-              stillInTitleParsing = (lineChecker.getLabelEnd(line) == null);
-              
-              if ((titleBuffer != null) && !stillInTitleParsing) {
-                title = titleBuffer.toString();
-                titleBuffer = null;
-              }
-              
             } else if ((tempLine = lineChecker.getThreadState(line)) != null) {
               content.append(tempLine);
               content.append("\n");
-              /*
-               * Commented off by Sabha on 3/3/12
-               * We want to parse further to see if the thread state appears on a different line
-               *
               if (title.indexOf("t@") > 0) {
                 // in this case the title line is missing state
                 // informations
@@ -1463,8 +1409,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   title += " nid=none " + state;
                 }
               }
-               * 
-               */
             //} else if (content != null && (tempLine = lineChecker.getLockedOwnable(line)) != null) {
             //  concurrentSyncsFlag = true;
             //  content.append(tempLine);
@@ -1493,7 +1437,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               content.append(tempLine);
               content.append("\n");
             }
-            
             /*
              * } else if (line.indexOf("- ") >= 0) { if (concurrentSyncsFlag) {
              * content.append(linkifyMonitor(line)); monitorStack.push(line); }
@@ -1502,7 +1445,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             // last thread reached?
             if ((tempLine = lineChecker.getEndOfDump(line)) != null) {
               finished = true;
-
+              getBis().mark(getMarkSize());
               if ((checkForDeadlocks(threadDump)) == 0) {
                 // no deadlocks found, set back original
                 // position.
@@ -1516,12 +1459,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               }
 
               getBis().mark(getMarkSize());
-
+              
               if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
                 getBis().reset();                
               }
-            } else {
-              getBis().mark(getMarkSize());
             }
           }
         }
@@ -1600,8 +1541,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           threadDump.add(catMonitorsLocks);
         }
 
-        overallTDI.setGeneratedViaWLST(this.isParsingWLSTGeneratedDump());
-        
         Category unsortedThreadCategory = (Category) catThreads.getUserObject();
         Category sortedThreads = sortThreadsByHealth(unsortedThreadCategory);
         overallTDI.setThreads(sortedThreads);
@@ -1680,7 +1619,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     int heapLineCounter = 0;
     int lines = 0;
 
-    while (getBis().ready() && !finished) {      
+    while (getBis().ready() && !finished) {
+      getBis().mark(getMarkSize());
       String line = getNextLine();
       if (!found && !line.equals("")) {
         if (line.trim().startsWith("Heap")) {
@@ -1817,28 +1757,13 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    * @param jvmVersion the jvmVersion to set
    */
   public void setJvmVersion(String jvmVersion) {
-    this.jvmVersion = jvmVersion;    
-  }
-
-  /**
-   * @return the parsingWLSTGeneratedDump
-   */
-  public boolean isParsingWLSTGeneratedDump() {
-    return parsingWLSTGeneratedDump;
-  }
-
-  /**
-   * @param parsingWLSTGeneratedDump the parsingWLSTGeneratedDump to set
-   */
-  public void setParsingWLSTGeneratedDump(boolean parsingWLSTGeneratedDump) {
-    this.parsingWLSTGeneratedDump = parsingWLSTGeneratedDump;
+    this.jvmVersion = jvmVersion;
   }
 
   public class LineChecker implements DumpParser.lineChecker {
 
     Pattern fullDumpPattern;
     Pattern stackStartPattern = createPattern("\\s*(\".*)");
-    Pattern threadLabelEndPattern;
     Pattern atPattern;
     Pattern threadStatePattern;
     Pattern lockedOwnablePattern;
@@ -1861,14 +1786,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       return null;
     }
 
-    public String getLabelEnd(String line) {
-      if (threadLabelEndPattern != null) {
-        Matcher matcher = threadLabelEndPattern.matcher(line);
-        return (matcher.matches() ? line : null);
-      }
-      return line;
-    }
-    
     public String getStackStart(String line) {
       if (stackStartPattern != null) {
         Matcher matcher = stackStartPattern.matcher(line);
@@ -1894,8 +1811,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       if (atPattern != null) {
         Matcher matcher = atPattern.matcher(line);
         if (matcher.matches()) {
-          //return format(matcher.group(1));
-          return format(line);
+          return format(matcher.group(1));
         }
       }
       return null;
@@ -1996,10 +1912,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
     public void setStackStartPattern(String pattern) {
       stackStartPattern = createPattern(pattern);
-    }
-    
-    public void setLabelContinuePattern(String pattern) {
-      threadLabelEndPattern = createPattern(pattern);
     }
 
     @Override
