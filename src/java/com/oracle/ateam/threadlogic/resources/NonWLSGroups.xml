@@ -212,4 +212,15 @@ xmlns="http://java.net/projects/threadlogic">
 			<Pattern>java.util.Timer</Pattern>
 		</PatternList>
 	</SimpleGroup>
+	<SimpleGroup>
+		<Name>JacORB CORBA</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>org.jacorb.poa.RequestProcessor</Pattern>
+      <Pattern>org.jacorb.util.threadpool.ConsumerTie</Pattern>
+		</PatternList>
+	</SimpleGroup>
+  
 </tlogic:GroupsDefn>
