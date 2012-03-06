@@ -219,8 +219,39 @@ xmlns="http://java.net/projects/threadlogic">
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
 			<Pattern>org.jacorb.poa.RequestProcessor</Pattern>
+      <Pattern>org.jacorb.poa.RequestController</Pattern>
       <Pattern>org.jacorb.util.threadpool.ConsumerTie</Pattern>
+      <Pattern>org.jacorb.orb.iiop.IIOPListener</Pattern>
 		</PatternList>
+    <ExcludedAdvisories>
+			<AdvisoryId>Socket Read</AdvisoryId>
+		</ExcludedAdvisories>     
 	</SimpleGroup>
-  
+	<SimpleGroup>
+		<Name>Wily</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>com.wily.isengard.util.thread.AThreadedExecutable</Pattern>
+      <Pattern>com.wily.introscope.agent.connection.ConnectionThread</Pattern>
+      <Pattern>com.wily.util.task.ATask</Pattern>
+      <Pattern>com.wily.util.heartbeat.IntervalHeartbeat</Pattern>
+		</PatternList>
+    <ExcludedAdvisories>
+			<AdvisoryId>Socket Read</AdvisoryId>
+		</ExcludedAdvisories>     
+	</SimpleGroup>  
+  <SimpleGroup>
+		<Name>Adventnet SNMP Agent</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>			
+      <Pattern>com.adventnet</Pattern>      
+		</PatternList>
+    <ExcludedAdvisories>
+			<AdvisoryId>Socket Read</AdvisoryId>
+		</ExcludedAdvisories>     
+	</SimpleGroup>    
 </tlogic:GroupsDefn>
