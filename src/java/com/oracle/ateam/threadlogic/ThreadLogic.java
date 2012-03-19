@@ -1229,7 +1229,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     if (cat.getCurrentlySelectedUserObject() != null) {
       displayThreadInfo(cat.getCurrentlySelectedUserObject());
     } else {
-      displayContent(null);
+      displayContent(cat.getInfo());
     }
     if (needDividerPos) {
       topSplitPane.setDividerLocation(PrefManager.get().getTopDividerPos());
@@ -1241,7 +1241,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       statusBar.setInfoText(AppInfo.getStatusBarInfo());
     }
 
-    displayContent(cat.getInfo());
   }
 
   private void displayContent(String text) {
