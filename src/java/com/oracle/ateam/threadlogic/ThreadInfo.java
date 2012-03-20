@@ -339,6 +339,7 @@ public class ThreadInfo extends ThreadLogicElement {
    */
   public void setThreadGroup(ThreadGroup tg) {
     this.tg = tg;
+    this.tGroup = tg.getName();
   }
 
 }

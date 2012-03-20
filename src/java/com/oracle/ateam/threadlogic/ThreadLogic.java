@@ -2601,7 +2601,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       dumpFile = tempFile.getAbsolutePath();      
       
       bis = new BufferedInputStream(new FileInputStream(tempFile));
-      bis.mark(bis.available());
       
     } catch(IOException e) {
       System.out.println("Unable to create a temporary file to store clipboard contents: " + e.getMessage());

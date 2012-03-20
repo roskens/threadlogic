@@ -359,6 +359,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     // Use the health of the last or latest thread dump for reporting
     ThreadInfo actualThreadFromLastTDI = threadDumpArrList.get(noOfThreadDumps - 1).getThreadMap().get(nameId);
     HealthLevel health = actualThreadFromLastTDI.getHealth();
+    String threadGrpName = actualThreadFromLastTDI.getThreadGroup().getThreadGroupName();
 
     ArrayList<STATE_CHANGE> progressIndicatorList = progressMatrix.get(nameId);
 
@@ -367,6 +368,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     // comparison,
     // then upgrade the health to one level up
     if ((health.ordinal() >= HealthLevel.WATCH.ordinal()) && !nameId.toLowerCase().contains("muxer")
+            && !threadGrpName.toLowerCase().contains("jvm")
         && progressIndicatorList.get(progressIndicatorList.size() - 1) != STATE_CHANGE.PROGRESS) {
 
       switch (health) {
