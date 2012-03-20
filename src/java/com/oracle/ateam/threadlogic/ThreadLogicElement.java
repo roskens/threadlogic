@@ -30,7 +30,6 @@ public class ThreadLogicElement extends AbstractInfo implements Comparable {
 
   protected HealthLevel health = HealthLevel.IGNORE;
   protected ThreadState state;
-  private boolean generatedViaWLST = false;
   protected ArrayList<ThreadAdvisory> advisories = new ArrayList<ThreadAdvisory>();
 
   public ThreadLogicElement(String id) {
@@ -188,17 +187,4 @@ public class ThreadLogicElement extends AbstractInfo implements Comparable {
     return list;
   }
 
-  /**
-   * @return the generatedViaWLST
-   */
-  public boolean isGeneratedViaWLST() {
-    return generatedViaWLST;
-  }
-
-  /**
-   * @param generatedViaWLST the generatedViaWLST to set
-   */
-  public void setGeneratedViaWLST(boolean generatedViaWLST) {
-    this.generatedViaWLST = generatedViaWLST;
-  }
 }

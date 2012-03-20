@@ -92,7 +92,8 @@ public class HotspotParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*- parking to wait.*)");
     this.lineChecker.setWaitingToPattern("(.*- waiting to.*)");
     this.lineChecker.setLockedPattern("(.*- locked.*)");
-    this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|<EndOfDump>).*");
+    this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|Full thread dump|<EndOfDump>).*");
+    this.setJvmVendor(JVM_VENDOR_LIST[HOTSPOT_VM]);
     
     parseJvmVersion(bis);
   }
@@ -441,8 +442,8 @@ public class HotspotParser extends AbstractDumpParser {
       tokens = new String[7];
       tokens[0] = m.group(1); // name
       // tokens[1] = m.group(4); // prio
-      tokens[1] = m.group(3); // tid
-      tokens[2] = m.group(2); // nid
+      tokens[1] = m.group(2); // tid
+      tokens[2] = m.group(3); // nid
       tokens[3] = m.group(4); // State
 
     } catch(Exception e) { 
@@ -473,19 +474,25 @@ public class HotspotParser extends AbstractDumpParser {
         return tokens;
       }
       
-      String[] remainingTokens = nameEntry.substring(index + 1).trim().split(" ");
-      for(int i = 0; i < remainingTokens.length; i++) {
-        if (remainingTokens[i].indexOf("=") < 0)
+      String remainingLabel = nameEntry.substring(index + 1).trim();
+      String[] remainingTokens = remainingLabel.replace("daemon ","").trim().split(" ");
+      for(int i = 1; i < remainingTokens.length; i++) {
+        if (i == 3)
           break;
         
         String label = remainingTokens[i].replaceAll(".*=", "");
-        if (i == 0) // nid
-          tokens[2] = label;
-        else if (i == 1) // tid
+        if (i == 1) // tid
           tokens[1] = label;
-        else if (i == 2) // State
-          tokens[3] = label;
-      }
+        else if (i == 2) // nid
+          tokens[2] = label;
+      } 
+      
+      for(int i = 3; i < remainingTokens.length; i++) {
+        if (remainingTokens[i].startsWith("[0"))
+          break;
+        
+        tokens[3] = tokens[3] + " " + remainingTokens[i];        
+      }    
       return tokens;
    }
     
@@ -505,15 +512,15 @@ public class HotspotParser extends AbstractDumpParser {
    * @param bis the BufferedReader
    */
   protected void parseJvmVersion(BufferedReader bis) {
-    
+    int count = 0;
     try {
       bis.reset();
-      while (bis.ready()) {        
+      while (bis.ready() && count++ < 15) {        
         String line = bis.readLine();
         if (line != null) {
           int index = line.indexOf("Java HotSpot");
           if (index > 0) {            
-            super.setJvmVersion(line.substring(index).trim().replaceAll(":", ""));
+            super.setJvmVersion(line.substring(index + 5).trim().replaceAll(":", ""));
             System.out.println("Found JVM Version:" + line);
             return;
           }

@@ -55,6 +55,8 @@ public class JrockitParser extends AbstractDumpParser {
   // private boolean foundClassHistograms = false;
   // private boolean withCurrentTimeStamp = false;
 
+  private static Pattern jrockitDatePattern = Pattern.compile("[MTWFSa-z]{3}\\s[a-zA-Z]{3}\\s*\\d{1,2}\\s\\d\\d:\\d\\d:\\d\\d\\s\\d\\d\\d\\d");  
+  
   /**
    * constructs a new instance of a bea jdk parser
    * 
@@ -74,9 +76,11 @@ public class JrockitParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*-- Parking to wait for.*)");
     this.lineChecker.setWaitingToPattern("(.*-- Blocked trying to get lock.*)");
     this.lineChecker.setLockedPattern("(.*-- (Holding lock|Lock released while waiting).*)");
-    this.lineChecker.setEndOfDumpPattern("(.*(END OF THREAD DUMP|Blocked lock chains|Open lock chains).*)");    
+    this.lineChecker.setEndOfDumpPattern("(.*(END OF THREAD DUMP| lock chains).*)");    
+    this.setJvmVendor(JVM_VENDOR_LIST[JROCKIT_VM]);
     
-    resetDmPattern(bis, dm);
+    //resetDmPattern(bis, dm);
+    dm.setDefaultPattern(jrockitDatePattern);
     parseJvmVersion(bis);
   }
 
@@ -116,12 +120,13 @@ public class JrockitParser extends AbstractDumpParser {
    * @param bis the BufferedReader
    */
   protected void parseJvmVersion(BufferedReader bis) {
-    
+    int count = 0;
     try {
-      while (bis.ready()) {        
+      bis.reset();
+      while (bis.ready() && count++ < 10) {        
         String line = bis.readLine();
         if (line != null) {
-          int index = line.indexOf("Oracle JRockit");
+          int index = line.indexOf(" JRockit(R) ");
           if (index >= 0) {            
             System.out.println("JVM Version:" + line);
             super.setJvmVersion(line.substring(index).trim());
@@ -242,17 +247,18 @@ public class JrockitParser extends AbstractDumpParser {
       
       String[] remainingTokens = nameEntry.substring(index + 1).trim().split(" ");
       for(int i = 0; i < remainingTokens.length; i++) {
-        if (remainingTokens[i].indexOf("=") < 0)
+        
+        if (i == 3)
           break;
         
         String label = remainingTokens[i].replaceAll(".*=", "");
         if (i == 0) // nid
           tokens[2] = label;
-        else if (i == 1) // tid
+        else if (i == 2) // tid
           tokens[1] = label;
-        else if (i == 2) // State
-          tokens[3] = label;
       }
+      
+      tokens[3] = " " + remainingTokens[5];
       return tokens;
   }
    

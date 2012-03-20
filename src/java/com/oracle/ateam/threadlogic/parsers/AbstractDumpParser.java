@@ -109,8 +109,17 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   protected String LOCKED;
   protected String BLOCKED_FOR_LOCK;
   protected String GENERAL_WAITING;
-
-  private String jvmVersion;
+  
+  protected static final int HOTSPOT_VM = 0;
+  protected static final int JROCKIT_VM = 1;
+  protected static final int IBM_VM = 2;
+  protected static final int UNKNOWN_VM = 3;
+  
+  protected static final int[] VM_ID_LIST = { HOTSPOT_VM, JROCKIT_VM, IBM_VM, UNKNOWN_VM };
+  protected static final String[] JVM_VENDOR_LIST = { "Sun Hotspot", "Oracle JRockit", "IBM", "Unknown" };
+  
+  protected String jvmVendor = JVM_VENDOR_LIST[JVM_VENDOR_LIST.length - 1];  
+  protected String jvmVersion;
   
   // Used for deserialization
   public AbstractDumpParser() {
@@ -297,6 +306,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 .append(ThreadLogic.getFontSizeModifier(-1)).append(">").append(keys.get(0)  + ", Timestamp: " +  timeTaken0)
                 .append("</b></font><hr><pre><font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">");
                     
+                // Embed health for the given thread from each of the dumps
+                content.append("<font size=4>Health: ");
+                ThreadLogic.appendHealth(content, ti0);
+                content.append("</font><br>");
+                
                 if (ti0.getAdvisories().size() > 0) {
                   content.append("<font size=4>Advisories: ");
                   for (Iterator<ThreadAdvisory> iter = ti0.getAdvisories().iterator(); iter.hasNext();) {
@@ -323,6 +337,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 content.append("</font></b><hr><pre><font size=");
                 content.append(ThreadLogic.getFontSizeModifier(-1));
                 content.append(">");
+                
+                // Embed health for the given thread from each of the dumps
+                content.append("<font size=4>Health: ");
+                ThreadLogic.appendHealth(content, cmpThreadInfo);
+                content.append("</font><br>");
                 
                 // Embed advisories for the given thread from each of the dumps
                 if (cmpThreadInfo.getAdvisories().size() > 0) {
@@ -1446,7 +1465,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             // last thread reached?
             if ((tempLine = lineChecker.getEndOfDump(line)) != null) {
               finished = true;
-              getBis().mark(getMarkSize());
+              //getBis().mark(getMarkSize());
               if ((checkForDeadlocks(threadDump)) == 0) {
                 // no deadlocks found, set back original
                 // position.
@@ -1459,14 +1478,18 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 getBis().reset();
               }
 
-              getBis().mark(getMarkSize());
+              //getBis().mark(getMarkSize());
               
               if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
                 getBis().reset();                
               }
+            } else {
+              // Mark the point as we have successfuly parsed the thread
+              getBis().mark(getMarkSize());
             }
           }
         }
+        getBis().reset();
         // last thread
         String stringContent = content != null ? content.toString() : null;
         if (title != null) {
@@ -1542,6 +1565,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           threadDump.add(catMonitorsLocks);
         }
 
+        overallTDI.setJvmType(this.getJvmVendor());
+        
         Category unsortedThreadCategory = (Category) catThreads.getUserObject();
         Category sortedThreads = sortThreadsByHealth(unsortedThreadCategory);
         overallTDI.setThreads(sortedThreads);
@@ -1761,6 +1786,20 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     this.jvmVersion = jvmVersion;
   }
 
+  /**
+   * @return the jvmVendor
+   */
+  public String getJvmVendor() {
+    return jvmVendor;
+  }
+
+  /**
+   * @param jvmVendor the jvmVendor to set
+   */
+  public void setJvmVendor(String jvmVendor) {
+    this.jvmVendor = jvmVendor;
+  }
+  
   public class LineChecker implements DumpParser.lineChecker {
 
     Pattern fullDumpPattern;

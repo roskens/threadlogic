@@ -125,12 +125,19 @@ public class ThreadDiffsTableCategory extends TableCategory {
     DefaultTableCellRenderer renderer = new DefaultTableCellRenderer();
     renderer.setHorizontalAlignment(JLabel.RIGHT);
 
-    filteredTable.getColumnModel().getColumn(0).setPreferredWidth(300);
-    filteredTable.getColumnModel().getColumn(1).setPreferredWidth(100);
-    filteredTable.getColumnModel().getColumn(2).setPreferredWidth(70);
-    filteredTable.getColumnModel().getColumn(3).setPreferredWidth(70);
-    filteredTable.getColumnModel().getColumn(4).setPreferredWidth(300);
+    int noOfTDs = threadDumpArrList.size();
+    int healthProgressBarWidth = (noOfTDs * 10 < 70)? 70:(noOfTDs * 10);
+    int progressColumnWidth = (noOfTDs < 5)? 60:25;
+    
+    filteredTable.getColumnModel().getColumn(0).setPreferredWidth(150);
+    filteredTable.getColumnModel().getColumn(1).setPreferredWidth(healthProgressBarWidth);
+    filteredTable.getColumnModel().getColumn(2).setPreferredWidth(80);
+    filteredTable.getColumnModel().getColumn(3).setPreferredWidth(50);
+    filteredTable.getColumnModel().getColumn(4).setPreferredWidth(65);
+    filteredTable.getColumnModel().getColumn(5).setPreferredWidth(200);
     for (int i = 0; i < threadDumpArrList.size() - 1; i++)
-      filteredTable.getColumnModel().getColumn(i + 5).setPreferredWidth(70);
+      filteredTable.getColumnModel().getColumn(i + 6).setPreferredWidth(progressColumnWidth);
+    
+    filteredTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); 
   }
 }

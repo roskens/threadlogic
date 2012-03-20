@@ -89,8 +89,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowAdapter;
 import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -188,7 +188,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   private StatusBar statusBar;
 
   private SearchDialog searchDialog;
-
+  
+  private static final Vector<File> tempFileList = new Vector<File>();
+  
   /**
    * singleton access method for ThreadLogic
    */
@@ -388,9 +390,13 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       } else {
         // root nodes are moved down.
         setRootNodeLevel(1);
+        addDumpStreamForClipboard(text, "Clipboard at " + new Date(System.currentTimeMillis()));
+        /*
         addDumpStream(new ByteArrayInputStream(text.getBytes()),
             "Clipboard at " + new Date(System.currentTimeMillis()), false);
         addToLogfile(text);
+         * 
+         */
         if (this.getRootPane() != null) {
           this.getRootPane().revalidate();
         }
@@ -498,9 +504,14 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
 
   private LogFileContent addToLogfile(String dump) {
+    try {
+      InputStream bis = createTempFileFromClipboard(dump.getBytes());
+    } catch(Exception e) { System.out.println("Error in creating temporary file with clipboard content:" + e.getMessage()); }
+    
     ((LogFileContent) logFile.getUserObject()).appendToContentBuffer(dump);
     return (((LogFileContent) logFile.getUserObject()));
   }
+
 
   /**
    * create file filter for session files.
@@ -824,9 +835,13 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       if (dumpFile != null) {
         addDumpFile();
       } else if (content != null) {
+        addDumpStreamForClipboard(content, "Clipboard at " + new Date(System.currentTimeMillis()));
+        /*
         addDumpStream(new ByteArrayInputStream(content.getBytes()),
             "Clipboard at " + new Date(System.currentTimeMillis()), false);
         addToLogfile(content);
+         * 
+         */
       }
 
     if (isFileOpen()) {
@@ -897,19 +912,45 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     }
   }
 
+  private void addDumpStreamForClipboard(String content, String msg) {
+    
+    try {
+      InputStream bis = createTempFileFromClipboard(content.getBytes());
+    
+      addDumpStream(bis, msg, false);
+    } catch(IOException ex) {
+
+        JOptionPane.showMessageDialog(this.getRootPane(), "Error reading from Clipboard content: " + ex.getMessage() + ".",
+            "Error reading clipboard content", JOptionPane.ERROR_MESSAGE);
+    }
+  }
+    
+
   private void addDumpStream(InputStream inputStream, String file, boolean withLogfile) {
     
-    final InputStream parseFileStream = new ProgressMonitorInputStream(this, "Parsing " + file, inputStream);
+    final InputStream parseFileStream = new ProgressMonitorInputStream(this, file, inputStream);
 
+    Logfile logFileInstance = new Logfile(file);
+    // Save the reference to the newly created dump file for clipboard content within logFileInstance
+    if (!withLogfile)
+      logFileInstance.setTempFileLocation(dumpFile);
+    
     // Create the nodes.
-    topNodes.add(new DefaultMutableTreeNode(new Logfile(file)));
+    topNodes.add(new DefaultMutableTreeNode(logFileInstance));
     final DefaultMutableTreeNode top = (DefaultMutableTreeNode) topNodes.get(topNodes.size() - 1);
 
+    logFile = new DefaultMutableTreeNode(new LogFileContent(file));
+    setFileOpen(true);
+    
+    /*
     if ((!withLogfile && logFile == null) || isLogfileSizeOk(file)) {
       logFile = new DefaultMutableTreeNode(new LogFileContent(file));
     }
-    setFileOpen(true);
-
+     setFileOpen(true); 
+     * 
+     */
+    
+    
     final SwingWorker worker = new SwingWorker() {
 
       public Object construct() {
@@ -1085,6 +1126,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     displayContent(sb.toString());
   }
 
+  public static void appendHealth(StringBuffer sb, ThreadInfo ti) {
+    String color = ti.getHealth().getBackgroundRGBCode();
+    sb.append( "<font color=" + color + "\"><b>" + ti.getHealth() + "</b></font>&nbsp;&nbsp;");
+  }
+    
   public static void appendAdvisoryLink(StringBuffer sb, ThreadAdvisory advisory) {
     String color = advisory.getHealth().getBackgroundRGBCode();
     // sb.append("<p style=\"background-color:" + color +
@@ -1365,6 +1411,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         
         ThreadDumpInfo tdi = (ThreadDumpInfo)((DefaultMutableTreeNode)node).getUserObject();
         logFile.addThreadDump(tdi);
+        tdi.setLogFile(logFile);        
         
         if (!isFoundClassHistogram) {
           isFoundClassHistogram = dp.isFoundClassHistograms();
@@ -1389,7 +1436,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     if (userObject instanceof ThreadDumpInfo) {
       ThreadDumpInfo ti = (ThreadDumpInfo) userObject;
       int lineNumber = ti.getLogLine();
+      Logfile logFile = ti.getLogFile();
 
+      /*
       // find log file node.
       TreePath lastSavedPath, selPath;
       lastSavedPath = selPath = tree.getSelectionPath();
@@ -1420,6 +1469,14 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         displayLogFileContent(logfileContent.getUserObject());
         jeditPane.setFirstLine(lineNumber - 1);
       }
+      
+     */
+
+      //Logfile could be either referencing a real file or a clipboard content
+      //For cases of clipboard, then get reference to the temporary file that carries those content
+      String fileLocation = (logFile.getTempFileLocation() == null)? logFile.getName():logFile.getTempFileLocation(); 
+      displayLogFileContent(new LogFileContent(fileLocation));
+      jeditPane.setFirstLine(lineNumber - 1);      
     }
   }
 
@@ -2510,6 +2567,51 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       }
 
     }
+  }
+
+  protected void addToTempFileList(File tempFile) {
+    tempFileList.add(tempFile);
+  }
+  
+  protected void finalize() {
+    // Clean up all temporary files created with additional markers...
+    for(File tmpFile: tempFileList) {
+      tmpFile.delete();      
+    }
+    tempFileList.clear();
+  }
+  
+  /**
+   * Clone the stream and save temporarily
+   *
+   */
+  private InputStream createTempFileFromClipboard(byte[] content) throws IOException {
+    
+    BufferedInputStream bis = null; 
+    try {
+      File tempFile = null;
+      tempFile = File.createTempFile("tlogic.tmp.", ".log");
+      tempFile.deleteOnExit();
+      addToTempFileList(tempFile);
+      
+      // Add the markers based on VM Type
+      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile));      
+      
+      bos.write(content);
+      bos.flush();
+      bos.close();
+      bos = null;
+      dumpFile = tempFile.getAbsolutePath();      
+      
+      bis = new BufferedInputStream(new FileInputStream(tempFile));
+      bis.mark(bis.available());
+      
+    } catch(IOException e) {
+      System.out.println("Unable to create a temporary file to store clipboard contents: " + e.getMessage());
+      e.printStackTrace();
+      throw e;
+    }
+    return bis;
   }
   
 }

@@ -132,15 +132,16 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     this.threadDumpArrList = threadDumpArrList;
     int noOfTDs = threadDumpArrList.size();    
     
-    columnNames = new String[4 + noOfTDs];
+    columnNames = new String[5 + noOfTDs];
     columnNames[0] = "Name";
-    columnNames[1] = "Thread Group";
-    columnNames[2] = "Health";
+    columnNames[1] = "Health Progress Bar";
+    columnNames[2] = "Thread Group";
+    columnNames[3] = "Last Known Health";
 
-    columnNames[3] = "State";
-    columnNames[4] = "Advisories";
+    columnNames[4] = "State";
+    columnNames[5] = "Advisories";
     for (int i = 0; i < noOfTDs - 1; i++) {
-      columnNames[i + 5] = threadDumpArrList.get(i).getName().replace("Dump ", "") + " Vs. "
+      columnNames[i + 6] = threadDumpArrList.get(i).getName().replace("Dump ", "") + " Vs. "
           + threadDumpArrList.get(i + 1).getName().replace("Dump ", "");
 
       // Search for the time portion as in HH:MM:SS -> same format for time compared to day/dates across all JVM Thread Dumps
@@ -171,7 +172,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
             break;
           }
       }
-      columnNames[i + 5] = columnNames[i + 5] + " [" + startTime + " to " + endTime + "]";
+      columnNames[i + 6] = columnNames[i + 6] + " [" + startTime + " to " + endTime + "]";
     }
     createProgressMatrixBetweenTDs();
   }
@@ -184,30 +185,49 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
   }
 
   public Object getValueAt(int rowIndex, int columnIndex) {
-    ThreadData tidata = ((ThreadData) elements.elementAt(rowIndex));
-    String nameId = tidata.getNameId();
-    String filteredName = tidata.getName();
+    ThreadData tiData = ((ThreadData) elements.elementAt(rowIndex));
+    String nameId = tiData.getNameId();
+    String filteredName = tiData.getName();
     int noOfThreadDumps = threadDumpArrList.size();
     ThreadInfo actualThreadFromLastTDI = threadDumpArrList.get(noOfThreadDumps - 1).getThreadMap().get(nameId);
 
     switch (columnIndex) {
     case 0:
       return filteredName.replaceAll("\\[.*\\] ", "").replaceAll("\"", "");
-    case 1:      
+    case 1:
+      return returnHealthProgressionColumn(nameId);
+    case 2:      
       return actualThreadFromLastTDI.getThreadGroup().getThreadGroupName();
-    case 2:
-      return determineHealth(nameId);
     case 3:
-      return tidata.getState();
+      return determineHealth(nameId);
     case 4:
+      return tiData.getState();
+    case 5:
       return returnAdvisoryColumn(nameId);
 
     default:
-      return checkForDiffBetweenTDs(nameId, columnIndex - 5);
+      return checkForDiffBetweenTDs(nameId, columnIndex - 6);
     }
 
   }
 
+  
+  public String returnHealthProgressionColumn(String nameId) {
+    // Only column left is the Advisory section..
+    // Get the advisories for the thread from the last thread dump
+    int noOfThreadDumps = threadDumpArrList.size();
+    
+    StringBuffer sbuf = new StringBuffer("<html><body>");
+    for(int i = 0; i < noOfThreadDumps; i++) {
+      ThreadInfo ti = threadDumpArrList.get(i).getThreadMap().get(nameId);
+      HealthLevel health = ti.getHealth();      
+      sbuf.append("<font bgcolor=\"" + health.getBackgroundRGBCode() + "\" ><b>&nbsp;&nbsp;|</b></font>");      
+    }    
+    sbuf.append("</body></html>");
+    return sbuf.toString();
+
+  }
+  
   public String returnAdvisoryColumn(String nameId) {
     // Only column left is the Advisory section..
     // Get the advisories for the thread from the last thread dump
@@ -215,13 +235,14 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     ThreadInfo actualThreadFromLastTDI = threadDumpArrList.get(noOfThreadDumps - 1).getThreadMap().get(nameId);
 
     boolean firstEntry = true;
+    
     StringBuffer sbuf = new StringBuffer();
     for (ThreadAdvisory tdadv : actualThreadFromLastTDI.getAdvisories()) {
       if (!firstEntry)
         sbuf.append(", ");
       sbuf.append(tdadv.getPattern());
       firstEntry = false;
-    }
+    }    
     return sbuf.toString();
 
   }
@@ -332,7 +353,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
   }
 
   public HealthLevel determineHealth(String nameId) {
-
+    
     int noOfThreadDumps = threadDumpArrList.size();
 
     // Use the health of the last or latest thread dump for reporting

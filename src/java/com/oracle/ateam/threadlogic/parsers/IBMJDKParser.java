@@ -50,7 +50,8 @@ public class IBMJDKParser extends AbstractDumpParser {
   private String monPattern = "3LKMONOBJECT\\s*([^:.]*): (owner|Flat locked by|<unowned>) (\\\".*[^(]) \\(.*";
   private String waitNotify = "3LKWAITNOTIFY";
   private String waiter = "3LKWAITER";
-
+  private String parsedStartTime;
+  
   public IBMJDKParser(BufferedReader bis, Map threadStore, int lineCounter, boolean withCurrentTimeStamp,
       int startCounter, DateMatcher dm) {
     super(bis, dm);
@@ -69,6 +70,7 @@ public class IBMJDKParser extends AbstractDumpParser {
     this.lineChecker.setWaitingToPattern("3LKWAITER\\s*(.*\").*");
     this.lineChecker.setLockedPattern("3LKMONOBJECT");
     this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|<EndOfDump>).*");
+    this.setJvmVendor(JVM_VENDOR_LIST[IBM_VM]);
     
     resetDmPattern(bis, dm);
     parseJvmVersion(bis);
@@ -84,21 +86,21 @@ public class IBMJDKParser extends AbstractDumpParser {
    * @param bis the BufferedReader
    */  
   protected void resetDmPattern(BufferedReader bis, DateMatcher dm) {
+    int count = 0;
     boolean foundDate = false;
-    String dateEntry = "";
     Pattern ibmDatePattern = Pattern.compile("1TIDATETIME\\s*Date:\\s*\\d\\d\\d\\d.\\d\\d.\\d\\d\\sat\\s\\d\\d:\\d\\d:\\d\\d");
     dm.setDefaultPattern(ibmDatePattern);
     
     try {
-      bis.reset();
-      while (bis.ready()) {        
+      bis.reset();      
+      while (bis.ready() && count++ < 30) {        
         String line = bis.readLine();
         if (!foundDate && (line != null) && (line !="")) {          
-          Matcher m = dm.checkForDateMatch(line);
-          if (m != null) {
-            dateEntry = line;
-            foundDate = true;
-            System.out.println("Timestamp:" + dateEntry);
+          int index = line.indexOf("1TIDATETIME");
+          if (index >= 0) {
+            index = line.indexOf("Date:", index) + 5;
+            parsedStartTime = line.substring(index).trim();            
+            System.out.println("Timestamp:" + parsedStartTime);
             return;
           } 
         }
@@ -166,12 +168,15 @@ public class IBMJDKParser extends AbstractDumpParser {
       try {
         Map threads = new HashMap();
         overallTDI = new ThreadDumpInfo("Dump No. " + counter++, 0);
-        overallTDI.setIsIBMJVM();
+        overallTDI.setJvmType(this.getJvmVendor());
         overallTDI.setJvmVersion(this.getJvmVersion());
         
-        if (withCurrentTimeStamp) {
+        if (parsedStartTime != null) {
+          overallTDI.setStartTime(parsedStartTime);
+        } else if (withCurrentTimeStamp) {
           overallTDI.setStartTime((new Date(System.currentTimeMillis())).toString());
         }
+        
         threadDump = new DefaultMutableTreeNode(overallTDI);
 
         catThreads = new DefaultMutableTreeNode(new TableCategory("Threads", IconFactory.THREADS));

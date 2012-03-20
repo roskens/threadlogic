@@ -496,7 +496,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>ParallelGCThreads</Keyword>
 		<Descrp>Large number of Parallel GC Threads used by JVM</Descrp>
-		<Advice>Reduce number of Parallel GC Threads (under 20), based on number of CPU/Cores and JVMs running on the host machine</Advice>
+		<Advice>Reduce number of Parallel GC Threads (under 20), based on number of CPU/Cores and JVMs running on the host machine. Use -XXgcthreads:N for JRockit and -XX:ParallelGCThreads=N for HotSpot </Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Waiting for Event while blocking others</Name>
@@ -630,6 +630,20 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>DefaultMBeanServerInterceptor.queryMBeans, DefaultMBeanServerInterceptor.getMBean</Keyword>
 		<Descrp>Query of MBeans from the MBeanServer instance</Descrp>
 		<Advice>Ensure its not an overhead/drain on performance if multiple threads attempting to query/get/update the MBean Server</Advice>
+	</Advisory>weblogic.servlet.internal.session.ReplicatedSessionContext
+  <Advisory>
+		<Name>WLS Replicated Session</Name>
+		<Health>NORMAL</Health>
+		<Keyword>weblogic.servlet.internal.session.ReplicatedSessionContext</Keyword>
+		<Descrp>WLS webapp is using replicated session (in clustered instance)</Descrp>
+		<Advice>Normal, HTTP Session would get replicated to a chosen secondary</Advice>
 	</Advisory>
-  
+  <Advisory>
+		<Name>BPEL Engine JDBC Connections</Name>
+		<Health>WATCH</Health>
+		<Keyword>com.collaxa.cube.engine.data.ConnectionFactory.getConnection</Keyword>
+		<Descrp>BPEL Engine requesting JDBC Connections</Descrp>
+		<Advice>BPEL Engine is requesting for new JDBC connections, ensure the thread does not blocked, or get into wait or sleep modes due to unavailable connections</Advice>
+	</Advisory>
 </tlogic:AdvisoryMap>
+	

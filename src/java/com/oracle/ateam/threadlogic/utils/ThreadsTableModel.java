@@ -202,7 +202,7 @@ public class ThreadsTableModel extends AbstractTableModel {
         Object entry = childNode.getUserObject();
         if (entry instanceof ThreadInfo) {
           ThreadInfo ti = (ThreadInfo) entry;
-          columnNames = new String[] { "Name", "Thread Group", "Health", "Advisories", "Native-ID", "Thread-ID", "State"};
+          columnNames = new String[] { "Name", "Thread Group", "Health", "Advisories", "Thread-ID", "Native-ID", "State"};
           
           // Create the data once inside ThreadData isntead of repeatedly parsing and recreating data...from advisories/tid/nids...
           elements.add(new ThreadData(ti));  

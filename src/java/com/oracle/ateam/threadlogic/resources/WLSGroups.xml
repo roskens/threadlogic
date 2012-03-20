@@ -213,8 +213,8 @@ xmlns="http://java.net/projects/threadlogic">
 		<PatternList>
 			<Pattern>orabpel.engine.pool</Pattern>
 			<Pattern>orabpel.invoke.pool</Pattern>
-			<Pattern>oracle.dfw</Pattern>
-			<Pattern>DmsThread</Pattern>
+      <Pattern>pool-.*-thread-</Pattern>
+      <Pattern>ActionMDB</Pattern>
 		</PatternList>
 	</SimpleGroup>
 	<SimpleGroup>
@@ -223,7 +223,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Inclusion>true</Inclusion>
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
-			<Pattern>oracle.tip.adapter.jms.inbound.JmsConsumer</Pattern>
+			<Pattern>oracle.integration.platform.blocks.event.jms.JmsQueueBusinessEventBus</Pattern>
 		</PatternList>
 	</SimpleGroup>
 	<SimpleGroup>
@@ -263,7 +263,9 @@ xmlns="http://java.net/projects/threadlogic">
 		<MatchLocation>name</MatchLocation>
 		<PatternList>
 			<Pattern>Fabric</Pattern>
-			<Pattern>JPS</Pattern>
+			<Pattern>JPS</Pattern>      
+			<Pattern>DmsThread</Pattern>      
+			<Pattern>oracle.dfw</Pattern>
 		</PatternList>
 	</SimpleGroup>
 	<ComplexGroup>
@@ -287,9 +289,12 @@ xmlns="http://java.net/projects/threadlogic">
 		<Inclusions>
 			<SimpleGroupId>Oracle JMS AdapterTemp</SimpleGroupId>
 		</Inclusions>
+    <!--
 		<Exclusions>
 			<SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
+      <SimpleGroupId>Oracle FrameworkTemp2</SimpleGroupId>
 		</Exclusions>
+    -->
 	</ComplexGroup>
 	<ComplexGroup>
 		<Name>Oracle SOA</Name>
@@ -314,6 +319,7 @@ xmlns="http://java.net/projects/threadlogic">
 			<SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
 			<SimpleGroupId>Oracle ADF</SimpleGroupId>
       <SimpleGroupId>Oracle AQ AdapterTemp</SimpleGroupId>
+      <SimpleGroupId>Oracle JMS AdapterTemp</SimpleGroupId>
 		</Exclusions>
 	</ComplexGroup>
 </tlogic:GroupsDefn>

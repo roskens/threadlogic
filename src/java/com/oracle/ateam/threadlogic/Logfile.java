@@ -45,6 +45,7 @@ import com.oracle.ateam.threadlogic.parsers.DumpParser;
 public class Logfile extends AbstractInfo {
   private String content;
   private DumpParser usedParser;
+  private String tempFileLocation;  
   private ArrayList<ThreadDumpInfo> tdList = new ArrayList<ThreadDumpInfo>();
 
   /**
@@ -96,4 +97,17 @@ public class Logfile extends AbstractInfo {
     tdList.add(tdi);
   }
   
+  /**
+   * @return the tempFileLocation
+   */
+  public String getTempFileLocation() {
+    return tempFileLocation;
+  }
+
+  /**
+   * @param tempFileLocation the tempFileLocation to set
+   */
+  public void setTempFileLocation(String tempFileLocation) {
+    this.tempFileLocation = tempFileLocation;
+  }  
 }

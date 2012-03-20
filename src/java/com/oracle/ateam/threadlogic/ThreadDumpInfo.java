@@ -56,6 +56,8 @@ public class ThreadDumpInfo extends ThreadLogicElement {
 
   private String startTime;
   private String jvmVersion;
+  private String jvmType;  
+  private boolean parsedWithFBParser = false;  
   private String overview;
   private Analyzer dumpAnalyzer;
 
@@ -74,6 +76,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   protected boolean hasDeadlock;
   protected boolean isIBMJVM = false;
   protected String mainThread = "";
+  private Logfile logFile;
 
   protected int noOfLocks, noOfGroups, noOfThreads, noOfBlockedThreads, noOfRunningThreads;
 
@@ -167,19 +170,27 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System"
         + ">Timestamp</td><td></td><td colspan=3><b><font face=System>");
     statData.append( (this.startTime == null)? "Not Available":startTime);
+    
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
-        + ">JVM Version</td><td></td><td colspan=3><b><font face=System>");
+        + ">JVM Vendor</td><td></td><td colspan=3><b><font face=System>");
+    statData.append(this.getJvmType());
+    
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
+        + ">JVM Version</td><td></td><td colspan=3><b><font face=System>");    
     statData.append((this.jvmVersion == null)? "Not Available":jvmVersion);
     
-    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System"
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System"
         + ">Overall Monitor Count</td><td></td><td colspan=3><b><font face=System>");
     statData.append(getMonitors() == null ? 0 : getMonitors().getNodeCount());
+    
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
         + ">Number of threads waiting for a monitor</td><td></td><td><b><font face=System>");
     statData.append(getWaitingThreads() == null ? 0 : getWaitingThreads().getNodeCount());
+    
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
         + ">Number of threads locking a monitor</td><td></td><td><b><font face=System size>");
     statData.append(getLockingThreads() == null ? 0 : getLockingThreads().getNodeCount());
+    
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
         + ">Number of threads sleeping on a monitor</td><td></td><td><b><font face=System>");
     statData.append(getSleepingThreads() == null ? 0 : getSleepingThreads().getNodeCount());
@@ -199,9 +210,9 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     statData.append(getMonitorsWithoutLocks() == null ? 0 : getMonitorsWithoutLocks().getNodeCount());
     statData.append("</b></td></tr>");
     
-    if (this.isGeneratedViaWLST()) {    
+    if (this.isParsedWithFBParser()) {    
       statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
-        + ">Was generated via WLST</td><td></td><td><b><font face=System+1>");    
+        + ">Was parsed via non VM specific Parser </td><td></td><td><b><font face=System+1>");    
       statData.append("<p><font style=color:Red><b> YES </b></font><p><br>");
     }   
     
@@ -209,15 +220,17 @@ public class ThreadDumpInfo extends ThreadLogicElement {
 
     statData.append("<font face=System><table border=0>");
     
-    if (this.isGeneratedViaWLST()) {
+    if (this.isParsedWithFBParser()) {
       
       statData.append("<tr bgcolor=\"#cccccc\" ><td colspan=2><font face=System"
           + "><p><font style=color:Red><b>WARNING!!!</b></font><p><br>");
       
-      statData.append("<font style=color:Red>WLST or WLS Admin Console generated thread dumps wont indicate Thread IDs or locking information between threads <br>");
-      statData.append("(except for JRockit). ThreadLogic won't be able to analyze or report existence of deadlocks or other blocked conditions, <br>");
-      statData.append("bottlenecks due to missing lock data. Also WLST might not be successful if server is in hung situation<br><br>");
-      statData.append("Strongly Recommendation: Use other system options (kill -3 or jrcmd or jstack) to generate thread dumps for real monitor/lock information and detailed analysis!!");
+      statData.append("<font style=color:Red>Partial thread dumps or dumps generated via WLST or WLS Admin Console dumps won't help in indicating <br>");
+      statData.append("complete information about Thread IDs or locking information between threads (except for JRockit). ThreadLogic won't be <br>");
+      statData.append("able to analyze or report existence of Deadlocks or other Blocked conditions, Bottlenecks due to missing data on Locks or Threads.<br>");
+      statData.append("<br>Also options such as WLST or Console <u>might not be successful if server is in hung or unresponsive</u> condition<br><br>");
+      statData.append("<b>General Recommendation:</b><br> Use System options (ex: kill -3 or jrcmd or jstack) to generate thread dumps with complete monitor, lock<br>");
+      statData.append("and thread id information and use complete thread dumps whenever possible for full detailed analysis!!");
       statData.append("</font><br></p></td></tr>");
       statData.append("<tr bgcolor=\"#ffffff\"><td></td></tr>");
     }    
@@ -715,7 +728,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
         + ">Number of busy (not waiting or blocked) threads </td><td><b><font face=System>");
     statData.append(this.noOfRunningThreads);
     
-    if (this.isGeneratedViaWLST()) {    
+    if (this.isParsedWithFBParser()) {    
       statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
         + ">Was generated via WLST</td><td></td><td><b><font face=System+1>");    
       statData.append("<p><font style=color:Red><b> YES </b></font><p><br>");
@@ -725,7 +738,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
 
     statData.append("<font face=System><table border=0>");
     
-    if (this.isGeneratedViaWLST()) {
+    if (this.isParsedWithFBParser()) {
       
       statData.append("<tr bgcolor=\"#cccccc\" ><td colspan=2><font face=System"
           + "><p><font style=color:Red><b>WARNING!!!</b></font><p><br>");
@@ -829,10 +842,28 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     if (!this.hasDeadlock)
       return "";
 
+    Collection<ThreadInfo> deadLockedThreads = this.getDeadlockedThreads();
     StringBuffer sbuf = new StringBuffer("<table><tr bgcolor=\"#cccccc\" >");
-    sbuf.append("<td colspan=2><font face=System><p><font style=color:Red><b>Deadlock Found !!!</b></font><p><br>");
-    sbuf.append(LockInfo.printDeadlockChain(getDeadlockedThreads()) + "<br></td></tr></table>");
+    sbuf.append("<td colspan=2><font face=System><p><font style=color:Red>");
+    sbuf.append("<b>Deadlock Found !!!</b></font><p><br>");
+    
+    sbuf.append(LockInfo.printDeadlockChain(deadLockedThreads));
+    sbuf.append("<br></td>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr></table>");
 
+    sbuf.append("<table><tr><td>Associated Thread Stacks<hr><br><br></td></tr>");
+    for(ThreadInfo ti: deadLockedThreads) {
+      sbuf.append("<tr><td> <font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">");
+      sbuf.append("Thread: ");
+      sbuf.append(ti.getFilteredName());      
+      sbuf.append("<br>&nbsp;&nbsp; waiting for lock : ");
+      sbuf.append(ti.getBlockedForLock().getLockId());
+      sbuf.append("<br>&nbsp;&nbsp; held by Thread: ");
+      sbuf.append(ti.getBlockedForLock().getLockOwner().getFilteredName());
+      sbuf.append("</font><br>");
+      sbuf.append(ti.getContent());
+      sbuf.append("<br><br></td></tr>");
+    }
+    sbuf.append("</table>");    
     return sbuf.toString();
   }
 
@@ -848,5 +879,47 @@ public class ThreadDumpInfo extends ThreadLogicElement {
    */
   public void setJvmVersion(String jvmVersion) {
     this.jvmVersion = jvmVersion;
+  }
+
+  /**
+   * @return the jvmType
+   */
+  public String getJvmType() {
+    return jvmType;
+  }
+
+  /**
+   * @param jvmType the jvmType to set
+   */
+  public void setJvmType(String jvmType) {
+    this.jvmType = jvmType;
+  }
+
+  /**
+   * @return the parsedWithVendorAgnosticParser
+   */
+  public boolean isParsedWithFBParser() {
+    return parsedWithFBParser;
+  }
+
+  /**
+   * @param parsedWithVendorAgnosticParser the parsedWithVendorAgnosticParser to set
+   */
+  public void setParsedWithFBParser(boolean parsedWithFBParser) {
+    this.parsedWithFBParser = parsedWithFBParser;
+  }
+  
+  /**
+   * @return the logFile
+   */
+  public Logfile getLogFile() {
+    return logFile;
+  }
+
+  /**
+   * @param logFile the logFile to set
+   */
+  public void setLogFile(Logfile logFile) {
+    this.logFile = logFile;
   }
 }
