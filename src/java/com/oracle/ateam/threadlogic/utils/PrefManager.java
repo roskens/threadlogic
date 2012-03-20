@@ -152,7 +152,7 @@ public class PrefManager {
   }
 
   public int getStreamResetBuffer() {
-    return (toolPrefs.getInt("streamResetBuffer", 3200000));
+    return (toolPrefs.getInt("streamResetBuffer", 16384));
   }
 
   public void setStreamResetBuffer(int buffer) {
