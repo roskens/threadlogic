@@ -900,10 +900,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       
       dumpCounter = 1;
       try {
-        BufferedInputStream bis = new BufferedInputStream(new FileInputStream(files[i]));
-        bis.mark(bis.available());
-
-        addDumpStream(bis, files[i], true);
+        addDumpStream(new BufferedInputStream(new FileInputStream(files[i])), files[i], true);
       } catch(IOException ex) {
 
         JOptionPane.showMessageDialog(this.getRootPane(), "Error opening " + ex.getMessage() + ".",
