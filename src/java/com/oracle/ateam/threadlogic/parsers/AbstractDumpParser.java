@@ -1363,10 +1363,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               // First, flush state for the previous thread (if
               // any)
               concurrentSyncsFlag = false;
+              if (content != null) content.append("</font></pre><br>");
               String stringContent = content != null ? content.toString() : null;
               if (title != null) {
                 threads.put(title, content.toString());
-                content.append("</pre></pre>");
+                
                 addToCategory(catThreads, overallTDI, title, null, stringContent, singleLineCounter, true);
                 threadCount++;
               }
