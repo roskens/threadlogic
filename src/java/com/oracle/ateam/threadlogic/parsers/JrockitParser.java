@@ -76,7 +76,7 @@ public class JrockitParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*-- Parking to wait for.*)");
     this.lineChecker.setWaitingToPattern("(.*-- Blocked trying to get lock.*)");
     this.lineChecker.setLockedPattern("(.*-- (Holding lock|Lock released while waiting).*)");
-    this.lineChecker.setEndOfDumpPattern("(.*(END OF THREAD DUMP| lock chains).*)");    
+    this.lineChecker.setEndOfDumpPattern("(.*(END OF THREAD DUMP| lock chains|Open lock chains).*)");    
     this.setJvmVendor(JVM_VENDOR_LIST[JROCKIT_VM]);
     
     //resetDmPattern(bis, dm);

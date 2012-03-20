@@ -852,14 +852,13 @@ public class ThreadDumpInfo extends ThreadLogicElement {
 
     sbuf.append("<table><tr><td>Associated Thread Stacks<hr><br><br></td></tr>");
     for(ThreadInfo ti: deadLockedThreads) {
-      sbuf.append("<tr><td> <font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">");
-      sbuf.append("Thread: ");
+      sbuf.append("<tr><td> <code>");
       sbuf.append(ti.getFilteredName());      
       sbuf.append("<br>&nbsp;&nbsp; waiting for lock : ");
       sbuf.append(ti.getBlockedForLock().getLockId());
       sbuf.append("<br>&nbsp;&nbsp; held by Thread: ");
       sbuf.append(ti.getBlockedForLock().getLockOwner().getFilteredName());
-      sbuf.append("</font><br>");
+      sbuf.append("</code><br><br>");
       sbuf.append(ti.getContent());
       sbuf.append("<br><br></td></tr>");
     }

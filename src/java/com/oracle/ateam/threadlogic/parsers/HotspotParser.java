@@ -69,7 +69,6 @@ import javax.swing.tree.TreeNode;
 public class HotspotParser extends AbstractDumpParser {
 
   private int counter = 1;
-  private int lineCounter = 0;
   private boolean foundClassHistograms = false;
   private boolean withCurrentTimeStamp = false;
 

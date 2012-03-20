@@ -645,5 +645,16 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>BPEL Engine requesting JDBC Connections</Descrp>
 		<Advice>BPEL Engine is requesting for new JDBC connections, ensure the thread does not blocked, or get into wait or sleep modes due to unavailable connections</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>OSB Business Service Error</Name>
+		<Health>WARNING</Health>
+		<Keyword>com.bea.wli.sb.transports.LoadBalanceFailoverListener.onError</Keyword>
+		<Descrp>OSB Business service either unreachable or errored out</Descrp>
+		<Advice>Verify the Business Service endpoint used by OSB is healthy and reachable; OSB will retry this endpoint again after a pre-configured sleep interval</Advice>
+	</Advisory>
+  
+  com.bea.wli.sb.transports.LoadBalanceFailoverListener.onError
+  
+  
 </tlogic:AdvisoryMap>
 	

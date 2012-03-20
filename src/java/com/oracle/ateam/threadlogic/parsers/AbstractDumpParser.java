@@ -231,9 +231,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         // This is a comparison across multiple thread dump files
         // Search for pattern like: javacore.20120130.103911.2883810.0001.txt
         int index = dumpName.lastIndexOf('.');
-        String strippedName = dumpName.substring(0, index);
+        String strippedName = dumpName;
+        if (index > 0)
+          strippedName = dumpName.substring(0, index);
+        
         index = strippedName.lastIndexOf('.');
-        strippedName = strippedName.substring(index + 1);
+        if (index > 0)
+          strippedName = strippedName.substring(index + 1);
+        
         try {
         tdiID = Integer.parseInt(strippedName);
         } catch(Exception e) {
@@ -1308,6 +1313,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           line = getNextLine();
           lineCounter++;
           singleLineCounter++;
+          
+          if ((line != null) && (line.trim().length() == 0))
+            continue;
+          
           if (locked) {            
             
             if (lineChecker.getFullDump(line) != null) {
@@ -1478,7 +1487,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 getBis().reset();
               }
 
-              //getBis().mark(getMarkSize());
+              getBis().mark(getMarkSize());
               
               if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
                 getBis().reset();                
@@ -1488,8 +1497,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               getBis().mark(getMarkSize());
             }
           }
-        }
-        getBis().reset();
+        }        
+        
         // last thread
         String stringContent = content != null ? content.toString() : null;
         if (title != null) {
@@ -1646,15 +1655,13 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     int lines = 0;
 
     while (getBis().ready() && !finished) {
-      getBis().mark(getMarkSize());
       String line = getNextLine();
+      lines++;
       if (!found && !line.equals("")) {
         if (line.trim().startsWith("Heap")) {
           found = true;
         } else if (lines >= getMaxCheckLines()) {
           finished = true;
-        } else {
-          lines++;
         }
       } else if (found) {
         if (!line.equals("")) {
@@ -1670,7 +1677,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       tdi.setHeapInfo(new HeapInfo(hContent.toString()));
       //System.out.println("Found heap info:" + hContent.toString());
     }
-
+        
     return (found);
   }
 
