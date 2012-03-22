@@ -145,7 +145,7 @@ import javax.swing.tree.TreePath;
 public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSelectionListener, ActionListener, MenuListener {
   private static JFileChooser fc;
   private static JFileChooser sessionFc;
-  private static int DIVIDER_SIZE = 4;
+  private static int DIVIDER_SIZE = 10;
   public static JFrame frame;
 
   private static String dumpFile;
@@ -332,6 +332,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     topSplitPane.setLeftComponent(emptyView);
     topSplitPane.setDividerSize(DIVIDER_SIZE);
     topSplitPane.setContinuousLayout(true);
+    topSplitPane.setOneTouchExpandable(true);
 
     // Add the scroll panes to a split pane.
     splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
