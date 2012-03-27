@@ -99,7 +99,7 @@ public class ThreadInfo extends ThreadLogicElement {
       threadState = threadState.toLowerCase();
 
       // Check against JRockit, IBM, SUN Thread states....
-      if (threadState.equals("b") || threadState.contains("native_blocked") || threadState.contains(" blocked")
+      if (threadState.equals("b") || threadState.contains(" blocked")
           || content.contains("State: BLOCKED (on object monitor)")) {
         this.state = ThreadState.BLOCKED;
         this.health = HealthLevel.WATCH;                
