@@ -89,11 +89,15 @@ public class ThreadsTableModel extends AbstractTableModel {
     private BigInteger parseNumbers(String val) {
       if (val == null || val.equals("?")) {
         return null;          
-      } else if (val.startsWith("0x")) {
+      }
+      
+      if (val.startsWith("0x")) {
         return new BigInteger(val.substring(2), 16);
+      } else if (val.matches(".*[A-Fa-f].*")) {
+        return new BigInteger(val, 16);
       }
     
-      return new BigInteger(val);      
+      return new BigInteger(val);            
     }
     
     private String getAdvisoryNames(ThreadInfo ti) {
