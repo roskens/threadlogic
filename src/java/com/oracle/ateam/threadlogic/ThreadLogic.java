@@ -763,11 +763,12 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       UIManager.LookAndFeelInfo currentLAFI = null;
 
       // retrieve plaf param.
-      String plaf = "Mac,Windows,Metal";
+      String plaf = "Nimbus,Mac,Windows,Metal";
+      
       if (PrefManager.get().isUseGTKLF()) {
-        plaf = "GTK,Mac,Windows,Metal";
+        plaf = "Nimbus,GTK,Mac,Windows,Metal";
       }
-
+       
       // this line needs to be implemented in order to make L&F work properly
       UIManager.getLookAndFeelDefaults().put("ClassLoader", getClass().getClassLoader());
 
