@@ -445,6 +445,10 @@ public class HotspotParser extends AbstractDumpParser {
       tokens[2] = m.group(3); // nid
       tokens[3] = m.group(4); // State
 
+      // Always treat the tid as a hexa decimal
+      if (!tokens[1].startsWith("0x"))
+        tokens[1] = "0x" + tokens[1];
+      
     } catch(Exception e) { 
       
       System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name);           
