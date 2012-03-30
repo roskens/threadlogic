@@ -490,12 +490,18 @@ public class HotspotParser extends AbstractDumpParser {
           tokens[2] = label;
       } 
       
+      
       for(int i = 3; i < remainingTokens.length; i++) {
         if (remainingTokens[i].startsWith("[0"))
           break;
         
         tokens[3] = tokens[3] + " " + remainingTokens[i];        
       }    
+      
+      // Always treat the tid as a hexa decimal
+      if (tokens[1] != null && !tokens[1].startsWith("0x"))
+        tokens[1] = "0x" + tokens[1];
+      
       return tokens;
    }
     
