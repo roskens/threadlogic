@@ -1,9 +1,9 @@
 /**
  * Copyright (c) 2012 egross, sabha.
- * 
+ *
  * ThreadLogic - parses thread dumps and provides analysis/guidance
  * It is based on the popular TDA tool.  Thank you!
- * 
+ *
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser Public License v2.1
  * which accompanies this distribution, and is available at
@@ -52,7 +52,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
  * table category type, displays its content in a table.
- * 
+ *
  * @author irockel
  */
 public class ThreadDiffsTableCategory extends TableCategory {
@@ -109,7 +109,7 @@ public class ThreadDiffsTableCategory extends TableCategory {
   /**
    * setup the table instance with the specified table model (either filtered or
    * none-filtered).
-   * 
+   *
    * @param ts
    *          the table sorter/model to use.
    * @param listener
@@ -130,7 +130,7 @@ public class ThreadDiffsTableCategory extends TableCategory {
     int healthProgressBarWidth = (noOfTDs * 10 < 70)? 70:(noOfTDs * 10);
     //int progressColumnWidth = (noOfTDs < 5)? 60:25;
     int progressColumnWidth = 60;
-    
+
     filteredTable.getColumnModel().getColumn(0).setPreferredWidth(width/7);
     filteredTable.getColumnModel().getColumn(0).setMinWidth(width/12);
     filteredTable.getColumnModel().getColumn(1).setPreferredWidth(width/9);
@@ -142,7 +142,7 @@ public class ThreadDiffsTableCategory extends TableCategory {
     filteredTable.getColumnModel().getColumn(5).setMinWidth(width/12);
     for (int i = 0; i < threadDumpArrList.size() - 1; i++)
       filteredTable.getColumnModel().getColumn(i + 6).setPreferredWidth(width/32);
-    
-    //filteredTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF); 
+
+    //filteredTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
   }
 }
