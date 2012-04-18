@@ -332,9 +332,10 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
         // The thread priority can change or state can change, creating an
         // ignorable difference
         // strip off the thread name from the rest of the content...
-        threadContent = threadContent.replace(oldFrame.getName(), "").trim();
-        compareAgainst = compareAgainst.replace(newFrame.getName(), "").trim();
-
+        // Also, strip the whitespaces/newlines just to be safer before comparing
+        threadContent = threadContent.replace(oldFrame.getName(), "").replaceAll("\\s", "").trim();
+        compareAgainst = compareAgainst.replace(newFrame.getName(), "").replaceAll("\\s", "").trim();
+        
         if (!threadContent.equals(compareAgainst))
           progressIndicatorList.add(STATE_CHANGE.PROGRESS);
         else {
