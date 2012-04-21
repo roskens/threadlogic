@@ -282,4 +282,16 @@ xmlns="http://java.net/projects/threadlogic">
 			<AdvisoryId>Socket Read</AdvisoryId>
 		</ExcludedAdvisories>     
 	</SimpleGroup>    
+  <SimpleGroup>
+		<Name>Actional</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>com.actional</Pattern>
+		</PatternList>
+    <ExcludedAdvisories>
+			<AdvisoryId>Socket Read</AdvisoryId>
+		</ExcludedAdvisories>     
+	</SimpleGroup>
 </tlogic:GroupsDefn>

@@ -255,7 +255,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>OSB is attempting to cache a service response inside Coherence layer</Descrp>
 		<Advice>OSB is attempting to a cache a service response into Coherence layer, should return immediately and not get into waiting or blocked state</Advice>
 	</Advisory>
-  
+  <Advisory>
+		<Name>OSB Java Callout </Name>
+		<Health>NORMAL</Health>
+		<Keyword>stages.transform.runtime.JavaCalloutRuntimeStep</Keyword>
+		<Descrp>OSB Proxy service invoking Java Callout</Descrp>
+		<Advice>Normal java callout activity</Advice>
+	</Advisory>  
   
   
   <!--
@@ -519,6 +525,14 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>B2B Thread Executor</Descrp>
 		<Advice>B2B Custom Thread Pool Executor thread</Advice>
 	</Advisory>
+	<Advisory>
+		<Name>AQ Dequeue Agent</Name>
+		<Health>NORMAL</Health>
+		<Keyword>oracle.tip.adapter.aq.*AbstractDequeueAgent</Keyword>
+		<Descrp>AQ Message dequeuing</Descrp>
+		<Advice>Normal AQ message dequeue thread</Advice>
+	</Advisory>
+  
 	<Advisory>
 		<Name>WLS Java Socket Muxer</Name>
 		<Health>WARNING</Health>
