@@ -405,13 +405,15 @@ public class ThreadDumpInfo extends ThreadLogicElement {
 
       // ThreadInfo.getName() returns everything including state/nid/tid..., so
       // use the filteredName that does not have the rest of the labels...
+      //System.out.println("Saving inside ThreadMap: threadName: " + ti.getName() + ", NameId is: " + ti.getNameId());
       this.threadTable.put(ti.getNameId(), ti);
     }
   }
 
   public ThreadInfo getThread(String threadName) {
     // FIXME - SABHA
-    String filteredThreadName = threadName.replaceAll("\" .*$", "\"");
+    // Remove the [ACTIVE], [STANDBY], [STUCK] labels as they interfere with diff/merge reporting
+    String filteredThreadName = threadName.replaceAll("\" .*$", "\"").replaceAll("\\[.*\\] ", "").trim();
     return this.threadTable.get(filteredThreadName);
   }
 
@@ -674,6 +676,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     this.threadList = ThreadInfo.sortByHealth(this.threadList);
     this.threadTable.clear();
     for (ThreadInfo ti : threadList) {
+      //System.out.println("Saving inside ThreadMap: threadName: " + ti.getName() + ", NameId is: " + ti.getNameId());
       this.threadTable.put(ti.getNameId(), ti);
     }
     // System.out.println("ThreadDump[" + this.id + "] blocked:" +

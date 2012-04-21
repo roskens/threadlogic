@@ -79,7 +79,7 @@ public class ThreadLogicElement extends AbstractInfo implements Comparable {
     return health;
   }
 
-  public void setHealth(HealthLevel health) {
+  public void setHealth(HealthLevel health) {    
     this.health = health;
   }
 

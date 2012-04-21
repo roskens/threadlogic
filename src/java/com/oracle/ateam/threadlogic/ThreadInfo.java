@@ -145,7 +145,7 @@ public class ThreadInfo extends ThreadLogicElement {
    */
   public void setFilteredName() {
     if (filteredName == null)
-      filteredName = getName().replaceAll("\" .*$", "\"");
+      filteredName = getName().replaceAll("\" .*$", "\"").replaceAll("\\[.*\\] ", "").trim();
   }
   
   public String getNameId() {
@@ -168,6 +168,7 @@ public class ThreadInfo extends ThreadLogicElement {
       nameId = getFilteredName() + tokens[1];
     else
       nameId = getFilteredName();
+    //System.out.println("Complete Name: " + getName() + ", NameId: " + nameId);
   }
   
 

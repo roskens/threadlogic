@@ -488,7 +488,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
     if (threadName.contains(ThreadLogicConstants.STUCK_PATTERN) && !isPollerThread) {
       ThreadAdvisory advisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.STUCK_PATTERN);
       advisoryList.add(advisory);
-      threadInfo.setHealth(HealthLevel.WARNING);
+      threadInfo.setHealth(HealthLevel.FATAL);
     }
 
     while (m.find()) {
@@ -639,7 +639,8 @@ public class ThreadAdvisory implements Comparable, Serializable {
       
       for (ThreadInfo ti : lockInfo.getBlockers()) {
         ti.addAdvisory(blockOrUnContentedThreadAdvisory);
-        ti.setHealth(HealthLevel.WARNING);
+        if (ti.getHealth().ordinal() < HealthLevel.WARNING.ordinal())
+          ti.setHealth(HealthLevel.WARNING);
         
         if (jmsQueueBottleneckAdvisory != null)
           ti.addAdvisory(jmsQueueBottleneckAdvisory);        

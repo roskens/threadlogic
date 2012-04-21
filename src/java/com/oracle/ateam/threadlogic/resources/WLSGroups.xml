@@ -135,6 +135,15 @@ xmlns="http://java.net/projects/threadlogic">
 			<Pattern>weblogic.cluster</Pattern>
 		</PatternList>
 	</SimpleGroup>
+  <SimpleGroup>
+		<Name>WebLogic Persistent Store</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>weblogic.store.internal.PersistentStoreImpl</Pattern>
+		</PatternList>
+	</SimpleGroup>  
 	<SimpleGroup>
 		<Name>WebLogic Embedded LDAP</Name>
 		<Visible>true</Visible>

@@ -532,7 +532,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>AQ Message dequeuing</Descrp>
 		<Advice>Normal AQ message dequeue thread</Advice>
 	</Advisory>
-  
+  <Advisory>
+		<Name>WLS Persistent Store Thread</Name>
+		<Health>NORMAL</Health>
+		<Keyword>weblogic.store.internal.PersistentStoreImpl.getOutstandingWork</Keyword>
+		<Descrp>Thread handling WLS Persistent Store</Descrp>
+		<Advice>Normal thread handling wls file based persistence</Advice>
+	</Advisory>  
 	<Advisory>
 		<Name>WLS Java Socket Muxer</Name>
 		<Health>WARNING</Health>

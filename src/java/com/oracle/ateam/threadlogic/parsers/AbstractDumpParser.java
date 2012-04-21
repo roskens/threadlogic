@@ -300,6 +300,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             Map<String, ThreadInfo> threadMap = tdiArrList.get(i).getThreadMap();
             if (threadMap.containsKey(threadNameId)) {
               occurence++;
+            } else {
+              System.out.println("Thread " + threadNameId + ", missing from Dump: " + i );
             }
           }
 
@@ -363,6 +365,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 maxLines = maxLines > countLines ? maxLines : countLines;
 
                 lastThreadInMerge = cmpThreadInfo;
+              } else {
+                System.out.println("Unable to find Thread with name:id as : " + threadNameId);
               }
             }
             
