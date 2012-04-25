@@ -31,6 +31,8 @@ public class ThreadLogicConstants {
   public static final String FINALIZER_THREAD_BLOCKED = "Finalizer.doFinalize";
   public static final String PARALLEL_GC_THREADS = "ParallelGCThreads";
 
+  public static final int TOO_MANY_THREADS_LIMIT = 100;
+  public static final String TOO_MANY_THREADS = "Too Many Threads";
   public static final String WLS_MUXER_THREADS = "WebLogic Muxer Threads";
 
   public static final String STUCK_PATTERN = "STUCK";

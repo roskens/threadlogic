@@ -248,6 +248,15 @@ xmlns="http://java.net/projects/threadlogic">
 			<Pattern>oracle.integration.platform.blocks.event.saq</Pattern>
 		</PatternList>
 	</SimpleGroup>
+  <SimpleGroup>
+		<Name>Oracle AQ Dequeue PollerTemp</Name>
+		<Visible>false</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>oracle.tip.adapter.aq.v2.database.AbstractDequeueAgent.run</Pattern>
+		</PatternList>
+	</SimpleGroup>
 	<SimpleGroup>
 		<Name>Oracle FrameworkTemp1</Name>
 		<Visible>false</Visible>
@@ -290,6 +299,21 @@ xmlns="http://java.net/projects/threadlogic">
 		<Visible>true</Visible>
 		<Inclusions>
 			<SimpleGroupId>Oracle AQ AdapterTemp</SimpleGroupId>
+		</Inclusions>
+		<Exclusions>
+			<SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
+		</Exclusions>
+    <ExcludedAdvisories>
+			<AdvisoryId>Database Query Execution</AdvisoryId>
+			<AdvisoryId>Socket Read</AdvisoryId>
+      <AdvisoryId>Stuck Thread</AdvisoryId>
+		</ExcludedAdvisories>        
+	</ComplexGroup>
+  <ComplexGroup>
+		<Name>Oracle AQ Dequeue Agent</Name>
+		<Visible>true</Visible>
+		<Inclusions>
+			<SimpleGroupId>Oracle AQ Dequeue PollerTemp</SimpleGroupId>
 		</Inclusions>
 		<Exclusions>
 			<SimpleGroupId>Oracle SOA DFW</SimpleGroupId>

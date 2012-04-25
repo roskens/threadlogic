@@ -95,7 +95,15 @@ public class ThreadGroup extends ThreadLogicElement {
     if (this.getAdvisories().size() != 0) {
       return;
     }
-
+    
+    boolean tooManyThreads = this.threads.size() > ThreadLogicConstants.TOO_MANY_THREADS_LIMIT;
+    ThreadAdvisory tooManyThreadsAdvisory = ThreadAdvisory.lookupThreadAdvisoryByName(ThreadLogicConstants.TOO_MANY_THREADS);
+    
+    if (tooManyThreads) {      
+      this.addAdvisory(tooManyThreadsAdvisory);
+      this.setHealth(tooManyThreadsAdvisory.getHealth());
+    }
+    
     Hashtable<String, HotCallPattern> threadStackCache = new Hashtable<String, HotCallPattern>();
     String threadGroupNameLower = this.threadGroupName.toLowerCase();
 
@@ -103,6 +111,9 @@ public class ThreadGroup extends ThreadLogicElement {
     
     for (ThreadInfo tholder : this.threads) {
 
+      if (tooManyThreads)
+        tholder.addAdvisory(tooManyThreadsAdvisory);
+      
       // Downgrade the health level of advisories that are specified in the Exclusion list
       if (exclusionList != null && exclusionList.size() > 0) {
         tholder.recalibrateHealthForExcludedAdvisories(HealthLevel.NORMAL, exclusionList);
@@ -113,6 +124,7 @@ public class ThreadGroup extends ThreadLogicElement {
       } else if (tholder.getState() == ThreadState.RUNNING) {
         ++runningThreads;
       }
+      
       // Ignore the thread label/top few lines that might vary between
       // threads...
       // Get the rest of the threads and check for repeat occurence of the same

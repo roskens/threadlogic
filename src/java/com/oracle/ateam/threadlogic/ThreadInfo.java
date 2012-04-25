@@ -98,6 +98,8 @@ public class ThreadInfo extends ThreadLogicElement {
     if (threadState != null) {
       threadState = threadState.toLowerCase();
 
+      
+    
       // Check against JRockit, IBM, SUN Thread states....
       if (threadState.equals("b") || threadState.contains(" blocked")
           || content.contains("State: BLOCKED (on object monitor)")) {
@@ -112,7 +114,7 @@ public class ThreadInfo extends ThreadLogicElement {
           || content.contains("State: TIMED_WAITING (on object monitor)")
           || (threadState.contains("waiting") && content.contains("java.lang.Object.wait")))  {
         this.state = ThreadState.WAITING;
-    } else if (threadState.contains("sleeping") || threadState.equals("cw") 
+      } else if (threadState.contains("sleeping") || threadState.equals("cw") 
           || content.contains("State: TIMED_WAITING (sleeping))")
           || (threadState.contains("timed_waiting") && content.contains("Thread.sleep"))) {
         this.state = ThreadState.TIMED_WAIT;

@@ -234,6 +234,21 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Normal OSB Proxy Service inbound call</Advice>
 	</Advisory>
   <Advisory>
+		<Name>OSB Publish Action</Name>
+		<Health>NORMAL</Health>
+		<Keyword>stages.publish.runtime.PublishRuntimeStep</Keyword>
+		<Descrp>OSB Publish Execution</Descrp>
+		<Advice>Normal OSB Publish Service outbound call</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>OSB handling response</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.bea.wli.sb.pipeline.RouterCallback.onReceiveResponse</Keyword>
+		<Descrp>OSB handling response</Descrp>
+		<Advice>Normal OSB response handling</Advice>
+	</Advisory>
+  
+  <Advisory>
 		<Name>OSB Web Service callout waiting for response</Name>
 		<Health>NORMAL</Health>
 		<Keyword>PipelineContextImpl.SynchronousListener.waitForResponse</Keyword>
@@ -383,7 +398,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>ContentionForUnownedLock</Keyword>
 		<Descrp>High Contention for unowned Locks</Descrp>
-		<Advice>Check and avoid (even if short lived) contention for locks, modify code or conditions (Debugs possibly turned on), increase the number of resources under contention via increased pool size/caching or avoid the call pattern/optimize the call.</Advice>
+		<Advice>Check and avoid (even if short lived) contention for locks, modify code or conditions (Debugs possibly turned on), increase the number of resources under contention via increased pool size/caching or avoid the call pattern/optimize the call. In case of OSB Services or Web Apps, ensure they use a dedicated Custom Work Manager with Min Thread Contraints (using dispatch policy) to avoid any thread starvation issues </Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Socket Read</Name>
@@ -433,6 +448,20 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>TibjmsxLinkTcp.LinkReader.run</Keyword>
 		<Descrp>Tibco EMS Message Listener Thread</Descrp>
 		<Advice>Normal behavior</Advice>
+	</Advisory>
+	<Advisory>
+		<Name>IBM MQ Client</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.ibm.mq.MQ</Keyword>
+		<Descrp>Using IBM MQ Client library</Descrp>
+		<Advice>Normal behavior</Advice>
+	</Advisory>
+	<Advisory>
+		<Name>Too Many Threads</Name>
+		<Health>WARNING</Health>
+		<Keyword>TooManyThreads</Keyword>
+		<Descrp>Using lots of threads - can be a resource drain or lead to too many context switches</Descrp>
+		<Advice>Reduce max number of threads; Specify lower max contraint if using custom work manager</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>JDBC Connection Pool shutting down</Name>
@@ -488,7 +517,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>WebLayerBlocked</Keyword>
 		<Descrp>Web Application is waiting for an Event</Descrp>
-		<Advice>Web Application should not go into WAIT state as it means the end user would have to wait for indeterminate time for a synchronous response, change the code or logic to return the results or response right away instead of blocking or waiting for an event.											</Advice>
+		<Advice>Web Application should not go into WAIT state as it means the end user would have to wait for indeterminate time for a synchronous response, change the code or logic to return the results or response right away instead of blocking or waiting for an event. Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution.											</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>OSB Session Activation</Name>

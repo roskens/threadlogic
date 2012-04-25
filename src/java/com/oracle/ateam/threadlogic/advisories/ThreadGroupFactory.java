@@ -27,6 +27,9 @@ public class ThreadGroupFactory {
     if (grpName.contains("SOA"))
       return new SOAThreadGroup(grpName);
     
+    if (grpName.contains("ADF"))
+      return new ADFThreadGroup(grpName);
+    
     if (grpName.contains("Muxer"))
       return new WLSMuxerThreadGroup(grpName);
     
