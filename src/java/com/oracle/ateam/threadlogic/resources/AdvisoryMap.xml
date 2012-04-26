@@ -224,7 +224,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>SocketImpl.socketConnect, PlainSocketImpl.socketCreate</Keyword>
 		<Descrp>Opening a socket connect</Descrp>
-		<Advice>Check if remote service is up or accepting connections or endpoint/url is wrongly defined as the socket connection establishment should be quick and fast. Also, bad in case of unicast clustering as members should have already connected to each other instead of opening new sockets.</Advice>
+		<Advice>Check if remote service is up or accepting connections or endpoint/url is wrongly defined as the socket connection establishment should be quick and fast.</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>OSB HTTP Proxy</Name>
@@ -311,11 +311,18 @@ xmlns="http://java.net/projects/threadlogic">
 	</Advisory>
   <Advisory>
 		<Name>WLS Unicast Cluster messaging</Name>
-		<Health>WATCH</Health>
+		<Health>NORMAL</Health>
 		<Keyword>weblogic.cluster.messaging.internal.GroupImpl</Keyword>
 		<Descrp>Using Unicast messaging for Cluster</Descrp>
-		<Advice>Ensure threads are not trying a new socket connect which would indicate problems in cluster communication, in which case apply latest Unicast related patches and enable Message Ordering or switch to Multicast</Advice>
-	</Advisory>  
+		<Advice>Normal group communication within unicast cluster</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>WLS Unicast Clustering unhealthy</Name>
+		<Health>FATAL</Health>
+		<Keyword>SocketImpl.*weblogic.cluster.messaging.internal.GroupImpl</Keyword>
+		<Descrp>Unicast messaging among Cluster members is not healthy</Descrp>
+		<Advice>Unicast group members are unable to communicate properly, apply latest Unicast related patches and enable Message Ordering or switch to Multicast</Advice>
+  </Advisory>
 	<Advisory>
 		<Name>Database Query Execution</Name>
 		<Health>WATCH</Health>    
