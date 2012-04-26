@@ -282,7 +282,7 @@ public class ThreadInfo extends ThreadLogicElement {
 
     if (this.isBlockedForLock)
       this.health = HealthLevel.WATCH;
-
+    
     ThreadAdvisory.runThreadAdvisory(this);
 
     this.advisories = ThreadAdvisory.sortByHealth(advisories);

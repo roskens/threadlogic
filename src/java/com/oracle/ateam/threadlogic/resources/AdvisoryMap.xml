@@ -222,9 +222,9 @@ xmlns="http://java.net/projects/threadlogic">
 	<Advisory>
 		<Name>Socket Connection to unreachable endpoint</Name>
 		<Health>WARNING</Health>
-		<Keyword>SocketImpl.socketConnect</Keyword>
+		<Keyword>SocketImpl.socketConnect, PlainSocketImpl.socketCreate</Keyword>
 		<Descrp>Opening a socket connect</Descrp>
-		<Advice>Check if remote service is up or accepting connections or endpoint/url is wrongly defined as the socket connection establishment should be quick and fast.</Advice>
+		<Advice>Check if remote service is up or accepting connections or endpoint/url is wrongly defined as the socket connection establishment should be quick and fast. Also, bad in case of unicast clustering as members should have already connected to each other instead of opening new sockets.</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>OSB HTTP Proxy</Name>
@@ -309,6 +309,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>Cluster MessageReceiver Thread</Descrp>
 		<Advice>This thread should be very quick in processing and scheduling appropriate work. If this thread continues to be RUNNING across thread dumps, there is likely a bug somewhere.</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>WLS Unicast Cluster messaging</Name>
+		<Health>WATCH</Health>
+		<Keyword>weblogic.cluster.messaging.internal.GroupImpl</Keyword>
+		<Descrp>Using Unicast messaging for Cluster</Descrp>
+		<Advice>Ensure threads are not trying a new socket connect which would indicate problems in cluster communication, in which case apply latest Unicast related patches and enable Message Ordering or switch to Multicast</Advice>
+	</Advisory>  
 	<Advisory>
 		<Name>Database Query Execution</Name>
 		<Health>WATCH</Health>    
@@ -701,9 +708,40 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>OSB Business service either unreachable or errored out</Descrp>
 		<Advice>Verify the Business Service endpoint used by OSB is healthy and reachable; OSB will retry this endpoint again after a pre-configured sleep interval</Advice>
 	</Advisory>
-  
-  com.bea.wli.sb.transports.LoadBalanceFailoverListener.onError
-  
-  
+  <Advisory>
+		<Name>Oracle cloud control activity</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.oracle.sysman.services.cloudmgmt, Cloud.*DaoImpl</Keyword>
+		<Descrp>Activity involving Oracle cloud control</Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Sun HSS Spawing Shell</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.sun.hss.domain.util.misc.*CommandSpawner</Keyword>
+		<Descrp>Sun HSS spawning off new shell for job execution</Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Sun HSS wait for death of spawned process</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.sun.hss.domain.util.spawn.UNIXProcess.waitForProcessExit</Keyword>
+		<Descrp>Thread waiting for death of spawned off process</Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>  
+  <Advisory>
+		<Name>Sun xVM Appliance Details</Name>
+		<Health>NORMAL</Health>
+		<Keyword>XVMServerService.*XVMApplianceDetails</Keyword>
+		<Descrp>Sun xVMServer getting xVM Appliance Details</Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>DWR Ajax</Name>
+		<Health>NORMAL</Health>
+		<Keyword>org.directwebremoting</Keyword>
+		<Descrp>Java Ajax interaction with javascript</Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>
 </tlogic:AdvisoryMap>
 	
