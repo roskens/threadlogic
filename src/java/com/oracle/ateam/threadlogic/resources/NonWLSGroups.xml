@@ -136,6 +136,8 @@ xmlns="http://java.net/projects/threadlogic">
 			<Pattern>DestroyJavaVM</Pattern>
       <Pattern>RMI Reaper</Pattern>
       <Pattern>GC Daemon</Pattern>
+      <Pattern>Signal Handler</Pattern>
+      <Pattern>VM JFR Buffer Thread</Pattern>
 		</PatternList>
 	</SimpleGroup>
 	<SimpleGroup>

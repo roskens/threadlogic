@@ -2462,6 +2462,12 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     frame.setExtendedState(PrefManager.get().getWindowState());
 
     frame.setVisible(true);
+    
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+        public void run() {
+              ThreadLogic.get(true).finalize();
+            }
+        });
   }
 
   /**
