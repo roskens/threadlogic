@@ -750,5 +750,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>Java Ajax interaction with javascript</Descrp>
 		<Advice>Normal</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>JRockit Memory Allocation</Name>
+		<Health>WATCH</Health>
+		<Keyword>jrockit.vm.Allocator.getNewTla</Keyword>
+		<Descrp>Thread needs more memory</Descrp>
+		<Advice>If multiple threads are requesting for memory, implies the server either needs more heap or jvm memory/gc settings need some tweaking </Advice>
+	</Advisory>
+  
 </tlogic:AdvisoryMap>
 	
