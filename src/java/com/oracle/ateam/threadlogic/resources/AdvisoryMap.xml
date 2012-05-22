@@ -323,6 +323,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>Unicast messaging among Cluster members is not healthy</Descrp>
 		<Advice>Unicast group members are unable to communicate properly, apply latest Unicast related patches and enable Message Ordering or switch to Multicast</Advice>
   </Advisory>
+  <Advisory>
+		<Name>WLS Clustering unhealthy</Name>
+		<Health>WARNING</Health>
+		<Keyword>WLS Clustering unhealthy</Keyword>
+		<Descrp>WLS Clustering subystem is not healthy</Descrp>
+		<Advice>If using Unicast, apply latest Unicast related patches and enable Message Ordering or switch to Multicast</Advice>
+  </Advisory>
 	<Advisory>
 		<Name>Database Query Execution</Name>
 		<Health>WATCH</Health>    

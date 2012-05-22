@@ -36,6 +36,9 @@ public class ThreadGroupFactory {
     if (grpName.contains("JVM"))
       return new JVMThreadGroup(grpName);
     
+    if (grpName.contains("Cluster"))
+      return new WLSClusterThreadGroup(grpName);
+    
     return new ThreadGroup(grpName);
   }
 }
