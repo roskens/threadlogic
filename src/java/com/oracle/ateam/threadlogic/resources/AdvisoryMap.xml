@@ -249,11 +249,11 @@ xmlns="http://java.net/projects/threadlogic">
 	</Advisory>
   
   <Advisory>
-		<Name>OSB Web Service callout waiting for response</Name>
-		<Health>NORMAL</Health>
+		<Name>OSB Proxy waiting for response</Name>
+		<Health>WATCH</Health>
 		<Keyword>PipelineContextImpl.SynchronousListener.waitForResponse</Keyword>
-		<Descrp>OSB Proxy waiting for WebSerice Callout Response</Descrp>
-		<Advice>Ensure backend can respond in timely fashion; When possible, use dedicated work manager and separate dispatch policy to handle calls for this proxy and avoid thread starvation if there are any loop-backs scenarios</Advice>
+		<Descrp>OSB Proxy waiting for response to WebSerice Callout or Publish </Descrp>
+		<Advice>Ensure backend can respond in timely fashion; Service Callouts and sync publish requires 2 threads for every outbound call - caller thread blocking for response notification and another thread handling the actual response and then notifying the first waiting thread; under heavy load, there might not be any ready thread to handle the response and notify the caller thread; If there are multiple threads demonstrating similar behavior of waiting for response, configure the Business Service to use the custom WM with Min Thread Constraints (using Dispatch Policy) to avoid thread starvation issues</Advice>
 	</Advisory>
   <Advisory>
 		<Name>OSB Service Response cache lookup</Name>
@@ -445,7 +445,7 @@ xmlns="http://java.net/projects/threadlogic">
 	<Advisory>
 		<Name>Transaction commit</Name>
 		<Health>NORMAL</Health>
-		<Keyword>TransactionManagerImpl.commit</Keyword>
+		<Keyword>TransactionManagerImpl.commit, weblogic.transaction.internal.Coordinator.*commit</Keyword>
 		<Descrp>Server committing Transaction</Descrp>
 		<Advice>Normal Commit as long as there are no rollbacks</Advice>
 	</Advisory>
