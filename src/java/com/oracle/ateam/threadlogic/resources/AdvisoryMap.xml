@@ -98,14 +98,14 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>BlockedThreads</Keyword>
 		<Descrp>High Contention for Locks among threads creating a performance bottleneck</Descrp>
-		<Advice>Check and avoid contention in locks, modify code or conditions (Debugs possibly turned on), increase the number of contended resources via increased pool size/caching</Advice>
+		<Advice>Check and avoid contention in locks, modify code or conditions (Debugs possibly turned on); Increase the number of contended resources via increased pool size/caching</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Finalizer Thread Blocked</Name>
 		<Health>FATAL</Health>
 		<Keyword>Finalizer.doFinalize</Keyword>
 		<Descrp>Finalizer Thread Blocked</Descrp>
-		<Advice>Check if the Finalizer Thread is blocked for a lock which will lead to wasted memory waiting to be reclaimed from Finalizer Queue</Advice>
+		<Advice>Check if the Finalizer Thread is blocked for a lock which can lead to wasted memory waiting to be reclaimed from Finalizer Queue</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS Server Shutdown</Name>
@@ -154,7 +154,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>NORMAL</Health>
 		<Keyword>com.mercury.diagnostics</Keyword>
 		<Descrp>Mercury Diagnostics instrumentation enabled</Descrp>
-		<Advice>Mercury Diagnostics instrumentation has been enabled, just ensure its does not consume too much memory nor instruments heavily to slow down performance</Advice>
+		<Advice>Mercury Diagnostics instrumentation has been enabled; Ensure it does not consume too much memory or uses too fine grained instrumentation that it slows down performance</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>EOF Exception in socket read</Name>
@@ -168,7 +168,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>SocketOutputStream.write</Keyword>
 		<Descrp>Socket Write</Descrp>
-		<Advice>Check for slowness/network outage/firewall drops sockets if these sockets are to DB or External/Remote Services or other cluster members (ignore for DB Pollers or Http Servlet threads)</Advice>
+		<Advice>Check for slowness/network outage/firewall drops sockets if these sockets are to DB or External/Remote Services; or other cluster members (ignore for DB Pollers or Http Servlet threads)</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Remote Server Disconnection</Name>
@@ -196,21 +196,21 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>FATAL</Health>
 		<Keyword>STUCK</Keyword>
 		<Descrp>Thread is Stuck, request taking very long time to finish</Descrp>
-		<Advice>Check why the thread or call is taking very long?? Is it blocked for unavailable or bad resource or contending for Lock? Can be ignored if it is doing repeat work in a loop (like adapter threads polling for events in a infinite loop)...</Advice>
+		<Advice>Check why the thread or call is taking very long??; Is it blocked for unavailable or bad resource or contending for Lock?; Can be ignored if it is doing repeat work in a loop; (like adapter threads polling for events in a infinite loop)...</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>IWay Adapter Endpoint Deactivation</Name>
 		<Health>WATCH</Health>
 		<Keyword>afjca15.AbstractResourceAdapter.endpointDeactivation</Keyword>
 		<Descrp>IWay Adapter Endpoint Deactivation invoked</Descrp>
-		<Advice>IWay Adapter endpoint is getting deactivated, there would be service disruption, ensure the call completes by checking in successive thread dumps</Advice>
+		<Advice>IWay Adapter endpoint is getting deactivated, there would be service disruption,; Ensure the call completes by checking in successive thread dumps</Advice>
 	</Advisory>  
   <Advisory>
 		<Name>Stellent WCM</Name>
 		<Health>NORMAL</Health>
 		<Keyword>oracle.stellent.wcm</Keyword>
 		<Descrp>Stellent web content management</Descrp>
-		<Advice>Web application is using stellent web content management, review against Stellent WCM related best practices</Advice>
+		<Advice>Web application is using Stellent web content management; Review against Stellent WCM related best practices</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS JMS Msg Receive</Name>
@@ -224,7 +224,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>SocketImpl.socketConnect, PlainSocketImpl.socketCreate</Keyword>
 		<Descrp>Opening a socket connect</Descrp>
-		<Advice>Check if remote service is up or accepting connections or endpoint/url is wrongly defined as the socket connection establishment should be quick and fast.</Advice>
+		<Advice>Check if remote service is up or accepting connections or endpoint/url is wrongly defined; as the socket connection establishment should generally be quick and fast.</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>OSB HTTP Proxy</Name>
@@ -253,14 +253,14 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>PipelineContextImpl.SynchronousListener.waitForResponse</Keyword>
 		<Descrp>OSB Proxy waiting for response to WebSerice Callout or Publish </Descrp>
-		<Advice>Ensure backend can respond in timely fashion; Service Callouts and sync publish requires 2 threads for every outbound call - caller thread blocking for response notification and another thread handling the actual response and then notifying the first waiting thread; under heavy load, there might not be any ready thread to handle the response and notify the caller thread; If there are multiple threads demonstrating similar behavior of waiting for response, configure the Business Service to use the custom WM with Min Thread Constraints (using Dispatch Policy) to avoid thread starvation issues</Advice>
+		<Advice>Ensure backend can respond in timely fashion; Service Callouts and sync publish requires 2 threads for every outbound call:; Invoking thread blocking for response notification; and another thread handling the actual response and then notifying the first waiting thread; Under heavy load, there might not be any ready thread to handle the response and notify the caller thread; If there are multiple threads demonstrating similar behavior of waiting for response,; configure the Business Service to use the custom WM with Min Thread Constraints; (using Dispatch Policy) to avoid thread starvation issues</Advice>
 	</Advisory>
   <Advisory>
 		<Name>OSB Service Response cache lookup</Name>
 		<Health>WATCH</Health>
 		<Keyword>com.bea.wli.sb.service.resultcache.ResultCache.get</Keyword>
 		<Descrp>OSB attempting to lookup cached service response from Coherence layer</Descrp>
-		<Advice>OSB is attempting to check for a cached service response from Coherence layer, should return immediately and not get into waiting or blocked state</Advice>
+		<Advice>OSB is attempting to check for a cached service response from Coherence layer,; Should return immediately and not get into waiting or blocked state</Advice>
 	</Advisory>
   
   <Advisory>
@@ -268,7 +268,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>NORMAL</Health>
 		<Keyword>com.bea.wli.sb.service.resultcache.ServiceResultCacheImpl.addToCache</Keyword>
 		<Descrp>OSB is attempting to cache a service response inside Coherence layer</Descrp>
-		<Advice>OSB is attempting to a cache a service response into Coherence layer, should return immediately and not get into waiting or blocked state</Advice>
+		<Advice>OSB is attempting to a cache a service response into Coherence layer,; Should return immediately and not get into waiting or blocked state</Advice>
 	</Advisory>
   <Advisory>
 		<Name>OSB Java Callout </Name>
@@ -300,14 +300,14 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>oracle.jdbc.driver.T4CConnection.connect</Keyword>
 		<Descrp>Oracle JDBC Connection creation</Descrp>
-		<Advice>Ensure JDBC Connections are created and pooled and does not get recreated newly each time under load (if the pool size was small and its growing, then its okay, would be advisable to set the initial pool capacity to a larger size at cost of startup time)</Advice>
+		<Advice>Ensure JDBC Connections are created and pooled and does not get recreated newly each time under load; If the pool size was small and its growing, then its okay; Would be advisable to set the initial pool capacity to a larger size at cost of startup time</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Cluster MessageReceiver Thread</Name>
 		<Health>NORMAL</Health>
 		<Keyword>MessageReceiverRunning</Keyword>
 		<Descrp>Cluster MessageReceiver Thread</Descrp>
-		<Advice>This thread should be very quick in processing and scheduling appropriate work. If this thread continues to be RUNNING across thread dumps, there is likely a bug somewhere.</Advice>
+		<Advice>This thread should be very quick in processing and scheduling appropriate work; If this thread continues to be RUNNING across thread dumps, there is likely a bug somewhere.</Advice>
 	</Advisory>
   <Advisory>
 		<Name>WLS Unicast Cluster messaging</Name>
@@ -335,7 +335,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>    
     <Keyword>Statement.execute</Keyword>
 		<Descrp>Executing operation or query on DB</Descrp>
-		<Advice>Check/Monitor Database SQL Executions if it takes longer and also check for socket connection disruption to database if thread continues to show same pattern</Advice>
+		<Advice>Check/Monitor Database SQL Executions if it takes longer and also check for socket connection disruption to database; if the thread continues to show same pattern or remains stuck (use AWR reports to debug)</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Native Select Poller</Name>
@@ -384,22 +384,29 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>FATAL</Health>
 		<Keyword>MuxerWaiting</Keyword>
 		<Descrp>WLS Muxer waiting for or parked for event/condition</Descrp>
-		<Advice>WLS Muxer is unhealthy and should not wait for a event/condition.  One muxer thread should be running (typically in poll) while holding a lock and the other threads waiting to get the lock.  There is likely a bug here.</Advice>
+		<Advice>WLS Muxer is unhealthy and should not wait for a event/condition; One muxer thread should be running (typically in poll) while holding a lock and the other threads waiting to get the lock; There is likely a bug here.</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Transaction rollback</Name>
 		<Health>WATCH</Health>
 		<Keyword>ServerTransactionImpl.globalRollback</Keyword>
 		<Descrp>Server rolling back Transaction</Descrp>
-		<Advice>Check why there is rollback happening from the server logs - Are resources not ready/unhealthy/disrupted/connectivity issues??</Advice>
+		<Advice>Check why there is rollback happening from the server logs; Are resources not ready/unhealthy/disrupted/connectivity issues??</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS JMS Queue Contention</Name>
 		<Health>WARNING</Health>
 		<Keyword>WLSJMSQueueBottleneck</Keyword>
 		<Descrp>Contention for WLS JMS Queue</Descrp>
-		<Advice>Multiple threads are blocked trying to get lock on the WLS JMS Queue, impeding production or consumption of messages till the lock gets relinquished. This can happen if thee are selectors holding lock on the queue or there are other changes to the queue itself. Check the thread owning lock on the Queue.</Advice>
+		<Advice>Multiple threads are blocked trying to get lock on the WLS JMS Queue, impeding production or consumption of messages till the lock gets relinquished; This can happen if there are selectors holding lock on the queue or there are other changes to the queue itself; Check the thread owning lock on the Queue.</Advice>
 	</Advisory>
+	<Advisory>
+		<Name>WLS JMS Session waiting to be destroyed</Name>
+		<Health>WARNING</Health>
+		<Keyword>JMSSession.waitForState</Keyword>
+		<Descrp>WLS JMS Session waiting for usage to end before getting cleaned up</Descrp>
+    <Advice>Indicates the session is still in use and cannot be cleaned up; Can potentially lead to a circular deadlock condition if the user of the session is blocked for a resource;  which is held by the first thread waiting for session usage to end</Advice>
+  </Advisory>
 	<Advisory>
 		<Name>SOAP outbound calls from SOA</Name>
 		<Health>NORMAL</Health>
@@ -419,14 +426,14 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>ContentionForUnownedLock</Keyword>
 		<Descrp>High Contention for unowned Locks</Descrp>
-		<Advice>Check and avoid (even if short lived) contention for locks, modify code or conditions (Debugs possibly turned on), increase the number of resources under contention via increased pool size/caching or avoid the call pattern/optimize the call. In case of OSB Services or Web Apps, ensure they use a dedicated Custom Work Manager with Min Thread Contraints (using dispatch policy) to avoid any thread starvation issues </Advice>
+		<Advice>Check and avoid (even if short lived) contention for locks, modify code or conditions (Debugs possibly turned on), increase the number of resources under contention via increased pool size/caching or avoid the call pattern/optimize the call; In case of OSB Services or Web Apps, ensure they use a dedicated Custom Work Manager with Min Thread Contraints (using dispatch policy) to avoid any thread starvation issues </Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Socket Read</Name>
 		<Health>WATCH</Health>
 		<Keyword>SocketInputStream.socketRead</Keyword>
 		<Descrp>Socket read</Descrp>
-		<Advice>Check for slowness/network outage/firewall socket drops if these sockets are to DB or External/Remote Services (not usual housekeeping services)</Advice>
+		<Advice>Check for slowness/network outage/firewall socket drops if these sockets are to DB; or External/Remote Services (not usual housekeeping services)</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Get Attributes of file from File System</Name>
@@ -482,7 +489,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>TooManyThreads</Keyword>
 		<Descrp>Using lots of threads - can be a resource drain or lead to too many context switches</Descrp>
-		<Advice>Reduce max number of threads; Specify lower max contraint if using custom work manager</Advice>
+		<Advice>Check why there are so many requests; Check if this server alone getting all the requests (non-uniform load distribution or loopbacks or peak bursts in traffic); Try to throttle the requests; Try to reduce max number of threads; Use custom WM with Min thread contraints to separate traffic and ensure requests for one application does not overwhelm all other server requests</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>JDBC Connection Pool shutting down</Name>
@@ -538,21 +545,21 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>WebLayerBlocked</Keyword>
 		<Descrp>Web Application is waiting for an Event</Descrp>
-		<Advice>Web Application should not go into WAIT state as it means the end user would have to wait for indeterminate time for a synchronous response, change the code or logic to return the results or response right away instead of blocking or waiting for an event. Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution.											</Advice>
+		<Advice>Web Application should not go into WAIT state as it means the end user would have to wait for indeterminate time for a synchronous response; Change the code or logic to return the results or response right away instead of blocking or waiting for an event; Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution; Ignorable for OSB Webservice callout as the pattern requires the invoker thread to wait while actual response is handled by another thread </Advice>
 	</Advisory>
 	<Advisory>
 		<Name>OSB Session Activation</Name>
 		<Health>WATCH</Health>
 		<Keyword>com.bea.wli.config.transaction.TransactionManager</Keyword>
 		<Descrp>OSB Session activation in progress or committing</Descrp>
-		<Advice>OSB Configuration is being updated via an active session, ensure the activation goes through and the thread does not reach blocked state</Advice>
+		<Advice>OSB Configuration is being updated via an active session; Ensure the activation goes through and the thread does not enter into blocked state</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Large # of Parallel GC Threads</Name>
 		<Health>WARNING</Health>
 		<Keyword>ParallelGCThreads</Keyword>
 		<Descrp>Large number of Parallel GC Threads used by JVM</Descrp>
-		<Advice>Reduce number of Parallel GC Threads (under 20), based on number of CPU/Cores and JVMs running on the host machine. Use -XXgcthreads:N for JRockit and -XX:ParallelGCThreads=N for HotSpot </Advice>
+		<Advice>Reduce number of Parallel GC Threads (to under 20), based on number of CPU/Cores and JVMs running on the host machine; Use -XXgcthreads:N for JRockit and -XX:ParallelGCThreads=N for HotSpot to limit number of parallel GC threads</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Waiting for Event while blocking others</Name>
@@ -615,7 +622,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>HotCallPattern</Keyword>
 		<Descrp>Multiple Threads executing same code path</Descrp>
-		<Advice>Ensure there are no blocking locks or bottlenecks, sufficient resources are available,remote service being invoked is responsive and scaling well to handle increased load; Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution</Advice>
+		<Advice>Ensure there are no blocking locks or bottlenecks, sufficient resources are available; Remote service being invoked is responsive and scaling well to handle increased load; Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS Messaging Bridge</Name>
@@ -636,14 +643,14 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>NORMAL</Health>
 		<Keyword>com.wily</Keyword>
 		<Descrp>Wily Instrumentation enabled</Descrp>
-		<Advice>Wily code instrumentation has been enabled, just ensure its does not consume too much memory nor instruments heavily to slow down performance</Advice>
+		<Advice>Wily code instrumentation has been enabled; Ensure it does not consume too much memory or uses too fine grained instrumentation that it slows down performance</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS JMS Message Filtering</Name>
 		<Health>WARNING</Health>
 		<Keyword>weblogic.messaging.common.SQLFilter.match</Keyword>
 		<Descrp>WLS JMS Message Filtering via Selectors</Descrp>
-		<Advice>Selectors can slow down performance if the filter uses message body or complex expressions for selecting messages and leading to slow down in message consumption and bottleneck among consumers as the Queue has to be locked while running the selectors; try to split the queue into multiple separate queues if possible to improve throughput and reduce contention among consumers.</Advice>
+		<Advice>Selectors can slow down performance if the filter uses message body or complex expressions for selecting messages; leading to slow down in message consumption and bottleneck among consumers as the Queue has to be locked while running the selectors; try to split the queue into multiple separate queues if possible to improve throughput and reduce contention among consumers.</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>OSB WebService Callout</Name>
@@ -664,7 +671,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>WLContextImpl.lookup</Keyword>
 		<Descrp>WLS JNDI Lookup</Descrp>
-		<Advice>JNDI Objects should be cached (along with Contexts) to avoid repeated calls especially when the resource is remote and not-local. This can result in degraded performance for repeat calls.</Advice>
+		<Advice>JNDI Objects should be cached (along with Contexts) to avoid repeated calls especially when the resource is remote and not-local; This can result in degraded performance for repeat calls.</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Wait for SLSB Beans</Name>
@@ -678,7 +685,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>FATAL</Health>
 		<Keyword>WLSSubsystemRequestOverflow</Keyword>
 		<Descrp>WLS Muxer is handling subsystem requests</Descrp>
-		<Advice>WLS Server health is unhealthy as some subsystems are overwhelmed with requests which is leading to the Muxer threads directly handling requests instead of dispatching to relevant subsystems.  There is likely a bug here.</Advice>
+		<Advice>WLS Server health is unhealthy as some subsystems are overwhelmed with requests which is leading to the Muxer threads directly handling requests; instead of dispatching to relevant subsystems; There is likely a bug here.</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Tibco EMS Message Consumer</Name>
@@ -713,7 +720,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>com.collaxa.cube.engine.data.ConnectionFactory.getConnection</Keyword>
 		<Descrp>BPEL Engine requesting JDBC Connections</Descrp>
-		<Advice>BPEL Engine is requesting for new JDBC connections, ensure the thread does not blocked, or get into wait or sleep modes due to unavailable connections</Advice>
+		<Advice>BPEL Engine is requesting for new JDBC connections; Ensure the thread does not blocked, or get into wait or sleep modes due to unavailable connections</Advice>
 	</Advisory>
   <Advisory>
 		<Name>OSB Business Service Error</Name>
@@ -769,7 +776,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>FATAL</Health>
 		<Keyword>sun.nio.ch.SocketDispatcher.read.*sun.nio.ch.SocketChannelImpl.read.*NIOSocketMuxer.*MuxableSocketT3.connect</Keyword>
 		<Descrp>WLS NIOMuxer attempting to read from an unreachable endpoint would block for long time leading to severe Server Hang situations</Descrp>
-		<Advice>Apply Patch for Bug:13962335 on all weblogic servers</Advice>
+		<Advice>Apply Patch for Bug #13962335 on all weblogic servers</Advice>
 	</Advisory>
   
 </tlogic:AdvisoryMap>
