@@ -41,6 +41,8 @@ import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
 
 import java.math.BigInteger;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -284,11 +286,18 @@ public class ThreadsTableModel extends AbstractTableModel {
     
     int i = (startRow >= 0 )? startRow : 0;
     boolean found = false;
+    
+    name = name.replaceAll("/", ".");    
+    Pattern p = Pattern.compile(name, Pattern.DOTALL | Pattern.CASE_INSENSITIVE );
+    
+    Matcher m = null;
     while (!found && (i < getRowCount())) {
       ThreadInfo ti = ((ThreadData) getInfoObjectAtRow(i++)).getAssocThreadInfo();      
       if (ti == null)
         continue;
-      found = ti.getName().toLowerCase().indexOf(name.toLowerCase()) >= 0;      
+      
+      m = p.matcher(ti.getName());
+      found = m.find(); 
     }
 
     return (found ? i - 1 : -1);
@@ -301,11 +310,17 @@ public class ThreadsTableModel extends AbstractTableModel {
     int i = (startRow >= 0 )? startRow : 0;
     boolean found = false;
     
+    searchContent = searchContent.replaceAll("/", ".");    
+    Pattern p = Pattern.compile(searchContent, Pattern.DOTALL | Pattern.CASE_INSENSITIVE );
+    
+    Matcher m = null;
     while (!found && (i < getRowCount())) {
       ThreadInfo ti = ((ThreadData) getInfoObjectAtRow(i++)).getAssocThreadInfo();      
       if (ti == null)
         continue;
-      found = ti.getContent().toLowerCase().indexOf(searchContent.toLowerCase()) >= 0;      
+      
+      m = p.matcher(ti.getContent());
+      found = m.find();        
     }
 
     return (found ? i - 1 : -1);
