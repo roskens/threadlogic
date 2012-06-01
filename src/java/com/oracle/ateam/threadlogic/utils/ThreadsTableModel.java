@@ -279,17 +279,35 @@ public class ThreadsTableModel extends AbstractTableModel {
    * @return the index of the row or -1 if not found.
    */
   public int searchRowWithName(int startRow, String name) {
-    int i = startRow;
+    if (name == null || name.equals(""))
+      return -1;
+    
+    int i = (startRow >= 0 )? startRow : 0;
     boolean found = false;
     while (!found && (i < getRowCount())) {
-      ThreadInfo ti = ((ThreadInfo) getInfoObjectAtRow(i++));
+      ThreadInfo ti = ((ThreadData) getInfoObjectAtRow(i++)).getAssocThreadInfo();      
       if (ti == null)
         continue;
-      found = ti.getName().indexOf(name) >= 0;
-      
+      found = ti.getName().toLowerCase().indexOf(name.toLowerCase()) >= 0;      
     }
 
     return (found ? i - 1 : -1);
   }
 
+  public int searchRowWithContent(int startRow, String searchContent) {
+    if (searchContent == null || searchContent.equals(""))
+      return -1;
+    
+    int i = (startRow >= 0 )? startRow : 0;
+    boolean found = false;
+    
+    while (!found && (i < getRowCount())) {
+      ThreadInfo ti = ((ThreadData) getInfoObjectAtRow(i++)).getAssocThreadInfo();      
+      if (ti == null)
+        continue;
+      found = ti.getContent().toLowerCase().indexOf(searchContent.toLowerCase()) >= 0;      
+    }
+
+    return (found ? i - 1 : -1);
+  }
 }

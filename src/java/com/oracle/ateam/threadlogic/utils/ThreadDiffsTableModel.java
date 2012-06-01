@@ -255,19 +255,34 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
    * @param name
    *          the (partial) name
    * @return the index of the row or -1 if not found.
-   */
+   *
   public int searchRowWithName(int startRow, String name) {
-    int i = startRow;
+    int i = (startRow >= 0 )? startRow : 0;
     boolean found = false;
     while (!found && (i < getRowCount())) {
-      ThreadInfo ti = (ThreadInfo) getInfoObjectAtRow(i++);
+      ThreadInfo ti = ((ThreadData) getInfoObjectAtRow(i++)).getAssocThreadInfo();
       if (ti == null)
         continue;
       found = ti.getName().indexOf(name) >= 0;
     }
 
+    return (found ? i - 1 : -1);  
+  }
+  
+  public int searchRowWithContent(int startRow, String searchContent) {
+    int i = (startRow >= 0 )? startRow : 0;
+    boolean found = false;
+    while (!found && (i < getRowCount())) {
+      ThreadInfo ti = ((ThreadData) getInfoObjectAtRow(i++)).getAssocThreadInfo();      
+      if (ti == null)
+        continue;
+      found = ti.getContent().indexOf(searchContent) >= 0;      
+      System.out.println("Found matching Thread Name: " + ti.getFilteredName());
+    }
+    
     return (found ? i - 1 : -1);
   }
+   */
 
   private STATE_CHANGE checkForDiffBetweenTDs(String nameId, int columnIndex) {
 

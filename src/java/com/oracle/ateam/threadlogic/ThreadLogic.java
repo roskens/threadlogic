@@ -1271,7 +1271,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       topSplitPane.setRightComponent(cat.getLastView());
     }
 
-    if (cat.getCurrentlySelectedUserObject() != null) {
+    // For Thread groups, continue to display the summary info instead of selected object at displayCategory level
+    // unless the user clicks on specific thread group entity which will be let the specific thread group info get displayed anyway
+    if ( !cat.getName().contains("Thread Groups Summary") && cat.getCurrentlySelectedUserObject() != null) {
       displayThreadInfo(cat.getCurrentlySelectedUserObject());
     } else {
       displayContent(cat.getInfo());
@@ -1781,7 +1783,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         } else {
           DefaultMutableTreeNode mergeRoot = fetchTop(tree.getSelectionPath());
           Map dumpMap = dumpStore.getFromDumpFiles(mergeRoot.getUserObject().toString());
-          ((Logfile) mergeRoot.getUserObject()).getUsedParser().mergeDumps(mergeRoot, dumpMap, paths, paths.length,
+          Object logFile = mergeRoot.getUserObject();
+          if (logFile instanceof ThreadDumpInfo)
+            logFile = ((ThreadDumpInfo)logFile).getLogFile();
+          
+          ((Logfile)logFile).getUsedParser().mergeDumps(mergeRoot, dumpMap, paths, paths.length,
               null);
           createTree();
           this.getRootPane().revalidate();
@@ -2619,3 +2625,4 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   }
   
 }
+

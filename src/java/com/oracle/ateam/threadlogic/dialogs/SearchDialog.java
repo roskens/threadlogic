@@ -46,15 +46,18 @@ import javax.swing.tree.TreePath;
  * 
  * @author irockel
  */
-public class SearchDialog extends JDialog implements ActionListener {
+public class SearchDialog extends JDialog implements ActionListener, ItemListener  {
 
   private static String SEARCH = "search";
   private static String CANCEL = "cancel";
 
   private JTextField searchField;
+  private JCheckBox checkThreadContent;
 
   private JComponent searchComp;
   private JTable searchTable;
+  
+  private boolean searchAgainstThreadContent = false;
 
   public SearchDialog(JFrame owner, JComponent comp) {
     super(owner, "Search this category... ");
@@ -64,10 +67,14 @@ public class SearchDialog extends JDialog implements ActionListener {
     searchField = new JTextField(10);
     searchField.setActionCommand(SEARCH);
     searchField.addActionListener(this);
-    setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);    
 
     JLabel label = new JLabel("Enter search string: ");
     label.setLabelFor(searchField);
+    
+    checkThreadContent = new JCheckBox("Search against thread content");
+    checkThreadContent.setSelected(searchAgainstThreadContent);
+    checkThreadContent.addItemListener(this);    
 
     searchComp = comp;
 
@@ -77,6 +84,7 @@ public class SearchDialog extends JDialog implements ActionListener {
     JPanel textPane = new JPanel(new FlowLayout(FlowLayout.TRAILING));
     textPane.add(label);
     textPane.add(searchField);
+    textPane.add(checkThreadContent);
 
     add(textPane);
     add(buttonPane);
@@ -94,6 +102,12 @@ public class SearchDialog extends JDialog implements ActionListener {
     return p;
   }
 
+  /** Listens to the check boxes. */
+  public void itemStateChanged(ItemEvent e) {
+      //Check if it was selected or deselected.
+      searchAgainstThreadContent = (e.getStateChange() == ItemEvent.SELECTED);
+  }
+    
   public void actionPerformed(ActionEvent e) {
     String cmd = e.getActionCommand();
 
@@ -114,7 +128,13 @@ public class SearchDialog extends JDialog implements ActionListener {
         }
       } else if (searchComp instanceof JTable) {
         ThreadsTableModel ttm = (ThreadsTableModel) ((TableSorter) ((JTable) searchComp).getModel()).getTableModel();
-        int row = ttm.searchRowWithName(((JTable) searchComp).getSelectedRow(), searchField.getText());
+        
+        int row = -1;
+        if (!searchAgainstThreadContent)
+          row = ttm.searchRowWithName(((JTable) searchComp).getSelectedRow(), searchField.getText());
+        else
+          row = ttm.searchRowWithContent(((JTable) searchComp).getSelectedRow(), searchField.getText());
+        
         ((JTable) searchComp).getSelectionModel().setSelectionInterval(row, row);
       }
     }
