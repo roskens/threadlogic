@@ -513,6 +513,27 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Check state of Managed servers if pattern continues (or possibly large number of managed servers and apps)</Advice>
 	</Advisory>
 	<Advisory>
+		<Name>Deployment started</Name>
+		<Health>NORMAL</Health>
+		<Keyword>DeploymentServerService.start</Keyword>
+		<Descrp>Deployment Service has been started</Descrp>
+		<Advice>Server bring up deployment service. Deployments should complete in a finite time. Precompile application bits with the correct server version ahead of deployment if possible to speed up deployment time</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>JSP Compilation</Name>
+		<Health>NORMAL</Health>
+		<Keyword>weblogic.servlet.jsp.JavelinxJspPrecompiler.compile</Keyword>
+		<Descrp>JSP compilation</Descrp>
+		<Advice>Precompile application bits and JPSs against the correct server version ahead of deployment if possible</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>JSP Compilation Job</Name>
+		<Health>WATCH</Health>
+		<Keyword>weblogic.jsp.internal.client.JobWaiter.blockUntilFinished</Keyword>
+		<Descrp>JSP compilation job blocking request</Descrp>
+		<Advice>Thread waiting for jsp compilation to finish. Precompile application bits and JPSs against the correct server version ahead of deployment if possible</Advice>
+	</Advisory>  
+	<Advisory>
 		<Name>WLS App undeployment</Name>
 		<Health>WATCH</Health>
 		<Keyword>BasicDeployment.unprepare</Keyword>
