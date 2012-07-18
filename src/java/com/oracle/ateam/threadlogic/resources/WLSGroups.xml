@@ -109,10 +109,16 @@ xmlns="http://java.net/projects/threadlogic">
 		<Name>WebLogic Muxer</Name>
 		<Visible>true</Visible>
 		<Inclusion>true</Inclusion>
+    <!--
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
 			<Pattern>EPollSocketMuxer|DevPollSocketMuxer|PosixSocketMuxer|NTSocketMuxer|JavaSocketMuxer|NIOSocketMuxer</Pattern>
 		</PatternList>
+    -->
+    <MatchLocation>name</MatchLocation>
+		<PatternList>
+			<Pattern>weblogic.socket.Muxer</Pattern>
+    </PatternList>
   <ExcludedAdvisories>
     <AdvisoryId>Socket Read</AdvisoryId>
   </ExcludedAdvisories>    

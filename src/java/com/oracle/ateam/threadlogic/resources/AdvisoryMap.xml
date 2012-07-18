@@ -178,11 +178,11 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Remote Server or client disconnected abruptly, diagnose why from errors/network level</Advice>
 	</Advisory>
 	<Advisory>
-		<Name>WLS Muxer normal execution</Name>
+		<Name>WLS Muxer execution</Name>
 		<Health>NORMAL</Health>
 		<Keyword>SocketMuxer.processSockets</Keyword>
 		<Descrp>WebLogic Muxer Thread blocked or handling sockets</Descrp>
-		<Advice>Check if its doing blocked for non-Muxer related locks or only doing routine polling as part of processSockets() call</Advice>
+		<Advice>Check if its blocked for non-Muxer related locks or only doing routine polling as part of processSockets() call</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>LDAP Connection</Name>
@@ -517,8 +517,8 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>NORMAL</Health>
 		<Keyword>DeploymentServerService.start</Keyword>
 		<Descrp>Deployment Service has been started</Descrp>
-		<Advice>Server bring up deployment service. Deployments should complete in a finite time. Precompile application bits with the correct server version ahead of deployment if possible to speed up deployment time</Advice>
-	</Advisory>
+		<Advice>Server bringing up deployment service. Deployments should complete in a finite time. Precompile application bits with the correct server version ahead of deployment if possible to speed up deployment time</Advice>
+	</Advisory>  
   <Advisory>
 		<Name>JSP Compilation</Name>
 		<Health>NORMAL</Health>
@@ -708,6 +708,34 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>WLS Muxer is handling subsystem requests</Descrp>
 		<Advice>WLS Server health is unhealthy as some subsystems are overwhelmed with requests which is leading to the Muxer threads directly handling requests; instead of dispatching to relevant subsystems; There is likely a bug here.</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>WLS Services start up</Name>
+		<Health>NORMAL</Health>
+		<Keyword>weblogic.t3.srvr.ServerServicesManager.startService</Keyword>
+		<Descrp>WLS Server starting up its services</Descrp>
+		<Advice>WLS Server is initializing and starting up its services</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>WLS subsystems starting</Name>
+		<Health>NORMAL</Health>
+		<Keyword>weblogic.t3.srvr.SubsystemRequest.rendezvouz</Keyword>
+		<Descrp>WLS Server waiting for subsystems to start</Descrp>
+		<Advice>WLS Server is waiting for subsystems to start</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>WLS Embedded LDAP replication</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.octetstring.vde.replication.Replication.run</Keyword>
+		<Descrp>WLS Server starting embedded ldap service</Descrp>
+		<Advice>WLS Server embedded ldap service starting</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Socket registered with WLS Muxer </Name>
+		<Health>WATCH</Health>
+		<Keyword>SocketMuxer.*SelfTuningWorkManagerImpl.WorkAdapterImpl.run</Keyword>
+		<Descrp>Socket is getting registered with WLS Muxer from a non-Muxer Thread</Descrp>
+		<Advice>OSB or other applications might register sockets with the Muxer layer to handle responses from backend without blocking (Check on FutureAsyncResponse Servlet pattern in WLS). Normally this happens real fast and rarely get captured in thread dumps. But if multiple threads demonstrate same pattern, then there is a problem with the WLS Muxer threads. </Advice>
+	</Advisory>
 	<Advisory>
 		<Name>Tibco EMS Message Consumer</Name>
 		<Health>NORMAL</Health>
@@ -791,6 +819,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>jrockit.vm.Allocator.getNewTla</Keyword>
 		<Descrp>Thread needs more memory</Descrp>
 		<Advice>If multiple threads are requesting for memory, implies the server either needs more heap or jvm memory/gc settings need some tweaking </Advice>
+	</Advisory>
+  <Advisory>
+		<Name>JRockit JFR Repository creation</Name>
+		<Health>WARNING</Health>
+		<Keyword>File.*oracle.jrockit.jfr.Repository.*BootService.start</Keyword>
+		<Descrp>JRockit might be unable to create JFR repository at startup</Descrp>
+		<Advice>WLS Server attempts to create JFR repository for use in WLDF during server startup under $TEMP location. If the $TEMP location is not writeable or problems exist with the file system, then the server startup can hang. Check permissions for $TEMP or override the default location with -Djava.io.tmpdir=... parameter in server startup script. </Advice>
 	</Advisory>
   <Advisory>
 		<Name>NIOMuxer Bug 13962335 </Name>
