@@ -723,6 +723,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>WLS Server is waiting for subsystems to start</Advice>
 	</Advisory>
   <Advisory>
+		<Name>WLS Socket Muxer starting</Name>
+		<Health>NORMAL</Health>
+		<Keyword>SocketMuxerServerService.start</Keyword>
+		<Descrp>WLS Server starting Socket Muxer subsystem</Descrp>
+		<Advice>Normally socket muxer system should finish fast, if it stays in same state, then its fatal</Advice>
+	</Advisory>
+  <Advisory>
 		<Name>WLS Embedded LDAP replication</Name>
 		<Health>NORMAL</Health>
 		<Keyword>com.octetstring.vde.replication.Replication.run</Keyword>
