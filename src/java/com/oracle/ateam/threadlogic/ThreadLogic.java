@@ -149,6 +149,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   public static JFrame frame;
 
   private static String dumpFile;
+  private static String defaultTDumpDir;
 
   private static String loggcFile;
 
@@ -224,7 +225,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
 
   public ThreadLogic(boolean setLF, String dumpFile) {
-    this(setLF);
+    this(setLF);    
     ThreadLogic.dumpFile = dumpFile;
   }
 
@@ -353,8 +354,10 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
     firstFile = true;
     setFileOpen(false);
-
+    
     setShowToolbar(PrefManager.get().getShowToolbar());
+    
+    
 
   }
 
@@ -2474,6 +2477,21 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
               ThreadLogic.get(true).finalize();
             }
         });
+    
+    // If a path to a directory has been provided as an argument,
+    // load the log files within them.
+    if (ThreadLogic.defaultTDumpDir != null) {
+      String logDir = ThreadLogic.defaultTDumpDir;
+      File logDirFile = new File(logDir);
+      System.out.println("Log Directory: " + logDir );
+
+      File[] logFiles = logDirFile.listFiles();
+      if (logFiles.length < 0) {          
+        System.out.println("No files found under the specified Log Directory:" + logDir);
+      }
+
+      ThreadLogic.get(true).openFiles(logFiles, false);
+    }
   }
 
   /**
@@ -2505,8 +2523,18 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    * main startup method for ThreadLogic
    */
   public static void main(String[] args) {
-    if (args.length > 0) {
-      dumpFile = args[0];
+    if (args.length > 0) {      
+      
+      File dumpDir = new File(args[0]);
+      
+      // Check for directory and load dumps within it
+      if (dumpDir.isDirectory()) {
+        defaultTDumpDir = args[0];
+      } else {
+        // Load single thread dump file
+        dumpFile = args[0];
+      }
+      //dumpFile = args[0];
     }
     // Schedule a job for the event-dispatching thread:
     // creating and showing this application's GUI.
