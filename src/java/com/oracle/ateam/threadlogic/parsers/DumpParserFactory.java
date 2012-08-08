@@ -119,6 +119,14 @@ public class DumpParserFactory {
           currentDumpParser = new JrockitParser(bis, threadStore, lineCounter, dm);
         } else if (IBMJDKParser.checkForSupportedThreadDump(line)) {
           currentDumpParser = new IBMJDKParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm);
+        } else {
+          int supportedJvmType = FallbackParser.checkForSupportedThreadDump(line);
+          if (supportedJvmType < 0)
+            continue;
+                
+          // Found some sort of match against the FallbackParser
+            currentDumpParser = new FallbackParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm, supportedJvmType);
+
         }
         lineCounter++;
       }

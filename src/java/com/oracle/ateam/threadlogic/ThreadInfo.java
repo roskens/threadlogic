@@ -101,7 +101,8 @@ public class ThreadInfo extends ThreadLogicElement {
       
     
       // Check against JRockit, IBM, SUN Thread states....
-      if (threadState.equals("b") || threadState.contains(" blocked")
+      if (threadState.equals("b") || threadState.contains(" blocked") 
+          || ( content.contains(" waiting for lock ") && !content.contains("Object.wait(") && !content.contains("park(") )
           || content.contains("State: BLOCKED (on object monitor)")) {
         this.state = ThreadState.BLOCKED;
         this.health = HealthLevel.WATCH;                

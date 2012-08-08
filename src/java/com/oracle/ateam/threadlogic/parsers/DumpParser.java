@@ -89,6 +89,8 @@ public interface DumpParser {
     public String getLockReleased(String line);
 
     public String getGCThread(String line);
+    
+    public String getEndOfTitlePattern(String line);
 
     public void setFullDumpPattern(String pattern);
 
@@ -111,6 +113,8 @@ public interface DumpParser {
     public void setLockReleasedPattern(String pattern);
 
     public void setGCThreadPattern(String pattern);
+    
+    public void setEndOfTitlePattern(String pattern);
 
   }
 }

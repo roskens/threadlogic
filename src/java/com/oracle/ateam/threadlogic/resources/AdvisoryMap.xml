@@ -96,7 +96,7 @@ xmlns="http://java.net/projects/threadlogic">
 	<Advisory>
 		<Name>WLS MDB</Name>
 		<Health>NORMAL</Health>
-		<Keyword>MDListener.onMessage</Keyword>
+		<Keyword>MDListener.onMessage, MDListener.execute</Keyword>
 		<Descrp>WLS MDB Execution</Descrp>
 		<Advice>MDB received a message and is executing onMessage call</Advice>
 	</Advisory>
@@ -435,12 +435,19 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>SOA Layer making HTTP SOAP Outbound call</Descrp>
 		<Advice>Check for slowness in remote webservice if pattern continues</Advice>
 	</Advisory>
-  	<Advisory>
+  <Advisory>
 		<Name>SOAP outbound calls from WLS</Name>
 		<Health>NORMAL</Health>
 		<Keyword>SOAPHttpURLConnection.getInputStream</Keyword>
 		<Descrp>WLS making HTTP SOAP Outbound call</Descrp>
 		<Advice>Check for slowness in remote webservice if thread continues to appear in Socket Read</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>SOA BAM</Name>
+		<Health>NORMAL</Health>
+		<Keyword>oracle.bpm.analytics.bam.action</Keyword>
+		<Descrp>Oracle SOA BAM Execution</Descrp>
+		<Advice>Normal</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Bottleneck among threads</Name>
@@ -868,6 +875,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>java.io.ObjectInputStream.readObject, java.io.ObjectOutputStream.writeObject</Keyword>
     <Descrp>Java serialization of objects</Descrp>
 		<Advice>Normal java serialization</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Dump Threads</Name>
+		<Health>IGNORE</Health>
+		<Keyword>JVMRuntime.getThreadStackDump</Keyword>
+    <Descrp>Dump Java Thread stacks programatically</Descrp>
+		<Advice>Ignore</Advice>
 	</Advisory>
   
 </tlogic:AdvisoryMap>

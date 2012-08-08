@@ -1824,6 +1824,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     Pattern endOfDumpPattern;
     Pattern lockReleasedPattern;
     Pattern gcThreadPattern = createPattern(".*(\".*G[Cc].*hread.*\").*");
+    Pattern endOfTitlePattern;
 
     @Override
     public String getFullDump(String line) {
@@ -1861,7 +1862,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       if (atPattern != null) {
         Matcher matcher = atPattern.matcher(line);
         if (matcher.matches()) {
-          return format(matcher.group(1));
+          //return format(matcher.group(1));
+          return format(matcher.groupCount() == 1? matcher.group(1): matcher.group(0));
         }
       }
       return null;
@@ -2019,6 +2021,22 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         return Pattern.compile(pattern);
       }
       return null;
+    }
+    
+    @Override
+    public String getEndOfTitlePattern(String line) {
+      if (endOfTitlePattern != null) {
+        Matcher matcher = endOfTitlePattern.matcher(line);
+        if (matcher.matches()) {
+          return format(matcher.group(0));
+        }
+      }
+      return null;
+    }
+
+    @Override
+    public void setEndOfTitlePattern(String pattern) {
+      this.endOfTitlePattern = createPattern(pattern);
     }
 
     private String format(String s) {
