@@ -55,6 +55,7 @@ public class ColoredTable extends JTable {
   private DefaultTableCellRenderer greenRenderer;
   private DefaultTableCellRenderer paleGreenRenderer;
   private DefaultTableCellRenderer yellowRenderer;
+  private DefaultTableCellRenderer paleYellowRenderer;
   private DefaultTableCellRenderer redRenderer;
   private DefaultTableCellRenderer orangeRenderer;
   private DefaultTableCellRenderer paleOrangeRenderer;
@@ -108,6 +109,11 @@ public class ColoredTable extends JTable {
       siennaRenderer.setBackground(new Color(248, 116, 49));
     }
 
+    if (paleYellowRenderer == null) {
+      paleYellowRenderer = new DefaultTableCellRenderer();
+      paleYellowRenderer.setBackground(new Color(217, 206, 0));
+    }
+    
     if (yellowRenderer == null) {
       yellowRenderer = new DefaultTableCellRenderer();
       yellowRenderer.setBackground(Color.YELLOW);
@@ -159,6 +165,10 @@ public class ColoredTable extends JTable {
             return redRenderer;
           }
 
+          if (s.equals("UNKNOWN")) {
+            return paleYellowRenderer;
+          }
+          
           if (s.equals("NORMAL") || s.equals("IGNORE")) {
             return blueRenderer;
           }

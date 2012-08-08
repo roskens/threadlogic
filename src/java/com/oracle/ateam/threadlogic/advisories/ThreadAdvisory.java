@@ -555,6 +555,13 @@ public class ThreadAdvisory implements Comparable, Serializable {
     }
 
     threadInfo.addAdvisories(advisoryList);
+    
+    int stackDepth = threadStack.split("\n").length;
+    if ((stackDepth > ThreadLogicConstants.ACTIVETHREAD_STACKDEPTH) 
+                  && (threadInfo.getAdvisories().size() == 0)
+                  && (threadInfo.getHealth().ordinal() < HealthLevel.WATCH.ordinal()) ) {
+      threadInfo.setHealth(HealthLevel.UNKNOWN);
+    }
   }
 
   // Ignore the thread label/top few lines that might vary between threads...

@@ -17,10 +17,13 @@ import java.util.Collections;
 
 public enum HealthLevel {
 
-  IGNORE, NORMAL, WATCH, WARNING, FATAL;
+  IGNORE, NORMAL, UNKNOWN, WATCH, WARNING, FATAL;
 
   public String getBackgroundRGBCode() {
     switch (this) {
+    case UNKNOWN:
+      // pale yellow
+      return "rgb(217, 206, 0)";  
     case WATCH:
       // pale orange
       return "rgb(247, 181, 49)";
@@ -36,6 +39,9 @@ public enum HealthLevel {
 
   public Color getColor() {
     switch (this) {
+    case UNKNOWN:
+      // pale yellow
+      return new Color(217, 206, 0);
     case WATCH:
       // pale orange
       return new Color(247, 181, 49);

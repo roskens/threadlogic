@@ -91,9 +91,23 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>JMSConsumer.receiveNoWait</Keyword>
 		<Descrp>WLS Synchronous JMS Receiver</Descrp>
-		<Advice>Prefer Asynchronous JMS Receivers over Synchronous Receivers (register as MessageListener) as async model scales well</Advice>
+		<Advice>Prefer Asynchronous JMS Receivers over Synchronous Receivers (register as MessageListener or use MDBs) as async model scales well</Advice>
 	</Advisory>
 	<Advisory>
+		<Name>WLS MDB</Name>
+		<Health>NORMAL</Health>
+		<Keyword>MDListener.onMessage</Keyword>
+		<Descrp>WLS MDB Execution</Descrp>
+		<Advice>MDB received a message and is executing onMessage call</Advice>
+	</Advisory>
+	<Advisory>
+		<Name>WLS JMS Publisher</Name>
+		<Health>NORMAL</Health>
+		<Keyword>JMSSession.createProducer</Keyword>
+		<Descrp>WLS JMS Publiser creation</Descrp>
+		<Advice>Attempting to create a WLS JMS Publisher to send message</Advice>
+	</Advisory>
+  <Advisory>
 		<Name>Bottleneck among threads</Name>
 		<Health>WARNING</Health>
 		<Keyword>BlockedThreads</Keyword>
@@ -113,6 +127,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>T3Srvr.shutdown</Keyword>
 		<Descrp>WLS Server shutting down</Descrp>
 		<Advice>Check if the server is shutting down due to user activity or due to failures (OOM/Error conditions)</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>WLS T3Server Thread</Name>
+		<Health>IGNORE</Health>
+		<Keyword>T3Srvr.waitForDeath</Keyword>
+		<Descrp>Thread will wait till it receives shutdown signal to stop the WLS Server </Descrp>
+		<Advice>Normal</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Random Number Seed generation Slow</Name>
@@ -452,7 +473,7 @@ xmlns="http://java.net/projects/threadlogic">
 	<Advisory>
 		<Name>Transaction commit</Name>
 		<Health>NORMAL</Health>
-		<Keyword>TransactionManagerImpl.commit, weblogic.transaction.internal.Coordinator.*commit</Keyword>
+		<Keyword>TransactionManagerImpl.commit, weblogic.transaction.internal.Coordinator.*commit, ServerTransactionImpl.commit</Keyword>
 		<Descrp>Server committing Transaction</Descrp>
 		<Advice>Normal Commit as long as there are no rollbacks</Advice>
 	</Advisory>
@@ -555,7 +576,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>JNDI Context should be cached, repeat calls can degrade performance if context is not cached</Advice>
 	</Advisory>
 	<Advisory>
-		<Name>Listener</Name>
+		<Name>Socket Listener</Name>
 		<Health>IGNORE</Health>
 		<Keyword>SocketImpl.socketAccept, ServerSocketChannelImpl.accept</Keyword>
 		<Descrp>Socket Listener waiting on accept</Descrp>
@@ -640,7 +661,7 @@ xmlns="http://java.net/projects/threadlogic">
 	</Advisory>
 	<Advisory>
 		<Name>Hot Spots</Name>
-		<Health>WARNING</Health>
+		<Health>WATCH</Health>
 		<Keyword>HotCallPattern</Keyword>
 		<Descrp>Multiple Threads executing same code path</Descrp>
 		<Advice>Ensure there are no blocking locks or bottlenecks, sufficient resources are available; Remote service being invoked is responsive and scaling well to handle increased load; Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution</Advice>
@@ -840,6 +861,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>sun.nio.ch.SocketDispatcher.read.*sun.nio.ch.SocketChannelImpl.read.*NIOSocketMuxer.*MuxableSocketT3.connect</Keyword>
 		<Descrp>Check if WLS NIOMuxer is blocked for long, attempting to read from an unreachable endpoint, which can lead to stuck thread and severe Server Hang situations</Descrp>
 		<Advice>Apply Patch for Bug #13962335 on all weblogic servers if the server thread continues in the same read state across multiple thread dumps</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Java Serialization</Name>
+		<Health>NORMAL</Health>
+		<Keyword>java.io.ObjectInputStream.readObject, java.io.ObjectOutputStream.writeObject</Keyword>
+    <Descrp>Java serialization of objects</Descrp>
+		<Advice>Normal java serialization</Advice>
 	</Advisory>
   
 </tlogic:AdvisoryMap>
