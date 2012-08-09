@@ -49,6 +49,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 
 import com.oracle.ateam.threadlogic.Logfile;
+import com.oracle.ateam.threadlogic.ThreadDumpInfo;
 import com.oracle.ateam.threadlogic.ThreadLogic;
 
 /**
@@ -104,7 +105,17 @@ public class LongThreadDialog extends JDialog {
         if (ThreadLogic.frame != null) {
           ThreadLogic.frame.setEnabled(true);
         }
-        ((Logfile) top.getUserObject()).getUsedParser().findLongRunningThreads(top, threadDumps, dumps,
+        
+        Logfile assocLogFile = null;
+        Object userObj = top.getUserObject();
+        if (userObj instanceof ThreadDumpInfo) {
+          ThreadDumpInfo ti = (ThreadDumpInfo) userObj;
+          assocLogFile = ti.getLogFile();
+        } else {
+          assocLogFile = (Logfile) top.getUserObject();          
+        }
+
+        assocLogFile.getUsedParser().findLongRunningThreads(top, threadDumps, dumps,
             Integer.parseInt(settingsPanel.minOccurenceField.getText()), settingsPanel.threadRegExField.getText());
         backRef.createTree();
         backRef.tree.expandRow(1);
