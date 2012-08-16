@@ -402,10 +402,10 @@ xmlns="http://java.net/projects/threadlogic">
 	</Advisory>
 	<Advisory>
 		<Name>WLS Muxer in Wait or Parking Condition</Name>
-		<Health>FATAL</Health>
+		<Health>WARNING</Health>
 		<Keyword>MuxerWaiting</Keyword>
 		<Descrp>WLS Muxer waiting for or parked for event/condition</Descrp>
-		<Advice>WLS Muxer is unhealthy and should not wait for a event/condition; One muxer thread should be running (typically in poll) while holding a lock and the other threads waiting to get the lock; There is likely a bug here.</Advice>
+		<Advice>WLS Muxer is unhealthy and should not wait for a event/condition; One muxer thread should be running (typically in poll) while holding a lock and the other threads waiting to get the lock; If the thread is waiting on a WebLogic Socket Muxer related internal resource (example weblogic.socket.PosixSocketInfo$FdStruct) then ignore the warning else its likely a bug.</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Transaction rollback</Name>

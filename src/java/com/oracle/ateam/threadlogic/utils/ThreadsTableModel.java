@@ -89,7 +89,7 @@ public class ThreadsTableModel extends AbstractTableModel {
     }
     
     private BigInteger parseNumbers(String val) {
-      if (val == null || val.equals("?")) {
+      if (val == null || val.equals("?") || val.equals("none")) {
         return null;          
       }
       

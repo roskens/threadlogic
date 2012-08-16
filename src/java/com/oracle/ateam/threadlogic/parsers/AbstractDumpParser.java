@@ -2163,6 +2163,17 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
       String entry = data.substring(offset, endOffset);
       entry = entry.trim().replaceAll("\\n.*", "").trim();
+      
+      // Trim off the trailing "owned by " Thread info appened by VisualVM
+      /* Sample created by VisualVM
+       "ExecuteThread: '3' for queue: 'weblogic.socket.Muxer'" - Thread t@243
+         java.lang.Thread.State: BLOCKED
+            at weblogic.socket.DevPollSocketMuxer.processSockets(DevPollSocketMuxer.java:92)
+            - waiting to lock <4de8b404> (a java.lang.String) owned by "ExecuteThread: '2' for queue: 'weblogic.socket.Muxer'" t@242
+       * 
+       */
+      entry = entry.replaceAll("owned by .*", "").trim();
+      
 
       // JRockit has an extra entry at end showing type of lock - locked or
       // unlocked or fat lock...
