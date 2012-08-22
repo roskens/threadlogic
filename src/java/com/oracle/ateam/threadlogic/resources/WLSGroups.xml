@@ -171,6 +171,33 @@ xmlns="http://java.net/projects/threadlogic">
       <AdvisoryId>Socket Read</AdvisoryId>
     </ExcludedAdvisories>  
 	</SimpleGroup>
+  <SimpleGroup>
+		<Name>OSM Tmp1</Name>
+		<Visible>false</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>com.mslv.oms</Pattern>
+      <Pattern>oracle.communications.ordermanagement</Pattern>
+		</PatternList>
+	</SimpleGroup>
+	<SimpleGroup>
+		<Name>OSM Tmp2</Name>
+		<Visible>false</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>name</MatchLocation>
+		<PatternList>
+			<Pattern>\'oms</Pattern>
+		</PatternList>
+	</SimpleGroup>
+  <ComplexGroup>
+		<Name>Order Service Mgmt (OSM)</Name>
+		<Visible>true</Visible>
+		<Inclusions>
+			<SimpleGroupId>OSM Tmp1</SimpleGroupId>
+      <SimpleGroupId>OSM Tmp2</SimpleGroupId>
+		</Inclusions>
+	</ComplexGroup>  
 	<SimpleGroup>
 		<Name>Oracle Service Bus Tmp1</Name>
 		<Visible>false</Visible>

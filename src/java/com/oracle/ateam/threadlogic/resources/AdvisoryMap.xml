@@ -517,7 +517,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>TooManyThreads</Keyword>
 		<Descrp>Using lots of threads - can be a resource drain or lead to too many context switches</Descrp>
-		<Advice>Check why there are so many requests; Check if this server alone getting all the requests (non-uniform load distribution or loopbacks or peak bursts in traffic); Try to throttle the requests; Try to reduce max number of threads; Use custom WM with Min thread contraints to separate traffic and ensure requests for one application does not overwhelm all other server requests</Advice>
+		<Advice>Check why there are so many threads; Check if this server alone getting all the requests (non-uniform load distribution or loopbacks or peak bursts in traffic); Try to throttle the requests; Try to reduce max number of threads; Use custom WM with Min thread contraints to separate traffic and ensure requests for one application does not overwhelm all other server requests</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>JDBC Connection Pool shutting down</Name>
@@ -532,6 +532,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>HttpServlet.service</Keyword>
 		<Descrp>Servlet Request</Descrp>
 		<Advice>Normal Servlet call</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>LOG4J using Immediate Flush</Name>
+		<Health>WARNING</Health>
+		<Keyword>log4j.Category.forcedLog</Keyword>
+		<Descrp>Log4j using immediate flush will reduce performance</Descrp>
+		<Advice>Immediate flush with log4j will result in logging holding up other threads, turn off immediateFlush and use BufferedIO or AsyncAppender</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Console checking Application Deployment status</Name>
@@ -596,6 +603,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>Web Application is waiting for an Event</Descrp>
 		<Advice>Web Application should not go into WAIT state as it means the end user would have to wait for indeterminate time for a synchronous response; Change the code or logic to return the results or response right away instead of blocking or waiting for an event; Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution; Ignorable for OSB Webservice callout as the pattern requires the invoker thread to wait while actual response is handled by another thread </Advice>
 	</Advisory>
+  <Advisory>
+		<Name>EJB Blocked</Name>
+		<Health>WARNING</Health>
+		<Keyword>EJB Blocked</Keyword>
+		<Descrp>EJB is waiting for a lock</Descrp>
+		<Advice>Check reasons for the EJB getting blocked</Advice>
+	</Advisory>
 	<Advisory>
 		<Name>OSB Session Activation</Name>
 		<Health>WATCH</Health>
@@ -608,7 +622,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>ParallelGCThreads</Keyword>
 		<Descrp>Large number of Parallel GC Threads used by JVM</Descrp>
-		<Advice>Reduce number of Parallel GC Threads (to under 20), based on number of CPU/Cores and JVMs running on the host machine; Use -XXgcthreads:N for JRockit and -XX:ParallelGCThreads=N for HotSpot to limit number of parallel GC threads</Advice>
+		<Advice>Reduce number of Parallel GC Threads (to under 24), based on number of CPU/Cores and JVMs running on the host machine; Use -XXgcthreads:N for JRockit and -XX:ParallelGCThreads=N for HotSpot to limit number of parallel GC threads. Recommended # of GC Threads = (# of CPUs x # of Hardware Threads per core)/(# of JVMs on same machine)</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Waiting for Event while blocking others</Name>
@@ -623,6 +637,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>coherence.component.util.Daemon.onWait</Keyword>
 		<Descrp>Coherence Daemon Thread Waiting</Descrp>
 		<Advice>Ignore</Advice>
+	</Advisory>
+	<Advisory>
+		<Name>Member joined Coherence Cluster</Name>
+		<Health>WATCH</Health>
+		<Keyword>com.tangosol.coherence.component.util.SafeService.memberJoined</Keyword>
+		<Descrp>A new member joined Coherence Cluster service</Descrp>
+		<Advice>Avoid using cluster or cache services when members are joining as it can lead to deadlocks</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>B2B Thread Executor</Name>
@@ -665,6 +686,20 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>ReentrantLock.lock</Keyword>
 		<Descrp>Thread attempting to acquire java concurrent Reentrant Lock</Descrp>
 		<Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Reentrant Lock</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Trying to acquire Write Lock</Name>
+		<Health>WATCH</Health>
+		<Keyword>WriteLock.lock</Keyword>
+		<Descrp>Thread attempting to acquire java concurrent Write Lock</Descrp>
+		<Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Write Lock</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Trying to acquire Read Lock</Name>
+		<Health>WATCH</Health>
+		<Keyword>ReadLock.lock</Keyword>
+		<Descrp>Thread attempting to acquire java concurrent Read Lock</Descrp>
+		<Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Read Lock</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Hot Spots</Name>
@@ -818,6 +853,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>NORMAL</Health>
 		<Keyword>com.oracle.sysman.services.cloudmgmt, Cloud.*DaoImpl</Keyword>
 		<Descrp>Activity involving Oracle cloud control</Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>OSM ClusterMessageHandler MDB</Name>
+		<Health>NORMAL</Health>
+		<Keyword>oracle.communications.ordermanagement.cluster.message.ClusterMessageHandlerBean</Keyword>
+		<Descrp>OSM ClusterMessageHandler MDB Execution</Descrp>
 		<Advice>Normal</Advice>
 	</Advisory>
   <Advisory>

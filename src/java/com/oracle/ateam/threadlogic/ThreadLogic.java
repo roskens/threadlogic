@@ -14,6 +14,7 @@ package com.oracle.ateam.threadlogic;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
 import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
 import com.oracle.ateam.threadlogic.categories.Category;
+import com.oracle.ateam.threadlogic.categories.ExternalizedNestedThreadGroupsCategory;
 import com.oracle.ateam.threadlogic.categories.TreeCategory;
 import com.oracle.ateam.threadlogic.dialogs.CustomCategoriesDialog;
 import com.oracle.ateam.threadlogic.dialogs.FilterDialog;
@@ -1274,9 +1275,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       topSplitPane.setRightComponent(cat.getLastView());
     }
 
-    // For Thread groups, continue to display the summary info instead of selected object at displayCategory level
-    // unless the user clicks on specific thread group entity which will be let the specific thread group info get displayed anyway
-    if ( !cat.getName().contains("Thread Groups Summary") && cat.getCurrentlySelectedUserObject() != null) {
+    // For Category with multiple nodes (like Thread groups), continue to display the summary info instead of selected object at displayCategory level
+    // unless the user clicks on specific child entity again which will be let the selected entry's info get displayed anyway
+    if ( (cat.getNodeCount() <= 1) && cat.getCurrentlySelectedUserObject() != null) {
       displayThreadInfo(cat.getCurrentlySelectedUserObject());
     } else {
       displayContent(cat.getInfo());

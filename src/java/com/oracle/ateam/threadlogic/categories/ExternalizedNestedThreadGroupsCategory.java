@@ -57,7 +57,8 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   private ArrayList<Filter> allWLSFilterList, allNonWLSFilterList;
   private static ArrayList<Filter> allNonWLSStaticFilterList, allWLSStaticFilterList;
   
-  private Filter wlsJMSFilter = new Filter("WLS JMS", "(weblogic.jms)|(weblogic.messaging)", 2, false, false, true);
+  private Filter wlsJMSFilter1 = new Filter("WLS JMS", "(weblogic.jms)|(weblogic.messaging)", 2, false, false, true);
+  private Filter wlsJMSFilter2 = new Filter("WLS JMS", "JmsDispatcher", 0, false, false, true);
   
   private static Filter allWLSThreadStackFilter, allWLSThreadNameFilter;
   
@@ -472,14 +473,18 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
 
     // Create a new filter for captuing just the wls & wls jms threads that dont fall under any known wls thread groups
     CompositeFilter wlsJMSThreadsFilter = new CompositeFilter("WLS JMS");
-    wlsJMSThreadsFilter.addFilter(wlsJMSFilter, true);
+    wlsJMSThreadsFilter.addFilter(wlsJMSFilter1, true);
+    wlsJMSThreadsFilter.addFilter(wlsJMSFilter2, true);
     nestedWLSCategory.addToFilters(wlsJMSThreadsFilter);
 
     CompositeFilter wlsThreadsFilter = new CompositeFilter("Rest of WLS");
     wlsThreadsFilter.addFilter(allWLSThreadStackFilter, true);
     wlsThreadsFilter.addFilter(allWLSThreadNameFilter, true);
+    
     // Exclude wls jms from pure wls related group
-    wlsThreadsFilter.addFilter(wlsJMSFilter, false);
+    wlsThreadsFilter.addFilter(wlsJMSFilter1, false);
+    wlsThreadsFilter.addFilter(wlsJMSFilter2, false);
+    
     nestedWLSCategory.addToFilters(wlsThreadsFilter);
 
     for (Filter filter : allWLSFilterList) {

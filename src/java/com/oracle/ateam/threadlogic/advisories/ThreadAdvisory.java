@@ -547,6 +547,12 @@ public class ThreadAdvisory implements Comparable, Serializable {
             .equals(ThreadState.TIMED_WAIT))) {
 
       advisoryList.add(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.WAITING_INSIDE_WEBLAYER));
+    } 
+    
+    if ((threadStack.contains(ThreadLogicConstants.EJB_PATTERN))
+        && state.equals(ThreadState.BLOCKED)) {
+
+      advisoryList.add(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.EJB_BLOCKED));
     }
     
     if (threadName.contains("weblogic.cluster.MessageReceiver")

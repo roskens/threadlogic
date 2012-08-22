@@ -41,6 +41,8 @@ public class ThreadLogicConstants {
   public static final String SOCKET_READ = "SocketInputStream.socketRead";
   public static final String SERVLET_PATTERN1 = "HttpServlet.service";
   public static final String SERVLET_PATTERN2 = "ServletRequestImpl.run";
+  public static final String EJB_PATTERN = "weblogic.ejb.container.internal";
+  
   public static final String DB_STMT_EXECUTE = "Statement.executeQuery";
   public static final String DB_PSTMT_EXECUTE = "PreparedStatement.execute";
 
@@ -49,6 +51,7 @@ public class ThreadLogicConstants {
   public static final String CONTENTION_FOR_UNOWNED_LOCK = "ContentionForUnownedLock";
   public static final String WAITING_WHILE_BLOCKING = "WaitWhileBlockingPattern";
   public static final String WAITING_INSIDE_WEBLAYER = "WebLayerBlocked";
+  public static final String EJB_BLOCKED = "EJB Blocked";
   public static final String MUXER_WAITING = "MuxerWaiting";
   public static final String WLS_JMS_QUEUE_BOTTLENECK = "WLSJMSQueueBottleneck";
   public static final String WLSMUXER_PROCESS_SOCKETS = "SocketMuxer.processSockets";

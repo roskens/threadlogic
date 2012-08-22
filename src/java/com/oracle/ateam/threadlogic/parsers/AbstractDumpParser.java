@@ -812,8 +812,31 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     if (threads.getNodeCount() == 0)
       return;
 
-    DefaultMutableTreeNode advisoryNode = new DefaultMutableTreeNode(new TableCategory("Advisory Map",
-        IconFactory.CUSTOM_CATEGORY, false));
+    Category advisoryMapCategory = new TableCategory("Advisory Map",
+        IconFactory.CUSTOM_CATEGORY, false);
+    
+    StringBuffer advisoryMapBuf = new StringBuffer();
+    advisoryMapBuf.append("<font face=System "
+        + "><table border=0><tr bgcolor=\"#dddddd\" ><td><font face=System "
+        + "><b>Advisory Map</b></td></tr><tr></tr><tr><td><font face=System>");
+    
+    advisoryMapBuf.append("All known advisories loaded inside ThreadLogic are listed in the map.<br>");
+    advisoryMapBuf.append("These are based on Advisory.xml packaged within ThreadLogic and also from any user specified advisories.<br>");
+    advisoryMapBuf.append("Known advisories will be matched against threads and reported.<br><br>");
+    
+    advisoryMapBuf.append("CAUTION!! The map shows only list of possible advisories to match against and does not imply all of them were found in the thread dump.<br>");
+    advisoryMapBuf.append("Check the logged messages at ThreadLogic startup on how-to add custom advisories or thread groups<br><br>");
+    
+    advisoryMapBuf.append("Select Thread Groups Summary node to view the overall thread group categories and details along with matched top-level advisories.<br>");
+    advisoryMapBuf.append("Expand the Thread Groups Summary node to view the categorization of threads into WebLogic and Non-WebLogic groups.<br>");
+    advisoryMapBuf.append("There will be nested thread groups within each of the WLS & Non-WLS groups.<br><br>");
+    
+    advisoryMapBuf.append("Advisories would be reported at both individual thread level and Thread Group level.<br>");
+    advisoryMapBuf.append("Select individual thread entries within the Thread Groups for detailed analysis of each thread.");
+    advisoryMapBuf.append("</td></tr></table>");
+    
+    advisoryMapCategory.setInfo(advisoryMapBuf.toString());
+    DefaultMutableTreeNode advisoryNode = new DefaultMutableTreeNode(advisoryMapCategory);
 
     Collection<ThreadAdvisory> advisoryList = ThreadAdvisory.getAdvisoryList();
     for (ThreadAdvisory advisory : advisoryList) {
