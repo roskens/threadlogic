@@ -534,7 +534,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Normal Servlet call</Advice>
 	</Advisory>
   <Advisory>
-		<Name>LOG4J using Immediate Flush</Name>
+		<Name>Log4j using Immediate Flush</Name>
 		<Health>WARNING</Health>
 		<Keyword>log4j.Category.forcedLog</Keyword>
 		<Descrp>Log4j using immediate flush will reduce performance</Descrp>
@@ -861,6 +861,20 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>oracle.communications.ordermanagement.cluster.message.ClusterMessageHandlerBean</Keyword>
 		<Descrp>OSM ClusterMessageHandler MDB Execution</Descrp>
 		<Advice>Normal</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>OSM cluster-wide order release</Name>
+		<Health>WATCH</Health>
+		<Keyword>AgentRequestBalancerImpl.releaseOrderOwnership</Keyword>
+		<Descrp>OSM waiting for cluster-wide lock to be released for a given Order from a remote server</Descrp>
+		<Advice>Should get lock released fast by remote server - problem if it takes long (> few seconds) to get released </Advice>
+	</Advisory>
+  <Advisory>
+		<Name>OSM cluster-wide order lock</Name>
+		<Health>WATCH</Health>
+		<Keyword>ordermanagement.util.t.tryLock</Keyword>
+		<Descrp>OSM trying to acquire cluster-wide lock for a given Order</Descrp>
+		<Advice>Should acquire lock fast once holder (remote server) of lock releases - problem if blocked for long (> few seconds)</Advice>
 	</Advisory>
   <Advisory>
 		<Name>Sun HSS Spawing Shell</Name>

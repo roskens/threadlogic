@@ -539,8 +539,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
     
 
     // If the thread is in WAIT or BLOCKED state but the call came in as a
-    // servlet
-    // Then tag that at WARNING level...
+    // servlet, then tag that at WARNING level...
 
     if ((threadStack.contains(ThreadLogicConstants.SERVLET_PATTERN1) || threadStack.contains(ThreadLogicConstants.SERVLET_PATTERN2))
         && (state.equals(ThreadState.BLOCKED) || state.equals(ThreadState.WAITING) || state
@@ -549,6 +548,9 @@ public class ThreadAdvisory implements Comparable, Serializable {
       advisoryList.add(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.WAITING_INSIDE_WEBLAYER));
     } 
     
+    // If the thread is in BLOCKED state but the call came in as a
+    // EJB, then tag that as EJB Blocked...
+
     if ((threadStack.contains(ThreadLogicConstants.EJB_PATTERN))
         && state.equals(ThreadState.BLOCKED)) {
 
@@ -562,10 +564,10 @@ public class ThreadAdvisory implements Comparable, Serializable {
 
     threadInfo.addAdvisories(advisoryList);
     
-    if ((threadInfo.getAdvisories().size() == 0)
+    if ((threadInfo.getAdvisories().size() <= 1)
                   && (threadInfo.getHealth().ordinal() < HealthLevel.WATCH.ordinal()) ) {
       int stackDepth = threadStack.split("\n").length;
-      if (stackDepth > ThreadLogicConstants.ACTIVETHREAD_STACKDEPTH)       
+      if (stackDepth >= ThreadLogicConstants.ACTIVETHREAD_STACKDEPTH)       
         threadInfo.setHealth(HealthLevel.UNKNOWN);
     }
   }
