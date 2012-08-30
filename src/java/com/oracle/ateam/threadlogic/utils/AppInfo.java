@@ -40,7 +40,7 @@ package com.oracle.ateam.threadlogic.utils;
 public class AppInfo {
   private static final String APP_SHORT_NAME = "ThreadLogic";
   private static final String APP_FULL_NAME = "ThreadLogic - We'll do the analysis for you!";
-  private static final String VERSION = "1.0";
+  private static final String VERSION = "1.1";
 
   private static final String COPYRIGHT = "2012-2020";
 
