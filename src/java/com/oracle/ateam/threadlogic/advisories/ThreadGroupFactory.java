@@ -33,11 +33,17 @@ public class ThreadGroupFactory {
     if (grpName.contains("Muxer"))
       return new WLSMuxerThreadGroup(grpName);
     
+    if (grpName.contains("Rest of WLS"))
+      return new RestOfWLSThreadGroup(grpName);
+    
     if (grpName.contains("JVM"))
       return new JVMThreadGroup(grpName);
     
     if (grpName.contains("Cluster"))
       return new WLSClusterThreadGroup(grpName);
+    
+    if (grpName.contains("Oracle Service Bus"))
+      return new OSBThreadGroup(grpName);
     
     return new ThreadGroup(grpName);
   }

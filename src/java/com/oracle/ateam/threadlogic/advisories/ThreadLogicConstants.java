@@ -45,7 +45,7 @@ public class ThreadLogicConstants {
   
   public static final String DB_STMT_EXECUTE = "Statement.executeQuery";
   public static final String DB_PSTMT_EXECUTE = "PreparedStatement.execute";
-
+  
   public static final String HOT_CALL_PATTERN = "HotCallPattern";
   public static final String BLOCKED_THREADS = "BlockedThreads";
   public static final String CONTENTION_FOR_UNOWNED_LOCK = "ContentionForUnownedLock";
@@ -57,6 +57,13 @@ public class ThreadLogicConstants {
   public static final String WLSMUXER_PROCESS_SOCKETS = "SocketMuxer.processSockets";
   public static final String WLS_SUBSYSTEM_REQUEST_OVERFLOW = "WLSSubsystemRequestOverflow";
   public static final String WLS_CLUSTER_MESSAGERECEIVER_RUNNING = "MessageReceiverRunning";
+  
+  public static final String IDLE_THREADS = "ExecuteThread.waitForRequest";
+  public static final String WLS_SERVICES_STARTUP = "ServerServicesManager.startService";
+  public static final String WLS_DEFAULT_THREAD_POOL = "weblogic.kernel.default";
+  public static final String WLS_DEFAULT_THREAD_POOL_STARVATION = "ThreadStarvation";
+  
+  public static final String OSB_WAIT_FOR_SERVICE_CALLOUT = "PipelineContextImpl.SynchronousListener.waitForResponse";
   
   public static final String AQ_ADAPTER_POLLER = "oracle.tip.adapter.db.inbound.InboundWorkWrapper";
   public static final String IWAY_SAP_POLLER = "com.ibi.sap30.inbound.SapInboundAdapter$MasterThread";

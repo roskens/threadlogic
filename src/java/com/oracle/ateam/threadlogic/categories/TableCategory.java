@@ -164,7 +164,7 @@ public class TableCategory extends AbstractCategory {
     } else if (tm instanceof ThreadGroupsTableModel) {
       // This is for the ThreadGroups table ...
 
-      filteredTable.getColumnModel().getColumn(0).setPreferredWidth(300);
+      filteredTable.getColumnModel().getColumn(0).setPreferredWidth(200);
       filteredTable.getColumnModel().getColumn(1).setPreferredWidth(70);
 
       for (int i = 2; i < columnCount - 1; i++) {

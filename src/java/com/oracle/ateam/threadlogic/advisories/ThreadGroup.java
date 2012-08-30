@@ -15,12 +15,12 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
-import java.util.Collection;
 
 import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.ThreadLogicElement;
 import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.ThreadState;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class ThreadGroup extends ThreadLogicElement {
 
@@ -108,6 +108,8 @@ public class ThreadGroup extends ThreadLogicElement {
     String threadGroupNameLower = this.threadGroupName.toLowerCase();
 
     int size = this.getGroupSize();
+    Hashtable<ThreadAdvisory, AtomicInteger> watchAdvisoryHitList = new Hashtable<ThreadAdvisory, AtomicInteger>();
+    
     
     for (ThreadInfo tholder : this.threads) {
 
@@ -164,8 +166,18 @@ public class ThreadGroup extends ThreadLogicElement {
         HealthLevel state = savedAdvisory.getHealth();
 
         // Add the advisory if its above or equal to WARNING
-        if (state.ordinal() >= HealthLevel.WARNING.ordinal())
+        if (state.ordinal() >= HealthLevel.WARNING.ordinal()) {
           this.addAdvisory(savedAdvisory);
+        } else if (state == HealthLevel.WATCH) {
+          // If the advisory is at WATCH level, add to the hit list
+          // If large # of threads display same advisory, set to WARNING at the Thread Group level.
+          AtomicInteger counter = watchAdvisoryHitList.get(savedAdvisory);
+          if (counter == null) {
+            counter = new AtomicInteger(0);
+            watchAdvisoryHitList.put(savedAdvisory, counter);
+          }
+          counter.incrementAndGet();          
+        }
       }
 
       // If the thread's health is at a higher level, set the thread group
@@ -178,6 +190,13 @@ public class ThreadGroup extends ThreadLogicElement {
       }
     }
 
+    // If large # of threads display same advisory, set to WARNING at the Thread Group level.
+    for(ThreadAdvisory watchLevelAdvisory: watchAdvisoryHitList.keySet()) {
+      if (watchAdvisoryHitList.get(watchLevelAdvisory).get() > ThreadLogicConstants.HOT_CALL_MIN_OCCURENCE)
+        watchLevelAdvisory.setHealth(HealthLevel.WARNING);
+        this.addAdvisory(watchLevelAdvisory);      
+    }
+    
     // System.out.println("*************** No of Hot Patterns:" +
     // threadStackCache.keySet().size());
     for (String key : threadStackCache.keySet()) {
@@ -321,8 +340,8 @@ public class ThreadGroup extends ThreadLogicElement {
               + getHotCallPatternPercentage()
               + "% of Threads in this thread group exhibit a pattern of executing same code paths tagged as Hot Patterns.</p><br>");
       statData
-          .append("<font style=color:Red>This implies multiple threads are executing the same code path and can be affected by locks, synchronization, resource constraints.<br>");
-      statData.append("or resources limits as part of the same code path execution.</font><br></td></tr>");
+          .append("<font style=color:Red>This implies multiple threads are executing the same code path and can be affected by locks,<br>");
+      statData.append(" synchronization, resource constraints or limits as part of the same code path execution.</font><br></td></tr>");
 
       statData.append("<tr bgcolor=\"#ffffff\"><td></td></tr>");
     }

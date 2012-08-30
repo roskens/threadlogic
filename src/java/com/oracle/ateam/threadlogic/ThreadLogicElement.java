@@ -103,8 +103,9 @@ public class ThreadLogicElement extends AbstractInfo implements Comparable {
   }
   
   public synchronized void addAdvisory(ThreadAdvisory advisory) {
-    if ((advisories != null) && !advisories.contains(advisory))
+    if ((advisories != null) && !advisories.contains(advisory)) {
       this.advisories.add(advisory);
+    }
   }
 
   public synchronized void addAdvisories(ArrayList<ThreadAdvisory> advisories) {

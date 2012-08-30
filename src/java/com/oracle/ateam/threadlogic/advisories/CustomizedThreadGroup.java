@@ -21,32 +21,35 @@ import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.LockInfo;
 import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.ThreadState;
+import java.util.regex.Pattern;
 
 /**
  *
  * @author saparam
  */
-public class WLSClusterThreadGroup extends CustomizedThreadGroup {    
-  
-  public WLSClusterThreadGroup(String grpName) {
+public class CustomizedThreadGroup extends ThreadGroup {      
+   
+  public CustomizedThreadGroup(String grpName) {
     super(grpName);
   }
   
+  public void runAdvisory() {    
+    super.runAdvisory();    
+    runGroupAdvisory();
+  }
+  
   public void runGroupAdvisory() {
-    if (getThreads().size() > 5) {
-      ThreadAdvisory advisory = ThreadAdvisory.lookupThreadAdvisory("WLS Clustering unhealthy");
-      addAdvisory(advisory);
-      if (this.getHealth().ordinal() < advisory.getHealth().ordinal());
-        this.setHealth(advisory.getHealth());
-        
-      for(ThreadInfo ti: threads) {
-        ti.addAdvisory(advisory);
-        if (ti.getHealth().ordinal() < advisory.getHealth().ordinal()) {
-          ti.setHealth(advisory.getHealth());
-        }
-      }      
-    }
-  }  
+  } 
+  
+  public String getCustomizedOverview() {
+    return null;
+  }
   
   
+  /**
+   * creates the overview information for this thread group.
+   */
+  protected void createOverview() {  
+    setOverview(getBaseOverview() + getCustomizedOverview() + getEndOfBaseOverview() + getCritOverview());
+  }
 }

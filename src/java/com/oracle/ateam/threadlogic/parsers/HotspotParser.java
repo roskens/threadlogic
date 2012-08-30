@@ -116,21 +116,25 @@ public class HotspotParser extends AbstractDumpParser {
    *          containing monitor
    */
   protected String linkifyMonitor(String line) {
-    if (line != null && line.indexOf('<') >= 0) {
-      String begin = line.substring(0, line.indexOf('<'));
-      String monitor = line.substring(line.indexOf('<'), line.indexOf('>') + 1);
-      String end = line.substring(line.indexOf('>') + 1);
-      monitor = monitor.replaceAll("<", "<a href=\"monitor://" + monitor + "\">&lt;");
-      monitor = monitor.substring(0, monitor.length() - 1) + "&gt;</a>";
-      return (begin + monitor + end);
-    } else if (line != null && line.indexOf('@') >= 0) {
-      String begin = line.substring(0, line.indexOf('@') + 1);
-      String monitor = line.substring(line.indexOf('@'));
-      monitor = monitor.replaceAll("@", "@<a href=\"monitor://<" + monitor.substring(1) + ">\">");
-      monitor = monitor.substring(0, monitor.length() - 1) + "</a>";
-      return (begin + monitor);
-    } else {
-      return (line);
+    try {
+      if (line != null && line.indexOf('<') >= 0) {
+        String begin = line.substring(0, line.indexOf('<'));
+        String monitor = line.substring(line.indexOf('<'), line.indexOf('>') + 1);
+        String end = line.substring(line.indexOf('>') + 1);
+        monitor = monitor.replaceAll("<", "<a href=\"monitor://" + monitor + "\">&lt;");
+        monitor = monitor.substring(0, monitor.length() - 1) + "&gt;</a>";
+        return (begin + monitor + end);
+      } else if (line != null && line.indexOf('@') >= 0) {
+        String begin = line.substring(0, line.indexOf('@') + 1);
+        String monitor = line.substring(line.indexOf('@'));
+        monitor = monitor.replaceAll("@", "@<a href=\"monitor://<" + monitor.substring(1) + ">\">");
+        monitor = monitor.substring(0, monitor.length() - 1) + "</a>";
+        return (begin + monitor);
+      } else {
+        return (line);
+      }
+    } catch(Exception e) { 
+      return null;
     }
   }
 
@@ -451,8 +455,8 @@ public class HotspotParser extends AbstractDumpParser {
       
     } catch(Exception e) { 
       
-      System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name);           
-      e.printStackTrace();
+      System.out.println("WARNING!! Unable to parse partial Thread Tokens with name:" + name);           
+      //e.printStackTrace();
       
       return doHardParsing(name);
     }

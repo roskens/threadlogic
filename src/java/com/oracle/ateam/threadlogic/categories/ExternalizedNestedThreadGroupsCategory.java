@@ -583,8 +583,6 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   private void createThreadGroupNestedCategories(ThreadGroup tg, Filter associatedFilter, NestedCategory parentCategory) {
 
     tg.runAdvisory();
-    associatedFilter.setInfo(tg.getOverview());
-
 
     NestedCategory nestedCategory = parentCategory.getSubCategory(associatedFilter.getName());
     HealthLevelAdvisoryFilter warningFilter = new HealthLevelAdvisoryFilter("Threads at Warning Or Above",
@@ -623,5 +621,6 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
       }
     }
 
+    associatedFilter.setInfo(tg.getOverview());
   }
 }

@@ -26,28 +26,25 @@ import com.oracle.ateam.threadlogic.ThreadState;
  *
  * @author saparam
  */
-public class WLSMuxerThreadGroup extends ThreadGroup {    
+public class WLSMuxerThreadGroup extends CustomizedThreadGroup {    
   
   public WLSMuxerThreadGroup(String grpName) {
     super(grpName);
   }
   
-  public void runAdvisory() {    
-    super.runAdvisory();    
-    runWLSMuxerAdvisory();
-  }
-  
-  public void runWLSMuxerAdvisory() {
-    if (getThreads().size() > 6) {
-      ThreadAdvisory advisory = ThreadAdvisory.lookupThreadAdvisory("WebLogicMuxerThreads");
-      addAdvisory(advisory);
-      if (this.getHealth().ordinal() < advisory.getHealth().ordinal());
-        this.setHealth(advisory.getHealth());
+  public void runGroupAdvisory() {
+    if (getThreads().size() > 5) {
+      ThreadAdvisory muxerThreadsAdvisory = ThreadAdvisory.lookupThreadAdvisory("WebLogicMuxerThreads");
+      HealthLevel muxerThreadsHealth = muxerThreadsAdvisory.getHealth();
+      
+      addAdvisory(muxerThreadsAdvisory);
+      if (this.getHealth().ordinal() < muxerThreadsHealth.ordinal());
+        this.setHealth(muxerThreadsHealth);
         
       for(ThreadInfo ti: threads) {
-        ti.addAdvisory(advisory);
-        if (ti.getHealth().ordinal() < advisory.getHealth().ordinal()) {
-          ti.setHealth(advisory.getHealth());
+        ti.addAdvisory(muxerThreadsAdvisory);
+        if (ti.getHealth().ordinal() < muxerThreadsHealth.ordinal()) {
+          ti.setHealth(muxerThreadsHealth);
         }
       }      
     }
@@ -117,14 +114,6 @@ public class WLSMuxerThreadGroup extends ThreadGroup {
       advisoryList.remove(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.WLSMUXER_PROCESS_SOCKETS));
     }
   }
-
   
   
-  /**
-   * creates the overview information for this thread group.
-   */
-  protected void createOverview() {
-  
-  setOverview(getBaseOverview() + getCritOverview());
-}
 }

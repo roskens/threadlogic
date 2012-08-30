@@ -38,6 +38,7 @@ import com.oracle.ateam.threadlogic.ThreadDumpInfo;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
 import java.awt.Color;
 import com.oracle.ateam.threadlogic.ThreadInfo;
+import com.oracle.ateam.threadlogic.ThreadState;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import javax.swing.table.DefaultTableCellRenderer;

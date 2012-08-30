@@ -24,7 +24,7 @@ import com.oracle.ateam.threadlogic.ThreadInfo;
  *
  * @author saparam
  */
-public class JVMThreadGroup extends ThreadGroup {    
+public class JVMThreadGroup extends CustomizedThreadGroup {    
   
   protected int gcThreads;
   protected boolean isFinalizerBlocked = false;
@@ -33,12 +33,7 @@ public class JVMThreadGroup extends ThreadGroup {
     super(grpName);
   }
   
-  public void runAdvisory() {    
-    super.runAdvisory();    
-    runJVMAdvisory();
-  }
-  
-  public void runJVMAdvisory() {
+  public void runGroupAdvisory() {
     ArrayList<ThreadAdvisory> advisories = new ArrayList<ThreadAdvisory>();
     ArrayList<ThreadInfo> threads = this.getThreads();
     
@@ -80,7 +75,7 @@ public class JVMThreadGroup extends ThreadGroup {
     this.addAdvisories(advisories);
   }  
   
-  public String getJVMOverview() {
+  public String getCustomizedOverview() {
     StringBuffer statData = new StringBuffer();
     statData.append("<tr bgcolor=\"#dddddd\"><td><font face=System "
         + ">Number of Parallel GC Threads </td><td><b><font face=System>");
@@ -105,11 +100,5 @@ public class JVMThreadGroup extends ThreadGroup {
     return statData.toString();
   }  
   
-  /**
-   * creates the overview information for this thread group.
-   */
-  protected void createOverview() {
   
-  setOverview(getBaseOverview() + getJVMOverview() + getEndOfBaseOverview() + getCritOverview());
-}
 }

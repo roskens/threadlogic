@@ -255,6 +255,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Normal OSB Proxy Service inbound call</Advice>
 	</Advisory>
   <Advisory>
+		<Name>OSB Tuxedo Interaction</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.bea.wli.sb.transports.tuxedo.TuxedoOutboundMessageContext</Keyword>
+		<Descrp>OSB outbound to Tuxedo Service</Descrp>
+		<Advice>Normal OSB outbound call to Tux</Advice>
+	</Advisory>
+  <Advisory>
 		<Name>OSB Publish Action</Name>
 		<Health>NORMAL</Health>
 		<Keyword>stages.publish.runtime.PublishRuntimeStep</Keyword>
@@ -267,17 +274,16 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>com.bea.wli.sb.pipeline.RouterCallback.onReceiveResponse</Keyword>
 		<Descrp>OSB handling response</Descrp>
 		<Advice>Normal OSB response handling</Advice>
-	</Advisory>
-  
+	</Advisory>  
   <Advisory>
 		<Name>OSB Proxy waiting for response</Name>
 		<Health>WATCH</Health>
 		<Keyword>PipelineContextImpl.SynchronousListener.waitForResponse</Keyword>
 		<Descrp>OSB Proxy waiting for response to WebSerice Callout or Publish </Descrp>
-		<Advice>Ensure backend can respond in timely fashion; Service Callouts and sync publish requires 2 threads for every outbound call:; Invoking thread blocking for response notification; and another thread handling the actual response and then notifying the first waiting thread; Under heavy load, there might not be any ready thread to handle the response and notify the caller thread; If there are multiple threads demonstrating similar behavior of waiting for response,; configure the Business Service to use the custom WM with Min Thread Constraints; (using Dispatch Policy) to avoid thread starvation issues</Advice>
+		<Advice>Ensure backend can respond in timely fashion; Service Callouts and Sync Publish requires 2 threads for every outbound call:; Invoking thread blocking for response notification; and another thread handling the actual response and then notifying the first waiting thread; Under heavy load, there might not be any ready thread to handle the response and notify the caller thread; If there are multiple threads demonstrating similar behavior of waiting for response,; configure the Business Service with Dispatch Policy to use a custom WM with Min Thread Constraints (in SBConsole -- Business Service -- HTTP Transport Configuration page) to avoid thread starvation issues. The Min Thread constraint can be low (under 5) and shared across multiple Business Services (invoked via Service callout) also as it will be used for real short interval to notify the waiting service callout thread. </Advice>
 	</Advisory>
   <Advisory>
-		<Name>OSB Service Response cache lookup</Name>
+		<Name>OSB Service Response Cache lookup</Name>
 		<Health>WATCH</Health>
 		<Keyword>com.bea.wli.sb.service.resultcache.ResultCache.get</Keyword>
 		<Descrp>OSB attempting to lookup cached service response from Coherence layer</Descrp>
@@ -298,17 +304,15 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>OSB Proxy service invoking Java Callout</Descrp>
 		<Advice>Normal java callout activity</Advice>
 	</Advisory>  
-  
-  
-  <!--
 	<Advisory>
 		<Name>WLS JMS Paging</Name>
 		<Health>FATAL</Health>
-		<Keyword>MessageHandle.setPagingInProgress</Keyword>
+		<Keyword>MessageHandle.setPagingInProgress, mesaging.kernel.internal.PagingImpl</Keyword>
 		<Descrp>WebLogic JMS paging messages to disk</Descrp>
-		<Advice>WLS has started paging messages to disk as consumers cannot keep up with producers and messages have started accumulating; Increase, speed or tune consumers or Introduce flow controls/quotas to slow down producers and Inflow rates. Or Increase number of servers to spread the load.</Advice>
+		<Advice>
+       WLS has started paging messages to disk as consumers cannot keep up with producers and messages have started accumulating increasing memory pressure; Paging will slow down performance. Increase, speed up or tune consumers or use flow controls/quotas to slow down producers and in-flow rates. Or increase number of servers to share the load.
+    </Advice>
 	</Advisory>
--->  
 	<Advisory>
 		<Name>Handle new WLS Request</Name>
 		<Health>NORMAL</Health>
@@ -348,11 +352,18 @@ xmlns="http://java.net/projects/threadlogic">
 		<Name>WLS Clustering unhealthy</Name>
 		<Health>WARNING</Health>
 		<Keyword>WLS Clustering unhealthy</Keyword>
-		<Descrp>WLS Clustering subystem is not healthy</Descrp>
+		<Descrp>WLS Clustering subystem might be unhealthy</Descrp>
 		<Advice>If using Unicast, apply latest Unicast related patches and enable Message Ordering or switch to Multicast</Advice>
   </Advisory>
+  <Advisory>
+		<Name>WLS Cluster HTTP Statedump</Name>
+		<Health>WATCH</Health>
+		<Keyword>weblogic.cluster.HTTPExecuteRequest</Keyword>
+		<Descrp>WLS Cluster might be unhealthy</Descrp>
+		<Advice>If using Unicast, apply latest Unicast related patches and enable Message Ordering or switch to Multicast; If using Multicast, servers might not be communicating well due to excessive GCs or other issues, check all cluster members health</Advice>
+  </Advisory>
 	<Advisory>
-		<Name>Database Query Execution</Name>
+		<Name>DB Execute</Name>
 		<Health>WATCH</Health>    
     <Keyword>Statement.execute</Keyword>
 		<Descrp>Executing operation or query on DB</Descrp>
@@ -405,7 +416,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>MuxerWaiting</Keyword>
 		<Descrp>WLS Muxer waiting for or parked for event/condition</Descrp>
-		<Advice>WLS Muxer is unhealthy and should not wait for a event/condition; One muxer thread should be running (typically in poll) while holding a lock and the other threads waiting to get the lock; If the thread is waiting on a WebLogic Socket Muxer related internal resource (example weblogic.socket.PosixSocketInfo$FdStruct) then ignore the warning else its likely a bug.</Advice>
+		<Advice>WLS Muxer is unhealthy and should not wait for a event/condition; One muxer thread should be running (typically in poll) while holding a lock and the other threads waiting to get the lock; If the thread is waiting on a WebLogic Socket Muxer related internal resource (example: weblogic.socket.PosixSocketInfo$FdStruct) then ignore the warning else its likely a bug.</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Transaction rollback</Name>
@@ -464,7 +475,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Check for slowness/network outage/firewall socket drops if these sockets are to DB; or External/Remote Services (not usual housekeeping services)</Advice>
 	</Advisory>
 	<Advisory>
-		<Name>Get Attributes of file from File System</Name>
+		<Name>Get File Attributes</Name>
 		<Health>WATCH</Health>
 		<Keyword>UnixFileSystem.getBooleanAttributes</Keyword>
 		<Descrp>Thread getting file attributes from file system</Descrp>
@@ -478,11 +489,53 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Ignore</Advice>
 	</Advisory>
 	<Advisory>
-		<Name>Transaction commit</Name>
+		<Name>Remote Tx Coordinator</Name>
 		<Health>WATCH</Health>
-		<Keyword>TransactionManagerImpl.commit, weblogic.transaction.internal.Coordinator.*commit, ServerTransactionImpl.commit</Keyword>
-		<Descrp>Server committing Transaction</Descrp>
-		<Advice>Should commit in short time</Advice>
+		<Keyword>weblogic.transaction.internal.CoordinatorImpl.*Stub.commit</Keyword>
+		<Descrp>Remote coordinator to commit transaction</Descrp>
+		<Advice>Even if the coordinator is remote, it should execute fast (for cross-domains - use global trust or credential mappers); If multiple threads show up in Transaction commit waiting state or remote response, apply Bug fix 9974377 and 10236820 (WLS 10.3) that uses separate WM for JTA commits on all servers</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Tx commit</Name>
+		<Health>WATCH</Health>
+		<Keyword>ServerTransactionImpl.commit</Keyword>
+		<Descrp>Transaction commiting</Descrp>
+		<Advice>Transactiong getting commited; If multiple threads show up in Transaction commit waiting state or remote response, apply Bug fix 9974377 and 10236820 (WLS 10.3) that uses separate WM for JTA commits</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Tx 2PC Prepare</Name>
+		<Health>WATCH</Health>
+		<Keyword>weblogic.transaction.internal.ServerTransactionImpl.globalPrepare</Keyword>
+		<Descrp>Prepare phase of 2PC commit</Descrp>
+		<Advice>Can execute slow or fast based on participants in Transaction</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Tx commit to Disk</Name>
+		<Health>WATCH</Health>
+		<Keyword>GXATransactionImpl.commitStoreIO.*localCommit</Keyword>
+		<Descrp>Server committing Transaction to transaction logs</Descrp>
+		<Advice>Should commit in short time; If multiple threads show up in Transaction commit waiting state or remote response, apply Bug fix 9974377 and 10236820 (WLS 10.3) that uses separate WM for JTA commits as well as check on why the store writes are taking longer</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Tx prepare commit to disk</Name>
+		<Health>WATCH</Health>
+		<Keyword>GXATransactionImpl.commitStoreIO.*prepare</Keyword>
+		<Descrp>Server writing prepare phase of 2PC commit to transaction logs</Descrp>
+		<Advice>Should write the prepare phase in short time; If multiple threads show up in Transaction commit waiting state or remote response, apply Bug fix 9974377 and 10236820 (WLS 10.3) that uses separate WM for JTA commits</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Tx logging</Name>
+		<Health>WATCH</Health>
+		<Keyword>ServerTransactionImpl.log</Keyword>
+		<Descrp>Server waiting for logging of prepare or commit of transaction</Descrp>
+		<Advice>Should finish in short time</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Thread starvation</Name>
+		<Health>WARNING</Health>
+		<Keyword>ThreadStarvation</Keyword>
+		<Descrp>WLS Default Thread pool is possibly running out of free threads to serve requests</Descrp>
+		<Advice>There are too few idle threads in WLS Default Thread pool to handle new requests or callbacks (like OSB Service callout response or JTA commit callbacks or JMS acks) if system is heavily loaded; If multiple threads show up in Service callout remote response, configure custom work manager with min thread constraints for the Busines service response handling. For JTA commits blocked for remote callbacks, apply Bug fix 9974377 and 10236820 (WLS 10.3) that uses separate WM for JTA commits (needs to be applied on all servers involved in the distributed transaction)</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Reserve Connection from Pool</Name>
@@ -534,11 +587,11 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Normal Servlet call</Advice>
 	</Advisory>
   <Advisory>
-		<Name>Log4j using Immediate Flush</Name>
+		<Name>Log4J immediateFlush</Name>
 		<Health>WARNING</Health>
 		<Keyword>log4j.Category.forcedLog</Keyword>
-		<Descrp>Log4j using immediate flush will reduce performance</Descrp>
-		<Advice>Immediate flush with log4j will result in logging holding up other threads, turn off immediateFlush and use BufferedIO or AsyncAppender</Advice>
+		<Descrp>Log4J using immediateFlush will reduce performance</Descrp>
+		<Advice>immediateFlush with log4j will result in slowdown and increased contention among threads; this option is ON by default and might not be explicitly specified; Set it to false or use BufferedIO or AsyncAppender in the appenders config</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Console checking Application Deployment status</Name>
@@ -622,7 +675,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>ParallelGCThreads</Keyword>
 		<Descrp>Large number of Parallel GC Threads used by JVM</Descrp>
-		<Advice>Reduce number of Parallel GC Threads (to under 24), based on number of CPU/Cores and JVMs running on the host machine; Use -XXgcthreads:N for JRockit and -XX:ParallelGCThreads=N for HotSpot to limit number of parallel GC threads. Recommended # of GC Threads = (# of CPUs x # of Hardware Threads per core)/(# of JVMs on same machine)</Advice>
+		<Advice>Reduce number of Parallel GC Threads, based on number of CPU/Cores and JVMs running on the host machine; Use -XXgcthreads:N for JRockit and -XX:ParallelGCThreads=N for HotSpot to limit number of parallel GC threads. Recommended # of GC Threads = (# of CPUs x # of Hardware Threads per core)/(# of JVMs on same machine). Example: Exalogic node 12 core, hyperthreaded means 24 hardware threads, and 2 JVMs imply 12 ParallelGC threads for each JVM</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Waiting for Event while blocking others</Name>
@@ -632,7 +685,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Ensure the owner thread is not waiting forever for an Event; if the desired Event never occurs, the lock will never get released and the blockers will be stuck in the same state forever.</Advice>
 	</Advisory>
 	<Advisory>
-		<Name>Coherence Dameon Thread in wait</Name>
+		<Name>Coherence Dameon wait</Name>
 		<Health>IGNORE</Health>
 		<Keyword>coherence.component.util.Daemon.onWait</Keyword>
 		<Descrp>Coherence Daemon Thread Waiting</Descrp>
@@ -643,7 +696,42 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>com.tangosol.coherence.component.util.SafeService.memberJoined</Keyword>
 		<Descrp>A new member joined Coherence Cluster service</Descrp>
-		<Advice>Avoid using cluster or cache services when members are joining as it can lead to deadlocks</Advice>
+		<Advice>Avoid using cluster or cache services when a member is joining as it can lead to deadlocks</Advice>
+	</Advisory>
+	<Advisory>
+		<Name>Member left Coherence Cluster</Name>
+		<Health>WATCH</Health>
+		<Keyword>com.tangosol.coherence.component.util.SafeService.memberLeft</Keyword>
+		<Descrp>A new member joined Coherence Cluster service</Descrp>
+		<Advice>Avoid using cluster or cache services when a member just left</Advice>
+	</Advisory>
+	<Advisory>
+		<Name>Member leaving Coherence Cluster</Name>
+		<Health>WATCH</Health>
+		<Keyword>com.tangosol.coherence.component.util.SafeService.memberLeaving</Keyword>
+		<Descrp>A new member joined Coherence Cluster service</Descrp>
+		<Advice>Careful using cluster or cache services when member is leaving, dont use locks</Advice>
+	</Advisory>  
+	<Advisory>
+		<Name>Coherence waiting for EventQueue to drain</Name>
+		<Health>WARNING</Health>
+		<Keyword>EventDispatcher.drainQueue</Keyword>
+		<Descrp>Waiting for events to drain from queue</Descrp>
+		<Advice>Can indicate deadlock or slow processing if its stays in this state</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Coherence Deprecated API</Name>
+		<Health>WARNING</Health>
+		<Keyword>com.tangosol.net.CacheFactory.getReplicatedCache</Keyword>
+		<Descrp>getReplicatedCache is deprecated - use getCache</Descrp>
+		<Advice>Change code to use CacheFactory.getCache(name) or getService which is more efficient</Advice>
+	</Advisory>
+	<Advisory>
+		<Name>Coherence slowdown</Name>
+		<Health>WARNING</Health>
+		<Keyword>com.tangosol.net.CacheFactory.ensureCluster</Keyword>
+		<Descrp>Presence of CacheFactory.ensureCluster might indicate coherence slowness</Descrp>
+		<Advice>ensureCluster call normally wont be seen in thread dumps as its a fast call. Presence of it might indicate slowdown. Verify there are no cluster wide deadlocks or members joining/leaving cluster</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>B2B Thread Executor</Name>
@@ -667,6 +755,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Normal thread handling wls file based persistence</Advice>
 	</Advisory>  
 	<Advisory>
+		<Name>WLS StoreIO Writes</Name>
+		<Health>NORMAL</Health>
+		<Keyword>weblogic.store.io.file.FileStoreIO.flush</Keyword>
+		<Descrp>Thread handling WLS Persistent FileStoreIO</Descrp>
+		<Advice>thread writing to wls file based persistence</Advice>
+	</Advisory>
+  <Advisory>
 		<Name>WLS Java Socket Muxer</Name>
 		<Health>WARNING</Health>
 		<Keyword>JavaSocketMuxer.processSockets</Keyword>
@@ -685,14 +780,17 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>ReentrantLock.lock</Keyword>
 		<Descrp>Thread attempting to acquire java concurrent Reentrant Lock</Descrp>
-		<Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Reentrant Lock</Advice>
+    <Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Reentrant Lock</Advice>
 	</Advisory>
   <Advisory>
 		<Name>Trying to acquire Write Lock</Name>
 		<Health>WATCH</Health>
 		<Keyword>WriteLock.lock</Keyword>
 		<Descrp>Thread attempting to acquire java concurrent Write Lock</Descrp>
-		<Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Write Lock</Advice>
+		<Advice>
+      Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; 
+    Use -XX:+PrintConcurrentLocks to print the details of locks   
+    </Advice>
 	</Advisory>
   <Advisory>
 		<Name>Trying to acquire Read Lock</Name>
@@ -706,7 +804,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>HotCallPattern</Keyword>
 		<Descrp>Multiple Threads executing same code path</Descrp>
-		<Advice>Ensure there are no blocking locks or bottlenecks, sufficient resources are available; Remote service being invoked is responsive and scaling well to handle increased load; Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution</Advice>
+		<Advice>Indicates heavily executed code paths. Need not be an indicator of problem but ensure there are no blocking locks or bottlenecks, sufficient resources are available for execution under load; Remote service being invoked is responsive and scaling well to handle increased load; Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS Messaging Bridge</Name>
@@ -736,12 +834,26 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>WLS JMS Message Filtering via Selectors</Descrp>
 		<Advice>Selectors can slow down performance if the filter uses message body or complex expressions for selecting messages; leading to slow down in message consumption and bottleneck among consumers as the Queue has to be locked while running the selectors; try to split the queue into multiple separate queues if possible to improve throughput and reduce contention among consumers.</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>WLS JMS Delayed delivery</Name>
+		<Health>NORMAL</Health>
+		<Keyword>QueueImpl.DeliveryListener.timerExpired</Keyword>
+		<Descrp>WLS JMS Message with delayed msg delivery </Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>
 	<Advisory>
 		<Name>OSB WebService Callout</Name>
 		<Health>NORMAL</Health>
 		<Keyword>WsCalloutRuntimeStep.processMessage</Keyword>
 		<Descrp>OSB WebService Callout Execution</Descrp>
 		<Advice>OSB WebService outbound call</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>OSB Business Service Response</Name>
+		<Health>WATCH</Health>
+		<Keyword>HttpOutboundMessageContextWls.RetrieveHttpResponseWork</Keyword>
+		<Descrp>OSB WebService resonse read</Descrp>
+		<Advice>OSB should read the response very fast from a remote business webservice endpoint and the thread itself will rarely appear in thread dumps; if the thread continues to appear in same state, then either the backend service or network is slow</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>HTTP Response Read</Name>
@@ -772,9 +884,9 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>WLS Server health is unhealthy as some subsystems are overwhelmed with requests which is leading to the Muxer threads directly handling requests; instead of dispatching to relevant subsystems; There is likely a bug here.</Advice>
 	</Advisory>
   <Advisory>
-		<Name>WLS Services start up</Name>
+		<Name>WLS Services startup</Name>
 		<Health>NORMAL</Health>
-		<Keyword>weblogic.t3.srvr.ServerServicesManager.startService</Keyword>
+		<Keyword>ServerServicesManager.startService</Keyword>
 		<Descrp>WLS Server starting up its services</Descrp>
 		<Advice>WLS Server is initializing and starting up its services</Advice>
 	</Advisory>
@@ -826,7 +938,14 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>DefaultMBeanServerInterceptor.queryMBeans, DefaultMBeanServerInterceptor.getMBean</Keyword>
 		<Descrp>Query of MBeans from the MBeanServer instance</Descrp>
 		<Advice>Ensure its not an overhead/drain on performance if multiple threads attempting to query/get/update the MBean Server</Advice>
-	</Advisory>weblogic.servlet.internal.session.ReplicatedSessionContext
+	</Advisory>
+  <Advisory>
+		<Name>JMX Invocation</Name>
+		<Health>WATCH</Health>
+		<Keyword>javax.management.remote.rmi</Keyword>
+		<Descrp>JMX invocations</Descrp>
+		<Advice>Ensure its not an overhead/drain on performance if multiple threads attempting to query/invoke/get/update MBeans</Advice>
+	</Advisory>
   <Advisory>
 		<Name>WLS Replicated Session</Name>
 		<Health>NORMAL</Health>
@@ -856,7 +975,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Normal</Advice>
 	</Advisory>
   <Advisory>
-		<Name>OSM ClusterMessageHandler MDB</Name>
+		<Name>OSM ClusterMsgHandler</Name>
 		<Health>NORMAL</Health>
 		<Keyword>oracle.communications.ordermanagement.cluster.message.ClusterMessageHandlerBean</Keyword>
 		<Descrp>OSM ClusterMessageHandler MDB Execution</Descrp>

@@ -22,7 +22,7 @@ import com.oracle.ateam.threadlogic.ThreadInfo;
  *
  * @author saparam
  */
-public class SOAThreadGroup extends ThreadGroup {  
+public class SOAThreadGroup extends CustomizedThreadGroup {  
   
   protected int bpelInvokeThreads, b2bExecutorThreads, bpelEngineThreads,
       soaJMSConsumerThreads;
@@ -31,9 +31,7 @@ public class SOAThreadGroup extends ThreadGroup {
     super(grpName);
   }
   
-  public void runAdvisory() {
-    
-    super.runAdvisory();
+  public void runGroupAdvisory() {
     
     for (ThreadInfo ti : this.threads) {
 
@@ -49,10 +47,9 @@ public class SOAThreadGroup extends ThreadGroup {
       else if (content.contains("adapter.jms.inbound.JmsConsumer.run"))
         ++this.soaJMSConsumerThreads;
     }
-
   }
   
-  public String getSOAOverview() {
+  public String getCustomizedOverview() {
     StringBuffer statData = new StringBuffer();
     statData.append("<tr bgcolor=\"#dddddd\"><td><font face=System "
         + ">Number of B2B Executor Threads </td><td><b><font face=System>");
@@ -72,13 +69,6 @@ public class SOAThreadGroup extends ThreadGroup {
 
     statData.append("</b></td></tr>\n\n");
     return statData.toString();
-  }
+  } 
   
-  /**
-   * creates the overview information for this thread group.
-   */
-  protected void createOverview() {
-  
-  setOverview(getBaseOverview() + getSOAOverview() + getEndOfBaseOverview() + getCritOverview());
-}
 }

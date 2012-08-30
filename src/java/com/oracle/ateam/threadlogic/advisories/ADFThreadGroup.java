@@ -26,21 +26,18 @@ import com.oracle.ateam.threadlogic.ThreadState;
  *
  * @author saparam
  */
-public class ADFThreadGroup extends ThreadGroup {    
+public class ADFThreadGroup extends CustomizedThreadGroup {    
   
   public ADFThreadGroup(String grpName) {
     super(grpName);
   }
   
-  public void runAdvisory() {    
-    super.runAdvisory(); 
-    runADFAdvisory();
-  }
-  
-  public void runADFAdvisory() {
+ 
+  public void runGroupAdvisory() {
     
     this.health = HealthLevel.NORMAL;
     for(ThreadInfo ti: threads) {
+      // Downgrade health levels for ADF threads if they are marked STUCK
       resetAdvisoriesBasedOnThread(ti, ti.getAdvisories());
       HealthLevel tiHealth = ti.getHealth();
     
@@ -48,12 +45,12 @@ public class ADFThreadGroup extends ThreadGroup {
       // health to that higher level
       // Not directly going with the Advisory default health level as we
       // downgrade level for muxer/adapters...
-      // So compare against the thread's health instead of advsiory.
+      // So compare against the thread's health instead of advisory.
       if (tiHealth.ordinal() > this.health.ordinal()) {
         this.health = tiHealth;
       }
     }
-  } 
+  }   
   
   public static void resetAdvisoriesBasedOnThread(ThreadInfo threadInfo, ArrayList<ThreadAdvisory> advisoryList) {
 
@@ -66,14 +63,5 @@ public class ADFThreadGroup extends ThreadGroup {
       return;
     }
   }
-
   
-  
-  /**
-   * creates the overview information for this thread group.
-   */
-  protected void createOverview() {
-
-    setOverview(getBaseOverview() + getCritOverview());
-  }
 }

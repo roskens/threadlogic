@@ -14,7 +14,6 @@ package com.oracle.ateam.threadlogic;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
 import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
 import com.oracle.ateam.threadlogic.categories.Category;
-import com.oracle.ateam.threadlogic.categories.ExternalizedNestedThreadGroupsCategory;
 import com.oracle.ateam.threadlogic.categories.TreeCategory;
 import com.oracle.ateam.threadlogic.dialogs.CustomCategoriesDialog;
 import com.oracle.ateam.threadlogic.dialogs.FilterDialog;
@@ -100,6 +99,7 @@ import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -275,6 +275,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
             navigateToChild("Threads sleeping");
           } else if (evt.getDescription().startsWith("dead")) {
             navigateToChild("Deadlocks");
+          } else if (evt.getDescription().startsWith("threadgroups")) {
+            navigateToChild("Thread Groups Summary");
           } else if (evt.getDescription().startsWith("openlogfile") && !evt.getDescription().endsWith("//")) {
             File[] files = { new File(evt.getDescription().substring(14)) };
             openFiles(files, false);
@@ -1089,9 +1091,14 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       setThreadDisplay(false);
     } else if (nodeInfo instanceof LogFileContent) {
       displayLogFileContent(nodeInfo);
-    } else if (nodeInfo instanceof Logfile && ((String) ((Logfile) nodeInfo).getContent()).startsWith("Thread Dumps")) {
-      displayLogFile();
-      setThreadDisplay(false);
+    } else if (nodeInfo instanceof Logfile) {
+      if (((String) ((Logfile) nodeInfo).getContent()).startsWith("Thread Dumps")) {          
+        displayLogFile();
+        setThreadDisplay(false);
+      } else {
+        displayLogFileOverview(nodeInfo);
+        setThreadDisplay(false);
+      }
     } else if (nodeInfo instanceof Category) {
       displayCategory(nodeInfo);
       setThreadDisplay(true);
@@ -1223,6 +1230,26 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     statusBar.setInfoText(AppInfo.getStatusBarInfo());
   }
 
+  private void displayLogFileOverview(Object nodeInfo) {
+    Logfile logFile = (Logfile) nodeInfo;
+    ArrayList<ThreadDumpInfo> tdumpsList = logFile.getThreadDumps();
+    
+    StringBuffer statData = new StringBuffer("<font face=System "
+        + "><table border=0 width='50%'><tr bgcolor=\"#dddddd\" ><td><font face=System "
+        + ">Log File</td><td></td><td colspan=3><b><font face=System>");
+    statData.append(logFile.getName());    
+    statData.append("</b></td></tr>\n");        
+    statData.append("<tr bgcolor=\"#eeeeee\"><td><font face=System "
+        + ">Number of dumps found</td><td></td><td colspan=3><b><font face=System>");
+    statData.append(tdumpsList.size());    
+    
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr></table>");
+    
+    statData.append(ThreadDumpInfo.getThreadDumpsOverview(tdumpsList));
+    displayContent(statData.toString());
+  }
+  
+  
   /**
    * initialize the base components needed for the jedit view of the log file
    */

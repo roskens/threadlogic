@@ -146,6 +146,62 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     return overview;
   }
   
+    public static String getThreadDumpsOverview(ArrayList<ThreadDumpInfo> tdumpsList) {
+    StringBuffer statData = new StringBuffer("<font face=System><br/><table border=1 cellpadding=0  >");   
+    statData.append("<tr bgcolor=\"#bbbbbb\" style='text-align:center'>")
+            .append("<td width=80 style='width:50pt'>Dump No</td>")
+            .append("<td width=200 style='width:150pt'>Timestamp</td>")
+            .append("<td width=80 style='width:60pt'>Thread Count</td>")
+            .append("<td width=80 style='width:80pt'>Health</td>")
+            .append("<td width=600 style='width:500pt'>Critical Advisories</td>")
+            .append("</tr>");      
+
+    String oddRow = "\"#eeeeee\"";
+    String evenRow = "\"#dddddd\"";
+    boolean rowIsOdd = true;
+    
+    for(ThreadDumpInfo td: tdumpsList) {
+      String color = td.getHealth().getBackgroundRGBCode();
+      String healthEntry = "<p style='background-color:" + color + "' >" + td.getHealth() + "</p>";
+
+      int i = 0;
+      ArrayList<ThreadAdvisory> critAdvisories = td.getCritAdvisories();
+      StringBuffer critAdvisoryBuf = new StringBuffer("<p>");
+      for(ThreadAdvisory critAdvisory: critAdvisories) {    
+        if ( i++ > 0)
+          critAdvisoryBuf.append(", ");
+        if (i % 5 == 0)
+          critAdvisoryBuf.append("<br>");
+        critAdvisoryBuf.append(critAdvisory.getPattern());
+      }
+      critAdvisoryBuf.append("</p>");
+      
+      String startTime = td.getStartTime();
+      if (startTime == null)
+        startTime = "";
+      
+      statData.append("<tr style='text-align:center' bgcolor=")
+              .append((rowIsOdd?oddRow:evenRow))
+              .append("><td width=80 style='width:50pt'>")
+              .append(td.getName().replace("Dump No. ", ""))
+              .append("</td><td width=200 style='width:150pt'>")
+              .append(startTime)
+              .append("</td><td width=80 style='width:60pt'>")
+              .append(td.getThreads().getNodeCount())
+              .append("</td><td width=80 style='width:80pt'>")
+              .append(healthEntry)
+              .append("</td><td width=600 style='width:500pt;text-align:left'>")                    
+              .append(critAdvisoryBuf)
+              .append("</td></tr>");
+      
+      rowIsOdd = !rowIsOdd;       
+    }
+    statData.append("</table><br/>");
+    
+    return statData.toString();
+  }
+
+  
   public boolean isIBMJVM() {
     return this.isIBMJVM;
   }
@@ -159,8 +215,13 @@ public class ThreadDumpInfo extends ThreadLogicElement {
    */
   private void createOverview() {
     StringBuffer statData = new StringBuffer("<font face=System "
-        + "><table border=0><tr bgcolor=\"#dddddd\"><td><font face=System "
-        + ">Overall Thread Count</td><td width=\"150\"></td><td colspan=3><b><font face=System>");
+        + "><table border=0><tr bgcolor=\"#dddddd\" ><td><font face=System "
+        + ">Thread Dump Name</td><td></td><td width=\"150\"><b><font face=System>");
+    statData.append(this.getName());    
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr>");    
+    
+    statData.append("<tr bgcolor=\"#dddddd\"><td><font face=System "
+        + ">Overall Thread Count</td><td></td><td colspan=3><b><font face=System>");
     statData.append(getThreads() == null ? 0 : getThreads().getNodeCount());
     
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System"
@@ -210,8 +271,31 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     statData.append(getMonitorsWithoutLocks() == null ? 0 : getMonitorsWithoutLocks().getNodeCount());
     statData.append("</b></td></tr>");
     
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
+        + ">Thread Dump Health </td><td></td><td><b><font face=System size>");
+    
+    String color = this.health.getBackgroundRGBCode();
+    statData.append("<p style=\"background-color:" + color + ";\">" + this.health + "</p>");
+
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
+        + ">Critical Advisories </td><td></td><td><b><font face=System size>");
+    
+    ArrayList<ThreadAdvisory> critAdvisories = this.getCritAdvisories();
+    int i = 0;
+    for(ThreadAdvisory critAdvisory: critAdvisories) {    
+      if ( i++ > 0)
+        statData.append(", ");
+      if (i % 5 == 0)
+        statData.append("<br>");
+      statData.append(critAdvisory.getPattern());
+    }
+    
+    if (i > 2) {
+      statData.append("</b></td></tr>\n\n<tr><td colspan=3>Please check <a href=\"threadgroups://\"><b>Thread Groups Summary</b></a> for more details");
+    }
+    
     if (this.isParsedWithFBParser()) {    
-      statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
+      statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
         + ">Was parsed via non VM specific Parser </td><td></td><td><b><font face=System+1>");    
       statData.append("<p><font style=color:Red><b> YES </b></font><p><br>");
     }   
@@ -235,12 +319,25 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       statData.append("<tr bgcolor=\"#ffffff\"><td></td></tr>");
     }    
 
-    // add hints concerning possible hot spots found in this thread dump.
-    statData.append(getDumpAnalyzer().analyzeDump());
-
+    
     if (getHeapInfo() != null) {
       statData.append(getHeapInfo());
     }
+    
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr></table>");
+
+    statData.append("<font face=System><table border=0>");   
+          
+    statData.append("<tr bgcolor=\"#cccccc\" ><td colspan=2><font face=System")
+            .append("><p>Please click on <a href=\"threadgroups://\"><b>Thread Groups Summary</b></a>")
+            .append(" for overall thread dump analysis and expand the node to see more detailed analysis<br>")
+            .append("for each thread group category and individual threads.</font><p><br></td></tr></table>");      
+
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr></table>");
+
+    statData.append("<font face=System><table border=0>"); 
+    // add hints concerning possible hot spots found in this thread dump.
+    statData.append(getDumpAnalyzer().analyzeDump());
 
     setOverview(statData.toString());
 
@@ -642,9 +739,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
 
     for (ThreadGroup group : this.threadGroupTable.values()) {
       // group.runAdvisory();
-      for (ThreadAdvisory advisory : group.getAdvisories()) {
-        // Bubble up the advisory to top level....
-        if (advisory.getHealth().ordinal() >= HealthLevel.WARNING.ordinal())
+      for (ThreadAdvisory advisory : group.getCritAdvisories()) {        
           this.addAdvisory(advisory);
       }
     }

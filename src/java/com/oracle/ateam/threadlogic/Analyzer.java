@@ -126,7 +126,7 @@ public class Analyzer implements Serializable {
       statData.append("<a href=\"http://www.tagtraum.com/gcviewer.html\">GCViewer-Homepage</a> for more<br>");
       statData.append(" information on how to do this.</td></tr>");
     }
-
+    
     return statData.toString();
   }
 }

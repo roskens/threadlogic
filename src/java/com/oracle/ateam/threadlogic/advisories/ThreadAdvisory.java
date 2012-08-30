@@ -296,7 +296,8 @@ public class ThreadAdvisory implements Comparable, Serializable {
     return sortByHealth(list);
   }
 
-  public static ThreadAdvisory lookupThreadAdvisory(String key) {
+  public static ThreadAdvisory lookupThreadAdvisory(String key) {    
+    
     ThreadAdvisory readOnlyAdvisory = threadAdvisoryMap.get(key);
     if (readOnlyAdvisory != null)
       return new ThreadAdvisory(readOnlyAdvisory);
@@ -564,7 +565,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
 
     threadInfo.addAdvisories(advisoryList);
     
-    if ((threadInfo.getAdvisories().size() <= 1)
+    if (threadInfo.getAdvisories().isEmpty()
                   && (threadInfo.getHealth().ordinal() < HealthLevel.WATCH.ordinal()) ) {
       int stackDepth = threadStack.split("\n").length;
       if (stackDepth >= ThreadLogicConstants.ACTIVETHREAD_STACKDEPTH)       

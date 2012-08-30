@@ -423,7 +423,7 @@ xmlns="http://java.net/projects/threadlogic">
 	</SimpleGroup>
   <SimpleGroup>
 		<Name>Sun HSS Domain Temp</Name>
-		<Visible>fakse</Visible>
+		<Visible>false</Visible>
 		<Inclusion>true</Inclusion>
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
@@ -431,6 +431,7 @@ xmlns="http://java.net/projects/threadlogic">
       <Pattern>com.sun.hss.services</Pattern>
 		</PatternList>    
 	</SimpleGroup>
+  com/iona/corba/art/workqueue
   <ComplexGroup>
     <Name>Sun HSS Domain</Name>
     <Visible>true</Visible>
@@ -443,5 +444,14 @@ xmlns="http://java.net/projects/threadlogic">
       <SimpleGroupId>Grizzly Threads</SimpleGroupId>
       <SimpleGroupId>Sun Cacao</SimpleGroupId>
     </Exclusions>        
-  </ComplexGroup>
+  </ComplexGroup>  
+  <SimpleGroup>
+		<Name>Iona CORBA</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>com.iona.corba</Pattern>
+		</PatternList>    
+	</SimpleGroup>
 </tlogic:GroupsDefn>
