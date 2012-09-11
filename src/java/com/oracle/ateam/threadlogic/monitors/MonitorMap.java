@@ -116,6 +116,8 @@ public class MonitorMap implements Serializable {
     }
     if ((line.indexOf('<') > 0)) {
       String monitor = line.substring(line.indexOf('<'));
+      monitor = monitor.replaceFirst(" owned by.*", "");
+      
       if (line.trim().startsWith("- waiting to lock") || line.trim().startsWith("- parking to wait")) {
         addWaitToMonitor(monitor, threadTitle, currentThread);
       } else if (line.trim().startsWith("- waiting on")) {

@@ -170,8 +170,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       for(ThreadAdvisory critAdvisory: critAdvisories) {    
         if ( i++ > 0)
           critAdvisoryBuf.append(", ");
-        if (i % 5 == 0)
-          critAdvisoryBuf.append("<br>");
+        
         critAdvisoryBuf.append(critAdvisory.getPattern());
       }
       critAdvisoryBuf.append("</p>");
@@ -278,15 +277,13 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     statData.append("<p style=\"background-color:" + color + ";\">" + this.health + "</p>");
 
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
-        + ">Critical Advisories </td><td></td><td><b><font face=System size>");
+        + ">Critical Advisories </td><td></td><td width=600 style='width:500pt;text-align:left'><b><font face=System size>");
     
     ArrayList<ThreadAdvisory> critAdvisories = this.getCritAdvisories();
     int i = 0;
     for(ThreadAdvisory critAdvisory: critAdvisories) {    
       if ( i++ > 0)
         statData.append(", ");
-      if (i % 5 == 0)
-        statData.append("<br>");
       statData.append(critAdvisory.getPattern());
     }
     

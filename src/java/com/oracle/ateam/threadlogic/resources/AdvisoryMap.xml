@@ -306,11 +306,29 @@ xmlns="http://java.net/projects/threadlogic">
 	</Advisory>  
 	<Advisory>
 		<Name>WLS JMS Paging</Name>
-		<Health>FATAL</Health>
-		<Keyword>MessageHandle.setPagingInProgress, mesaging.kernel.internal.PagingImpl</Keyword>
+		<Health>WARNING</Health>
+		<Keyword>mesaging.kernel.internal.PagingImpl</Keyword>
 		<Descrp>WebLogic JMS paging messages to disk</Descrp>
 		<Advice>
-       WLS has started paging messages to disk as consumers cannot keep up with producers and messages have started accumulating increasing memory pressure; Paging will slow down performance. Increase, speed up or tune consumers or use flow controls/quotas to slow down producers and in-flow rates. Or increase number of servers to share the load.
+       WLS might have started paging message to disk either because consumers cannot keep up with producers and messages have started accumulating increasing memory pressure or for temporary storage due to delayed delivery; Paging will slow down performance; Increase, speed up or tune consumers or use flow controls/quotas to slow down producers and in-flow rates; Or increase number of servers to share the load. 
+    </Advice>
+	</Advisory>
+  <Advisory>
+		<Name>WLS JMS Client JMX registration</Name>
+		<Health>WARNING</Health>
+		<Keyword>RuntimeMBeanDelegate.unregister.*FESession.close, RuntimeMBeanDelegate.register.*FESession.producerCreate</Keyword>
+		<Descrp>WebLogic JMS clients are getting (un)registered with JMX Server</Descrp>
+		<Advice>
+       If JMS producers/consumers are continuously created and destroyed, these will lead to excess calls to register/unregister the clients in the JMX system with synchronization and lead to slow down, unnecessary bottlenecks and inefficient use of server resources; Use Weblogic JMS Wrapper mechanism to use pooling and avoid repeat creation of jms clients.
+    </Advice>
+	</Advisory>
+  <Advisory>
+		<Name>WLS JMS Session cleanup</Name>
+		<Health>WARNING</Health>
+		<Keyword>JMSSession.waitForState.*JMSSession.stop.*WLConnectionImpl.stop.*JMSConnectionPoller.stopJMSConnection, JMSSession.waitForState.*JMSSession.stop.*JMSSessionPoolTester.close</Keyword>
+		<Descrp>WebLogic JMS session needs to be stopped before cleanup</Descrp>
+		<Advice>
+       JMS Connection poller or SessionPoolTester has detected remote connections to a jms destination is down and is attempting to stop the session before cleaning it up but as the session is in use, it has to wait; This can potentially lead to deadlocks if the Session is continuously in use or is waiting for a lock that is held by JMSConnectionPoller/SessionPoolTester detection thread or some others. Contact support for relevant patches if multiple threads start to block waiting for locks held by this thread.
     </Advice>
 	</Advisory>
 	<Advisory>
