@@ -180,16 +180,30 @@ is divided into following sections:
 	<!-- 
 	<echo message="version.major is ${version.major}" />
 	<echo message="version.minor is ${version.minor}" />
-	-->
-
+	
 	 <propertyfile  file="${basedir}/build_info.properties">
 	    <entry key="build.revision.number" type="int" operation="+" value="1" pattern="0"/>
 	</propertyfile>
 	<property file="${basedir}/build_info.properties" />
+        -->
 
-	<!-- echo message="build.revision is ${build.revision.number}" /-->
+	<exec executable="svn" outputproperty="revision.number">
+	    <arg line="info src"/>
+	    <redirector>
+	        <outputfilterchain>
+	            <linecontainsregexp>
+	                <regexp pattern='^Revision' />
+	            </linecontainsregexp>
+	            <tokenfilter>
+	                <replaceregex pattern='[\D]+([\d]+)' replace="\1" />
+	            </tokenfilter>
+	        </outputfilterchain>
+	    </redirector>
+	    
+        </exec>
+        <echo message="SVN version ${revision.number}" />
 
-	<property name="build.number" value="${version.major}.${version.minor}.${build.revision.number}"/>
+	<property name="build.number" value="${version.major}.${version.minor}.${revision.number}"/>
 	<echo message="Project ${ant.project.name} released with build version ${build.number}" />
 	
     </target>
