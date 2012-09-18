@@ -238,8 +238,8 @@ public class ThreadInfo extends ThreadLogicElement {
   }
 
   public void setBlockedForLock(String lockId) {
-    // System.out.println("setBlockedForLock: " + lockId +", for thread:"+
-    // this.getName());
+     //System.out.println("setBlockedForLock: '" + lockId +"', for thread:"+
+     // this.getName());
     LockInfo lock = this.getParentThreadDump().findLock(lockId);
     if (lock == null) {
       lock = new LockInfo(lockId);
@@ -257,8 +257,8 @@ public class ThreadInfo extends ThreadLogicElement {
 
     for (String lockId : holdingLocks) {
       LockInfo lock = this.getParentThreadDump().findLock(lockId);
-      // System.out.println("addOwnedLocks: " + lockId +", for thread: "+
-      // this.getName());
+       //System.out.println("addOwnedLocks: '" + lockId +"', for thread: "+
+       // this.getName());
       if (lock == null) {
         lock = new LockInfo(lockId);
         this.getParentThreadDump().addLock(lock);

@@ -938,24 +938,20 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       return "";
 
     Collection<ThreadInfo> deadLockedThreads = this.getDeadlockedThreads();
-    StringBuffer sbuf = new StringBuffer("<table><tr bgcolor=\"#cccccc\" >");
-    sbuf.append("<td colspan=2><font face=System><p><font style=color:Red>");
+    StringBuffer sbuf = new StringBuffer("<table width=1200><tr bgcolor=\"#cccccc\" >");
+    sbuf.append("<td colspan=3><font face=System><p><font style=color:Red>");
     sbuf.append("<b>Deadlock Found !!!</b></font><p><br>");
     
     sbuf.append(LockInfo.printDeadlockChain(deadLockedThreads));
     sbuf.append("<br></td>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr></table>");
 
-    sbuf.append("<table><tr><td>Associated Thread Stacks<hr><br><br></td></tr>");
+    sbuf.append("<table><tr><td>Associated Java Thread Stacks<hr><br></td></tr>");
     for(ThreadInfo ti: deadLockedThreads) {
-      sbuf.append("<tr><td> <code>");
+      sbuf.append("<tr><td> <b>");
       sbuf.append(ti.getFilteredName());      
-      sbuf.append("<br>&nbsp;&nbsp; waiting for lock : ");
-      sbuf.append(ti.getBlockedForLock().getLockId());
-      sbuf.append("<br>&nbsp;&nbsp; held by Thread: ");
-      sbuf.append(ti.getBlockedForLock().getLockOwner().getFilteredName());
-      sbuf.append("</code><br><br>");
+      sbuf.append(":</b><br>");
       sbuf.append(ti.getContent());
-      sbuf.append("<br><br></td></tr>");
+      sbuf.append("<br></td></tr>");
     }
     sbuf.append("</table>");    
     return sbuf.toString();

@@ -1510,11 +1510,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             if ((tempLine = lineChecker.getEndOfDump(line)) != null) {
               finished = true;
               //getBis().mark(getMarkSize());
+              /*
               if ((checkForDeadlocks(threadDump)) == 0) {
                 // no deadlocks found, set back original
                 // position.
                 getBis().reset();
               }
+               * 
+               */
 
               if (!checkThreadDumpStatData(overallTDI)) {
                 // no statistical data found, set back original
@@ -2203,7 +2206,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             - waiting to lock <4de8b404> (a java.lang.String) owned by "ExecuteThread: '2' for queue: 'weblogic.socket.Muxer'" t@242
        * 
        */
-      entry = entry.replaceAll("owned by .*", "").trim();
+      entry = entry.replaceAll(" owned by .*", "").trim();
       
 
       // JRockit has an extra entry at end showing type of lock - locked or

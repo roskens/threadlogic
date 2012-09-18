@@ -221,11 +221,6 @@ public class LockInfo implements Serializable {
       threadChainStack.push(currentOwnerThread);
       String navigationTrail = "Checking for deadlock with Thread[" + currentOwnerThread.getName()
           + "], blocked for Lock [" + blockedForLock.getLockId() + "] while holding Lock [" + currentLockId + "] ";
-
-      
-
-      
-      
       // System.out.println(navigationTrail);
 
       // Check to see if the waiter on the lock can actual hold the lock
@@ -256,9 +251,9 @@ public class LockInfo implements Serializable {
 
       sbuf.append("   Thread: ");
       sbuf.append(th.getFilteredName());
-      sbuf.append("<br>      is blocked for Lock [");
+      sbuf.append(" is waiting to lock monitor ");
       sbuf.append(targetLock.getLockId());
-      sbuf.append("],<br>      held by Thread: ");
+      sbuf.append(",<br>&nbsp;&nbsp; which is held by Thread: ");
       sbuf.append(targetLockOwner.getFilteredName());
       sbuf.append("<br><br>");
     }

@@ -32,6 +32,9 @@
  */
 package com.oracle.ateam.threadlogic.utils;
 
+import java.io.InputStream;
+import java.util.Properties;
+
 /**
  * provides static application information like name and version
  * 
@@ -41,22 +44,42 @@ public class AppInfo {
   private static final String APP_SHORT_NAME = "ThreadLogic";
   private static final String APP_FULL_NAME = "ThreadLogic - We'll do the analysis for you!";
   private static final String VERSION = "1.1";
+  private static String FULL_VERSION;
+  private static String BUILD_DATE;
+  
 
   private static final String COPYRIGHT = "2012-2020";
 
+  static {
+    try {
+        InputStream is = AppInfo.class.getResourceAsStream("/META-INF/MANIFEST.MF");
+        Properties props = new Properties();
+        props.load(is);
+        FULL_VERSION = props.getProperty("Build-Version");
+        BUILD_DATE = props.getProperty("Built-Date");        
+      } catch(Exception e) {
+      }
+    
+      if (FULL_VERSION == null)        
+        FULL_VERSION = VERSION;
+      
+      if (BUILD_DATE == null)
+        BUILD_DATE = "";
+  }
+    
   /**
    * get info text for status bar if no real info is displayed.
    */
   public static String getStatusBarInfo() {
-    return (APP_SHORT_NAME + " - " + APP_FULL_NAME + " " + VERSION);
+    return (APP_FULL_NAME + " " + FULL_VERSION + " " + BUILD_DATE);
   }
 
   public static String getAppInfo() {
-    return (APP_SHORT_NAME + " - " + APP_FULL_NAME);
+    return (APP_FULL_NAME);
   }
 
   public static String getVersion() {
-    return (VERSION);
+    return FULL_VERSION;
   }
 
   public static String getCopyright() {

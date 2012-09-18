@@ -113,8 +113,8 @@ public class ThreadGroup extends ThreadLogicElement {
     
     for (ThreadInfo tholder : this.threads) {
 
-      if (tooManyThreads)
-        tholder.addAdvisory(tooManyThreadsAdvisory);
+      //if (tooManyThreads)
+      //  tholder.addAdvisory(tooManyThreadsAdvisory);
       
       // Downgrade the health level of advisories that are specified in the Exclusion list
       if (exclusionList != null && exclusionList.size() > 0) {
