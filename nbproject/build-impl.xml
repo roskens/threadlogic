@@ -120,10 +120,84 @@ is divided into following sections:
             </and>
         </condition>
     </target>
+    
+    <!--
+		=================
+		Set Version Related
+		=================
+     -->
+     <!-- watch out! if you put version.properties file to src dirs,
+     cause the file ist copied 
+     to build before it is touched by this tasks, 
+     you will probably need to do some further customization -->
+     
+     <property file="${basedir}/build_info.properties"/>
+     
+     <target name="current-number">
+      <echo>Current build number:${build.number}</echo>
+     </target>
+     
+     <target name="revision">
+         <propertyfile  file="${basedir}/build_info.properties">
+                 <entry key="build.revision.number" type="int" operation="+" value="1" pattern="00"/>
+         </propertyfile>
+     </target>
+
+
+<!--
+	<target name="minor">
+	    <propertyfile  file="${basedir}/build_info.properties">
+		    <entry key="build.minor.number" type="int" operation="+" value="1" pattern="00"/>
+		    <entry key="build.revision.number" type="int" value="0" pattern="00"/>
+	    </propertyfile>
+	</target>
+
+	<target name="major">
+	    <propertyfile  file="${basedir}/build_info.properties">
+		    <entry key="build.major.number" type="int" operation="+" value="1" pattern="00"/>
+		    <entry key="build.minor.number" type="int" value="0" pattern="00"/>
+		    <entry key="build.revision.number" type="int" value="0" pattern="00"/>
+	    </propertyfile>
+	</target>
+-->
+
+    <property name="custom.version.file" value="${basedir}/version.properties"/>
     <target name="-post-init">
-        <!-- Empty placeholder for easier customization. -->
-        <!-- You can override this target in the ../build.xml file. -->
+	<!-- check if there is a version -->
+	<available file="${custom.version.file}" property="custom.version.available"/>
     </target>
+    
+    <target name="pre-inc-version" depends="init"  unless="custom.version.available">
+	<echo message="No version file found. Creating ${custom.version.file} with Initial Version 0."/>
+	<echo file="${custom.version.file}" message="version=0"/>
+    </target>
+
+     <!-- read version -->
+     <target name="inc-version" depends="pre-inc-version">
+     
+	<property file="${basedir}/version.properties" />
+
+	<!-- 
+	<echo message="version.major is ${version.major}" />
+	<echo message="version.minor is ${version.minor}" />
+	-->
+
+	 <propertyfile  file="${basedir}/build_info.properties">
+	    <entry key="build.revision.number" type="int" operation="+" value="1" pattern="0"/>
+	</propertyfile>
+	<property file="${basedir}/build_info.properties" />
+
+	<!-- echo message="build.revision is ${build.revision.number}" /-->
+
+	<property name="build.number" value="${version.major}.${version.minor}.${build.revision.number}"/>
+	<echo message="Project ${ant.project.name} released with build version ${build.number}" />
+	
+    </target>
+    <target name="clean-version" depends="-do-clean" description="Remove version property file">
+	<delete file="${custom.version.file}"/>
+    </target>
+
+    	
     <target depends="-pre-init,-init-private,-init-user,-init-project,-do-init" name="-init-check">
         <fail unless="src.none.dir">Must set src.none.dir</fail>
         <fail unless="src.java.dir">Must set src.java.dir</fail>
@@ -358,7 +432,7 @@ is divided into following sections:
         <dirname file="${dist.jar}" property="dist.jar.dir"/>
         <mkdir dir="${dist.jar.dir}"/>
     </target>
-    <target name="-pre-jar">
+    <target name="-pre-jar" depends="inc-version">
         <!-- Empty placeholder for easier customization. -->
         <!-- You can override this target in the ../build.xml file. -->
     </target>
@@ -366,12 +440,14 @@ is divided into following sections:
         <j2seproject1:jar/>
     </target>
     <target depends="init,compile,-pre-pre-jar,-pre-jar" if="manifest.available" name="-do-jar-with-manifest" unless="manifest.available+main.class">
-        <j2seproject1:jar manifest="${manifest.file}"/>
+        <j2seproject1:jar manifest="${manifest.file}"/>        
     </target>
     <target depends="init,compile,-pre-pre-jar,-pre-jar" if="manifest.available+main.class" name="-do-jar-with-mainclass" unless="manifest.available+main.class+mkdist.available">
         <j2seproject1:jar manifest="${manifest.file}">
             <j2seproject1:manifest>
                 <j2seproject1:attribute name="Main-Class" value="${main.class}"/>
+		<j2seproject1:attribute name="Class-Path" value="${jar.classpath}"/>
+		<j2seproject1:attribute name="Build-Version" value="${build.number}" />
             </j2seproject1:manifest>
         </j2seproject1:jar>
         <echo>To run this application from the command line without Ant, try:</echo>
@@ -397,11 +473,19 @@ is divided into following sections:
             </chainedmapper>
         </pathconvert>
         <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${libs.CopyLibs.classpath}" name="copylibs"/>
+        <tstamp>
+	  <format property="TODAY"
+	          pattern="MM/dd/yyyy"
+	          locale="en,US"/>
+	</tstamp>
+
         <copylibs compress="${jar.compress}" jarfile="${dist.jar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
             <fileset dir="${build.classes.dir}"/>
             <manifest>
                 <attribute name="Main-Class" value="${main.class}"/>
-                <attribute name="Class-Path" value="${jar.classpath}"/>
+                <attribute name="Class-Path" value="${jar.classpath}"/>                
+		<attribute name="Build-Version" value="${build.number}" />
+		<attribute name="Built-Date" value="${TODAY}"/>
             </manifest>
         </copylibs>
         <echo>To run this application from the command line without Ant, try:</echo>
