@@ -119,7 +119,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>FATAL</Health>
 		<Keyword>Finalizer.doFinalize</Keyword>
 		<Descrp>Finalizer Thread Blocked</Descrp>
-		<Advice>Check if the Finalizer Thread is blocked for a lock which can lead to wasted memory waiting to be reclaimed from Finalizer Queue</Advice>
+		<Advice>Check if the Finalizer Thread is blocked for a lock which can lead to wasted memory waiting to be reclaimed from Finalizer Queue. If using SOA and finalizer blocked for lock on HTTPClient.StreamDemultiplexor, apply bug fix: 11888645</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS Server Shutdown</Name>
