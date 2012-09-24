@@ -38,6 +38,7 @@ import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
 import com.oracle.ateam.threadlogic.categories.Category;
 import com.oracle.ateam.threadlogic.parsers.AbstractDumpParser;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -78,7 +79,8 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   protected String mainThread = "";
   private Logfile logFile;
 
-  protected int noOfLocks, noOfGroups, noOfThreads, noOfBlockedThreads, noOfRunningThreads;
+  protected int noOfLocks, noOfGroups, noOfThreads, noOfBlockedThreads;
+  private int noOfRunningThreads;
 
   public static final String DEADLOCK_KEYWORD = "DEADLOCK";
 
@@ -146,13 +148,27 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     return overview;
   }
   
-    public static String getThreadDumpsOverview(ArrayList<ThreadDumpInfo> tdumpsList) {
+  public String getBlockedThreadsStatus() {
+      int threadsWaitingForLock = (getWaitingThreads() != null)? getWaitingThreads().getNodeCount(): 0;
+      
+      String threadsWaitingLockColor = "";
+      if (threadsWaitingForLock > 50)
+        threadsWaitingLockColor = "rgb(255, 60, 60)";
+      else if (threadsWaitingForLock > 20)
+        threadsWaitingLockColor = "rgb(248, 116, 49)";
+      
+      return "<p style='background-color:" + threadsWaitingLockColor + "' >" + threadsWaitingForLock + "</p>";   
+  }
+  
+  public static String getThreadDumpsOverview(ArrayList<ThreadDumpInfo> tdumpsList) {
     StringBuffer statData = new StringBuffer("<font face=System><br/><table border=1 cellpadding=0  >");   
     statData.append("<tr bgcolor=\"#bbbbbb\" style='text-align:center'>")
             .append("<td width=80 style='width:50pt'>Dump No</td>")
             .append("<td width=200 style='width:150pt'>Timestamp</td>")
             .append("<td width=80 style='width:60pt'>Thread Count</td>")
             .append("<td width=80 style='width:80pt'>Health</td>")
+            .append("<td width=80 style='width:80pt'>Threads Blocked</td>")
+            .append("<td width=80 style='width:80pt'>Threads Running</td>")
             .append("<td width=600 style='width:500pt'>Critical Advisories</td>")
             .append("</tr>");      
 
@@ -177,7 +193,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       
       String startTime = td.getStartTime();
       if (startTime == null)
-        startTime = "";
+        startTime = "";      
       
       statData.append("<tr style='text-align:center' bgcolor=")
               .append((rowIsOdd?oddRow:evenRow))
@@ -189,6 +205,10 @@ public class ThreadDumpInfo extends ThreadLogicElement {
               .append(td.getThreads().getNodeCount())
               .append("</td><td width=80 style='width:80pt'>")
               .append(healthEntry)
+              .append("</td><td width=60 style='width:60pt'>")
+              .append(td.getBlockedThreadsStatus())
+              .append("</td><td width=60 style='width:60pt'>")
+              .append(td.getNoOfRunningThreads())
               .append("</td><td width=600 style='width:500pt;text-align:left'>")                    
               .append(critAdvisoryBuf)
               .append("</td></tr>");
@@ -243,17 +263,21 @@ public class ThreadDumpInfo extends ThreadLogicElement {
         + ">Overall Monitor Count</td><td></td><td colspan=3><b><font face=System>");
     statData.append(getMonitors() == null ? 0 : getMonitors().getNodeCount());
     
-    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
-        + ">Number of threads waiting for a monitor</td><td></td><td><b><font face=System>");
-    statData.append(getWaitingThreads() == null ? 0 : getWaitingThreads().getNodeCount());
-    
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
+        + ">Number of threads waiting for a monitor</td><td></td><td><b><font face=System>");
+    statData.append(getBlockedThreadsStatus());
+    
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
         + ">Number of threads locking a monitor</td><td></td><td><b><font face=System size>");
     statData.append(getLockingThreads() == null ? 0 : getLockingThreads().getNodeCount());
     
-    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
         + ">Number of threads sleeping on a monitor</td><td></td><td><b><font face=System>");
     statData.append(getSleepingThreads() == null ? 0 : getSleepingThreads().getNodeCount());
+    
+    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
+        + ">Number of threads running</td><td></td><td><b><font face=System>");
+    statData.append(getNoOfRunningThreads());
     /*
      * statData.append(
      * "</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System " +
@@ -292,7 +316,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     }
     
     if (this.isParsedWithFBParser()) {    
-      statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
+      statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
         + ">Was parsed via non VM specific Parser </td><td></td><td><b><font face=System+1>");    
       statData.append("<p><font style=color:Red><b> YES </b></font><p><br>");
     }   
@@ -747,7 +771,8 @@ public class ThreadDumpInfo extends ThreadLogicElement {
         ++noOfBlockedThreads;
         break;
       case RUNNING:
-        ++noOfRunningThreads;
+        if (!ti.getTGroup().contains("JVM"))
+          setNoOfRunningThreads(getNoOfRunningThreads() + 1);
         break;
       }
     }
@@ -816,12 +841,12 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     statData.append(this.noOfLocks);
 
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
-        + ">Number of threads blocked for locks</td><td><b><font face=System size>");
+        + ">Number of blocked threads</td><td><b><font face=System size>");
     statData.append(this.noOfBlockedThreads);
 
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
-        + ">Number of busy (not waiting or blocked) threads </td><td><b><font face=System>");
-    statData.append(this.noOfRunningThreads);
+        + ">Number of running threads</td><td><b><font face=System>");
+    statData.append(this.getNoOfRunningThreads());
     
     if (this.isParsedWithFBParser()) {    
       statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
@@ -860,7 +885,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       statData.append("<tr bgcolor=\"#ffffff\"><td></td></tr>");
     }
 
-    int percentageRunning = (int) (noOfRunningThreads * 100.0 / this.threadTable.size());
+    int percentageRunning = (int) (getNoOfRunningThreads() * 100.0 / this.threadTable.size());
     if (percentageRunning != 0) {
 
       statData.append("<tr bgcolor=\"#cccccc\" ><td colspan=2><font face=System" + "><p>" + percentageRunning
@@ -1011,5 +1036,19 @@ public class ThreadDumpInfo extends ThreadLogicElement {
    */
   public void setLogFile(Logfile logFile) {
     this.logFile = logFile;
+  }
+
+  /**
+   * @return the noOfRunningThreads
+   */
+  public int getNoOfRunningThreads() {
+    return noOfRunningThreads;
+  }
+
+  /**
+   * @param noOfRunningThreads the noOfRunningThreads to set
+   */
+  public void setNoOfRunningThreads(int noOfRunningThreads) {
+    this.noOfRunningThreads = noOfRunningThreads;
   }
 }

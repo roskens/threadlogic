@@ -119,7 +119,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>FATAL</Health>
 		<Keyword>Finalizer.doFinalize</Keyword>
 		<Descrp>Finalizer Thread Blocked</Descrp>
-		<Advice>Check if the Finalizer Thread is blocked for a lock which can lead to wasted memory waiting to be reclaimed from Finalizer Queue. If using SOA and finalizer blocked for lock on HTTPClient.StreamDemultiplexor, apply bug fix: 11888645</Advice>
+		<Advice>Check if the Finalizer Thread is blocked for a lock which can lead to wasted memory waiting to be reclaimed from Finalizer Queue; If using SOA and finalizer blocked for lock on HTTPClient.StreamDemultiplexor, apply bug fix: 11888645</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS Server Shutdown</Name>
@@ -681,6 +681,20 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>EJB is waiting for a lock</Descrp>
 		<Advice>Check reasons for the EJB getting blocked</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>WLS SFSB retrieve  from Cache</Name>
+		<Health>WATCH</Health>
+		<Keyword>weblogic.ejb.container.cache.NRUCache.get.*StatefulSessionManager.getBean</Keyword>
+		<Descrp>Attepmpting to get SFSB EJB from Cache</Descrp>
+		<Advice>Try to use SLSB if possible; If multiple threads are blocked trying to retrieve from cache, check for holder of the lock</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>WLS SFSB Passivation</Name>
+		<Health>WATCH</Health>
+		<Keyword>weblogic.ejb.container.manager.StatefulSessionManager.swapOut</Keyword>
+		<Descrp>Removing SFSB EJB from Cache and passivating to disk</Descrp>
+		<Advice>Try to use SLSB if possible; If possible, increase SFSB cache size to avoid premature passivation (at cost of higher memory)</Advice>
+	</Advisory>
 	<Advisory>
 		<Name>OSB Session Activation</Name>
 		<Health>WATCH</Health>
@@ -979,11 +993,25 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>BPEL Engine is requesting for new JDBC connections; Ensure the thread does not blocked, or get into wait or sleep modes due to unavailable connections</Advice>
 	</Advisory>
   <Advisory>
+		<Name>Oracle BAM Sensor</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.collaxa.cube.engine.sensor.sa.publisher.bamMonitor</Keyword>
+		<Descrp>Using Oracle BAM sensor to publish data</Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>
+  <Advisory>
 		<Name>OSB Business Service Error</Name>
 		<Health>WARNING</Health>
 		<Keyword>com.bea.wli.sb.transports.LoadBalanceFailoverListener.onError</Keyword>
 		<Descrp>OSB Business service either unreachable or errored out</Descrp>
 		<Advice>Verify the Business Service endpoint used by OSB is healthy and reachable; OSB will retry this endpoint again after a pre-configured sleep interval</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>OSB Route Blocking Http outbound</Name>
+		<Health>WARNING</Health>
+		<Keyword>com.bea.wli.sb.transports.http.HttpOutboundMessageContext.getResponse</Keyword>
+		<Descrp>OSB Route action is invoking HTTP Business service in blocking mode</Descrp>
+		<Advice>OSB Route action will use blocking mode for HTTP service invocations when used in Exactly-Once QoS mode, tying up the request thread till response returns, if request path has a transaction (like JMS Proxy) when calling Route; If its Best-Effort, then it will use async threading model to decouple request from response handler thread to avoid blocking; Decide on the transaction requiments and use either Exactly-Once (rollback complete request Tx on failure with HTTP business service) or Best-Effort (outcome of business service invocation wont affect request transaction) for the Route action</Advice>
 	</Advisory>
   <Advisory>
 		<Name>Oracle cloud control activity</Name>
@@ -1068,6 +1096,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>java.io.ObjectInputStream.readObject, java.io.ObjectOutputStream.writeObject</Keyword>
     <Descrp>Java serialization of objects</Descrp>
 		<Advice>Normal java serialization</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Thread Sleep</Name>
+		<Health>WARNING</Health>
+		<Keyword>Thread.sleep.*weblogic.kernel.ExecuteThread</Keyword>
+    <Descrp>Java Thread sleeping</Descrp>
+		<Advice>Use wait-notify, instead of repeated sleep-awake-check if possible</Advice>
 	</Advisory>
   <Advisory>
 		<Name>Dump Threads</Name>
