@@ -304,6 +304,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>OSB Proxy service invoking Java Callout</Descrp>
 		<Advice>Normal java callout activity</Advice>
 	</Advisory>  
+  <Advisory>
+		<Name>XPath Contention</Name>
+		<Health>WARNING</Health>
+		<Keyword>a java.lang.Class for org.apache.xmlbeans.impl.store.Path</Keyword>
+		<Descrp>Apache XMLBeans hitting static synchronized method during xpath execution</Descrp>
+		<Advice>Apply Bug #9727796 to avoid synchronization issues</Advice>
+	</Advisory> 
 	<Advisory>
 		<Name>WLS JMS Paging</Name>
 		<Health>WARNING</Health>
