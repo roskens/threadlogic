@@ -127,7 +127,7 @@ public class FallbackParser extends AbstractDumpParser {
 
   public void setUnknownVMMarkers() {
     this.lineChecker.setFullDumpPattern(".*(Thread dump for the running).*");
-    this.lineChecker.setAtPattern("\\s*[^\"][a-z]*\\..*\\(.*\\)");     
+    this.lineChecker.setAtPattern("\\s*[^\"][a-z ]*\\..*\\(.*\\)");     
     this.lineChecker.setEndOfDumpPattern(".*(\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for the running|<EndOfDump>).*");
     
     // Handle WLST, JRockit, Sun thread labels
@@ -205,17 +205,32 @@ public class FallbackParser extends AbstractDumpParser {
 
     String remainingLabel = nameEntry.substring(index + 1).trim();
 
-    if (remainingLabel.indexOf("=") < 0) {
-      if (nameEntry.contains("RUNNABLE"))
+    
+    if (nameEntry.contains("RUNNABLE"))
       tokens[3] = "RUNNING";
       // in WLST generated HotSpot thread dump, waiting for lock is used for general waiting
-      else if (nameEntry.contains("waiting for lock"))
-        tokens[3] = "waiting";
-      else if (nameEntry.contains("TIMED_WAITING"))
-        tokens[3] = "sleeping";
-      else if (nameEntry.contains(" WAITING"))
-        tokens[3] = "waiting";
-    }
+    else if (nameEntry.contains("waiting for lock"))
+      tokens[3] = "waiting";
+    else if (nameEntry.contains("TIMED_WAITING"))
+      tokens[3] = "sleeping";
+    else if (nameEntry.contains(" WAITING"))
+      tokens[3] = "waiting";
+    else if (nameEntry.contains(" BLOCKED"))
+      tokens[3] = " blocked";
+    
+    if (remainingLabel.indexOf("=") > 0) {    
+      String[] tokenSet=remainingLabel.trim().split(" ");
+      for(int i = 0; i < tokenSet.length; i++) {
+        String token = tokenSet[i].trim();
+        index = token.indexOf("id=");
+        if (index > -1) {
+          // this is the tid
+          tokens[1] = token.substring(index+3);
+          break;
+        }
+      }
+    }  
+  
     return tokens;        
   }
   
@@ -430,6 +445,7 @@ public class FallbackParser extends AbstractDumpParser {
         Matcher matched = getDm().getLastMatch();
         String parsedStartTime = null;
         
+        boolean startedParsingThreads = false;
         boolean stillInParsingTitle = false;
         boolean stillInParsingStackEntry = false;
         StringBuffer titleBuffer = null;
@@ -447,7 +463,7 @@ public class FallbackParser extends AbstractDumpParser {
           
           // Similarly, once we have started hitting thread labels( lineChecker.getStackStart(line) is not null),  
           // continue parsing, dont waste in trying to read date.... 
-          if (locked && !hasStartedParsingThreads(threadCount) 
+          if (locked && !startedParsingThreads 
                     && lineChecker.getStackStart(line) == null) {            
             
             if (lineChecker.getFullDump(line) != null ) {
@@ -498,7 +514,7 @@ public class FallbackParser extends AbstractDumpParser {
             // Problem with JRockit is the Timestamp occurs after the FULL THREAD DUMP tag
             // So the above logic fails as we wont get to parse for the date as its reverse for Hotspot (time occurs before Full Thread Dump marker)
             // So parse the timestamp here for jrockit....
-            if ( !hasStartedParsingThreads(threadCount) && (parsedStartTime == null)  
+            if ( !startedParsingThreads && (parsedStartTime == null)  
                     && !getDm().isPatternError() && (getDm().getRegexPattern() != null)) {
               Matcher m = getDm().checkForDateMatch(line);
               if (m != null) {                
@@ -599,11 +615,13 @@ public class FallbackParser extends AbstractDumpParser {
               if ((titleBuffer != null) && !stillInParsingTitle) {
                 title = titleBuffer.toString();
                 titleBuffer = null;
+                if (!startedParsingThreads)
+                  startedParsingThreads = true;
               }              
               
             } else {
               
-              if (!hasStartedParsingThreads(threadCount) && content == null)
+              if (!startedParsingThreads && content == null)
                 continue;
               
               if ((tempLine = lineChecker.getThreadState(line)) != null) {
@@ -656,7 +674,7 @@ public class FallbackParser extends AbstractDumpParser {
              * else { content.append(line); } content.append("\n"); }
              */
             // last thread reached?
-            if ( hasStartedParsingThreads(threadCount) && (tempLine = lineChecker.getEndOfDump(line)) != null) {
+            if ( startedParsingThreads && (tempLine = lineChecker.getEndOfDump(line)) != null) {
               finished = true;              
               if ((checkForDeadlocks(threadDump)) == 0) {
                 // no deadlocks found, set back original
