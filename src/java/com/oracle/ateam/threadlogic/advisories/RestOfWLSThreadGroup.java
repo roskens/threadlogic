@@ -40,6 +40,8 @@ public class RestOfWLSThreadGroup extends CustomizedThreadGroup {
     int idleThreadCount = 0;
     
     ThreadAdvisory idleThreadAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.IDLE_THREADS);
+    ThreadAdvisory listenerThreadAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.LISTENER_THREAD);
+    
     Pattern defaultWLSThreadPoolNamePattern = Pattern.compile(ThreadLogicConstants.WLS_DEFAULT_THREAD_POOL, Pattern.CASE_INSENSITIVE);
     
     // If the server is up and running,
@@ -50,6 +52,7 @@ public class RestOfWLSThreadGroup extends CustomizedThreadGroup {
     ThreadAdvisory wlsStartupThreadAdvisory 
             = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.WLS_SERVICES_STARTUP);
     
+    int noOfListeners = 0;
     for(ThreadInfo ti: threads) {
     
       if (ti.getAdvisories().contains(wlsStartupThreadAdvisory))
@@ -58,7 +61,16 @@ public class RestOfWLSThreadGroup extends CustomizedThreadGroup {
       if (ti.getAdvisories().contains(idleThreadAdvisory) && 
               defaultWLSThreadPoolNamePattern.matcher(ti.getName()).find() ) {
         idleThreadCount++;
+      } else if (ti.getAdvisories().contains(listenerThreadAdvisory) ) {
+        noOfListeners++;
       }
+    }
+    
+    if (noOfListeners < 1) {
+      ThreadAdvisory missingListenerAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.LISTENER_MISSING);
+      this.addAdvisory(missingListenerAdvisory);
+      if (this.getHealth().ordinal() < missingListenerAdvisory.getHealth().ordinal());
+        this.setHealth(missingListenerAdvisory.getHealth());
     }
     
     // Add Thread Starvation advisory and bump up health level for those 

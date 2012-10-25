@@ -58,7 +58,9 @@ public class ThreadLogicConstants {
   public static final String WLS_SUBSYSTEM_REQUEST_OVERFLOW = "WLSSubsystemRequestOverflow";
   public static final String WLS_CLUSTER_MESSAGERECEIVER_RUNNING = "MessageReceiverRunning";
   
+  public static final String LISTENER_MISSING = "Socket Listener Missing";
   public static final String IDLE_THREADS = "ExecuteThread.waitForRequest";
+  public static final String LISTENER_THREAD = "SocketImpl.socketAccept";  
   public static final String WLS_SERVICES_STARTUP = "ServerServicesManager.startService";
   public static final String WLS_DEFAULT_THREAD_POOL = "weblogic.kernel.default";
   public static final String WLS_DEFAULT_THREAD_POOL_STARVATION = "ThreadStarvation";
