@@ -695,7 +695,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     int overallThreadsWaiting = 0;
     while (iter.hasNext()) {
       String monitor = (String) iter.next();
-      Map[] threads = mmap.getFromMonitorMap(monitor);
+      Map[] threads = mmap.getFromMonitorMap(monitor);      
       ThreadInfo mi = new ThreadInfo(monitor, null, "", 0, null);
       DefaultMutableTreeNode monitorNode = new DefaultMutableTreeNode(mi);
 
@@ -713,7 +713,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         } else if (threads[MonitorMap.WAIT_THREAD_POS].containsKey(thread)) {
           createNode(monitorNode, "locks and waits on monitor: " + thread, null, stackTrace, 0);
           sleeps++;
-        } else {
+        } else {          
           createNode(monitorNode, "locked by " + thread, null, stackTrace, 0);
         }
         locks++;
@@ -988,12 +988,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     int blockedThread = 0;
     for (Iterator monitorMapiIter = mmap.iterOfKeys(); monitorMapiIter.hasNext();) {
       String monitor = (String) monitorMapiIter.next();
-      Map[] monitorThreads = mmap.getFromMonitorMap(monitor);
+      Map[] monitorThreads = mmap.getFromMonitorMap(monitor);      
+        
       String lockedThread = getLockingThread(monitorThreads);
       for (int i = 0; i < threads.getNodeCount(); i++) {
         ThreadInfo ti = (ThreadInfo) ((DefaultMutableTreeNode) threads.getNodeAt(i)).getUserObject();
         if (ti.getName().equals(lockedThread) && monitorThreads[MonitorMap.WAIT_THREAD_POS].size() > 0) {
           count++;
+          
           if (lockedThreadNode == null) {
             lockedCategory = new TreeCategory("Holding Locks", IconFactory.CUSTOM_CATEGORY, false);
             lockedThreadNode = new DefaultMutableTreeNode(lockedCategory);
@@ -1088,10 +1090,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       }
 
       String blockingStackFrame = (String) threads[MonitorMap.LOCK_THREAD_POS].get(threadLine);
-      tmi.setContent(blockingStackFrame);
-      mmi.setContent("This monitor (" + linkifyMonitor(monitor) + ") is held in the following stack frame:\n\n"
-          + blockingStackFrame);
-
+      if (blockingStackFrame != null) {
+        tmi.setContent(blockingStackFrame);
+        mmi.setContent("This monitor (" + linkifyMonitor(monitor) + ") is held in the following stack frame:\n\n"
+            + blockingStackFrame);
+      } else {
+        mmi.setContent("Owner of this monitor (" + linkifyMonitor(monitor) + ") could not be located");
+      }
+      
       // If no-one is blocked on or waiting for this monitor, don't show it
       if (monitorNode.getChildCount() > 0) {
         directChildMap.put(monitor, threadNode);
@@ -1569,6 +1575,31 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         int monitorsWithoutLocksCount = 0;
         int contendedMonitors = 0;
         int blockedThreads = 0;
+        
+        Iterator iter = mmap.iterOfKeys();
+        while (iter.hasNext()) {
+          String monitor = (String) iter.next();
+          Map[] threadsInMap = mmap.getFromMonitorMap(monitor);
+          
+          // first the locks
+          // We need to reset the stack trace for those threads that are holders of locks
+          // previously we set the stack trace to be empty as the ownership info was present in a different thread 
+          // that is blocked and not directly in the owner thread
+          Iterator iterLocks = threadsInMap[MonitorMap.LOCK_THREAD_POS].keySet().iterator();
+          while (iterLocks.hasNext()) {
+            String threadOwner = (String) iterLocks.next();
+            // System.out.println("ThreadOwner :" + threadOwner);
+            String stackTrace = (String) threadsInMap[MonitorMap.LOCK_THREAD_POS].get(threadOwner);
+            if (stackTrace == null) {
+              // System.out.println("ThreadOwner :" + threadOwner + ", owner stack is null");
+              // Search for the owner of the lock
+              ThreadInfo ownerThread = overallTDI.getThreadByName(threadOwner);
+              if (ownerThread != null)
+                threadsInMap[MonitorMap.LOCK_THREAD_POS].put(threadOwner, ownerThread.getContent());              
+            }            
+          }
+        }
+        
         // dump monitors
         if (mmap.size() > 0) {
           int[] result = dumpMonitors(catMonitors, catMonitorsLocks, mmap);

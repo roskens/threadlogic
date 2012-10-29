@@ -33,6 +33,7 @@
 package com.oracle.ateam.threadlogic.utils;
 
 import java.io.InputStream;
+import java.util.Date;
 import java.util.Properties;
 
 /**
@@ -64,7 +65,9 @@ public class AppInfo {
         FULL_VERSION = VERSION;
       
       if (BUILD_DATE == null)
-        BUILD_DATE = "";
+        BUILD_DATE = new Date().toString();
+      
+      System.out.println(APP_FULL_NAME + "\n version: " + FULL_VERSION + ", " + BUILD_DATE);
   }
     
   /**

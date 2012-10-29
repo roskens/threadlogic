@@ -62,6 +62,7 @@ public class ThreadsTableModel extends AbstractTableModel {
     private ThreadState state;
     private BigInteger tid;
     private BigInteger nid;
+    private String ecid;
     private ThreadInfo assocThreadInfo;
 
     public ThreadData(ThreadInfo ti) {
@@ -76,6 +77,7 @@ public class ThreadsTableModel extends AbstractTableModel {
         
         health = ti.getHealth();                  
         state = ti.getState();
+        ecid = ti.getEcid();
         
         advisoryNames = getAdvisoryNames(ti);
         String[] columns = ti.getTokens();
@@ -185,6 +187,20 @@ public class ThreadsTableModel extends AbstractTableModel {
     public void setAssocThreadInfo(ThreadInfo assocThreadInfo) {
       this.assocThreadInfo = assocThreadInfo;
     }
+
+    /**
+     * @return the ecid
+     */
+    public String getEcid() {
+      return ecid;
+    }
+
+    /**
+     * @param ecid the ecid to set
+     */
+    public void setEcid(String ecid) {
+      this.ecid = ecid;
+    }
     
     
   }
@@ -208,7 +224,7 @@ public class ThreadsTableModel extends AbstractTableModel {
         Object entry = childNode.getUserObject();
         if (entry instanceof ThreadInfo) {
           ThreadInfo ti = (ThreadInfo) entry;
-          columnNames = new String[] { "Name", "Thread Group", "Health", "Advisories", "Thread-ID", "Native-ID", "State"};
+          columnNames = new String[] { "Name", "Thread Group", "Health", "Advisories", "ECID", "Thread-ID", "Native-ID", "State"};
           
           // Create the data once inside ThreadData isntead of repeatedly parsing and recreating data...from advisories/tid/nids...
           elements.add(new ThreadData(ti));  
@@ -239,9 +255,10 @@ public class ThreadsTableModel extends AbstractTableModel {
       case (1): return tidata.getThreadGroupName();  
       case (2): return tidata.getHealth();  
       case (3): return tidata.getAdvisoryNames(); 
-      case (4): return tidata.getTid(); 
-      case (5): return tidata.getNid(); 
-      case (6): return tidata.getState();
+      case (4): return tidata.getEcid();
+      case (5): return tidata.getTid(); 
+      case (6): return tidata.getNid(); 
+      case (7): return tidata.getState();
       default:
         return null;
     } 
@@ -264,7 +281,7 @@ public class ThreadsTableModel extends AbstractTableModel {
    * @inherited
    */
   public Class getColumnClass(int columnIndex) {
-    if (columnIndex > 3 && columnIndex < 6) {
+    if (columnIndex > 4 && columnIndex < 5) {
       return BigInteger.class;
     } else {
       return String.class;

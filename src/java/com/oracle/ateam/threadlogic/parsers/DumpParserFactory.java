@@ -110,6 +110,9 @@ public class DumpParserFactory {
           } 
         }
         
+        if (line.trim().equals(""))
+          continue;
+        
         if (WrappedSunJDKParser.checkForSupportedThreadDump(line)) {
           currentDumpParser = new WrappedSunJDKParser(bis, threadStore, lineCounter, withCurrentTimeStamp,
               startCounter, dm);

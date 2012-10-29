@@ -465,8 +465,7 @@ is divided into following sections:
             </j2seproject1:manifest>
         </j2seproject1:jar>
         <echo>To run this application from the command line without Ant, try:</echo>
-        <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
-        <property location="${dist.jar}" name="dist.jar.resolved"/>
+        <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>        
         <pathconvert property="run.classpath.with.dist.jar">
             <path path="${run.classpath}"/>
             <map from="${build.classes.dir.resolved}" to="${dist.jar.resolved}"/>
@@ -475,6 +474,7 @@ is divided into following sections:
     </target>
     <target depends="init,compile,-pre-pre-jar,-pre-jar" if="manifest.available+main.class+mkdist.available" name="-do-jar-with-libraries">
         <property location="${build.classes.dir}" name="build.classes.dir.resolved"/>
+        <property location="${dist.jar}" name="build.classes.dir.resolved"/>
         <pathconvert property="run.classpath.without.build.classes.dir">
             <path path="${run.classpath}"/>
             <map from="${build.classes.dir.resolved}" to=""/>
@@ -492,8 +492,11 @@ is divided into following sections:
 	          pattern="MM/dd/yyyy"
 	          locale="en,US"/>
 	</tstamp>
-
-        <copylibs compress="${jar.compress}" jarfile="${dist.jar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
+        
+        <property name="distJar" value="${dist.dir}${file.separator}threadlogic.${build.number}.jar" />
+        <echo message="Building jar file ${distJar}" />
+        
+        <copylibs compress="${jar.compress}" jarfile="${distJar}" manifest="${manifest.file}" runtimeclasspath="${run.classpath.without.build.classes.dir}">
             <fileset dir="${build.classes.dir}"/>
             <manifest>
                 <attribute name="Main-Class" value="${main.class}"/>

@@ -1588,6 +1588,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     TreePath currentPath = tree.getSelectionPath();
     DefaultMutableTreeNode dumpNode = (DefaultMutableTreeNode) currentPath.getLastPathComponent();
     Enumeration childs = dumpNode.children();
+    if (!childs.hasMoreElements()) {
+      childs = dumpNode.getParent().children();
+    }
 
     TreePath searchPath = null;
     while ((searchPath == null) && childs.hasMoreElements()) {

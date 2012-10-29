@@ -32,11 +32,15 @@
  */
 package com.oracle.ateam.threadlogic.parsers;
 
+import com.oracle.ateam.threadlogic.LockInfo;
 import com.oracle.ateam.threadlogic.ThreadLogic;
 import com.oracle.ateam.threadlogic.ThreadDumpInfo;
+import com.oracle.ateam.threadlogic.ThreadInfo;
+import com.oracle.ateam.threadlogic.ThreadState;
 import com.oracle.ateam.threadlogic.categories.Category;
 import com.oracle.ateam.threadlogic.categories.TableCategory;
 import com.oracle.ateam.threadlogic.categories.TreeCategory;
+import com.oracle.ateam.threadlogic.monitors.FallbackMonitorMap;
 import com.oracle.ateam.threadlogic.monitors.MonitorMap;
 import com.oracle.ateam.threadlogic.utils.DateMatcher;
 import com.oracle.ateam.threadlogic.utils.IconFactory;
@@ -47,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
 import java.util.regex.Matcher;
@@ -110,25 +115,36 @@ public class FallbackParser extends AbstractDumpParser {
     Matcher m = defaultThreadPattern.matcher(line);
     boolean matches = m.matches();
     
-    if (!matches)
-      return -1;
-    
-    String entry = (m.groupCount() == 1? m.group(1): m.group());
+    if (matches) {
 
-    if (entry.indexOf(" nid=0x") >= 0) {
-        return HOTSPOT_VM;
-    } else if (entry.indexOf(" alive, ") >= 0) {
-        return JROCKIT_VM;
-    } else {
+      String entry = (m.groupCount() == 1? m.group(1): m.group());
+
+      if (entry.indexOf(" nid=0x") >= 0) {
+          return HOTSPOT_VM;
+      } else if (entry.indexOf(" alive, ") >= 0) {
+          return JROCKIT_VM;
+      } else {
+          return UNKNOWN_VM;
+      }
+      
+    } else if (logLine.contains("Full Thread Dump")) {
         return UNKNOWN_VM;
     }
+    
+    return -1;    
   }
   
 
   public void setUnknownVMMarkers() {
-    this.lineChecker.setFullDumpPattern(".*(Thread dump for the running).*");
+    this.lineChecker.setFullDumpPattern(".*(Thread dump for the running)|(Full Thread Dump).*");
     this.lineChecker.setAtPattern("\\s*[^\"][a-z ]*\\..*\\(.*\\)");     
-    this.lineChecker.setEndOfDumpPattern(".*(\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for the running|<EndOfDump>).*");
+    this.lineChecker.setThreadStatePattern("(.*: .*)|(\\])");
+
+    this.lineChecker.setWaitingOnPattern("(.*WAITING on.*)");
+    this.lineChecker.setParkingToWaitPattern("(.*\\.park\\.\\(.*)");
+    this.lineChecker.setWaitingToPattern("(.* BLOCKED on.*)");
+    
+    this.lineChecker.setEndOfDumpPattern(".*(\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for the running|(Full Thread Dump)|<EndOfDump>).*");
     
     // Handle WLST, JRockit, Sun thread labels
     this.lineChecker.setEndOfTitlePattern(".*( RUNNABLE| WAITING| BLOCKED| TIMED_WAITING).*");
@@ -151,7 +167,34 @@ public class FallbackParser extends AbstractDumpParser {
    *          containing monitor
    */
   protected String linkifyMonitor(String line) {
-    return (line);
+    if (line == null)
+      return null;
+    
+    try {
+        int index = line.indexOf(" lock=");
+        
+        while (index > 0){
+          index += 6;
+          String begin = line.substring(0, index);
+
+          String end = "";
+          int endIndex = line.indexOf(" ", index);
+          if (endIndex == -1) {
+            endIndex = line.length();
+          } else {
+            end = line.substring(endIndex);
+          }
+
+          String monitor = line.substring(index, endIndex);        
+          monitor = "<a href=\"monitor://" + monitor + "\">" + monitor + "</a>";
+          line = (begin + monitor + end);
+
+          index = line.indexOf(" lock=", endIndex + 10);
+        }
+      return line;
+    } catch(Exception e) { 
+      return null;
+    }
   }
 
 
@@ -372,7 +415,7 @@ public class FallbackParser extends AbstractDumpParser {
    */
   public MutableTreeNode parseNext() {
     
-    this.mmap = new MonitorMap();
+    this.mmap = new FallbackMonitorMap();
     
     if (nextDump != null) {
       MutableTreeNode tmpDump = nextDump;
@@ -441,13 +484,11 @@ public class FallbackParser extends AbstractDumpParser {
         Stack monitorStack = new Stack();
         long startTime = 0;
         int singleLineCounter = 0;
-        boolean concurrentSyncsFlag = false;
         Matcher matched = getDm().getLastMatch();
         String parsedStartTime = null;
         
         boolean startedParsingThreads = false;
         boolean stillInParsingTitle = false;
-        boolean stillInParsingStackEntry = false;
         StringBuffer titleBuffer = null;
 
         // Default to Hotspot unless we find any jrockit or ibm tags..        
@@ -550,7 +591,7 @@ public class FallbackParser extends AbstractDumpParser {
               // thread
               // First, flush state for the previous thread (if
               // any)
-              concurrentSyncsFlag = false;
+              
               
               if (!stillInParsingTitle) {
                 String stringContent = content != null ? content.toString() : null;
@@ -618,54 +659,33 @@ public class FallbackParser extends AbstractDumpParser {
                 if (!startedParsingThreads)
                   startedParsingThreads = true;
               }              
-              
+
+              // For the wlst generated new format of thread dump, the lock info appears in the title itself
+              // so we cannog get directly inLocking
+              if (content != null && (tempLine = lineChecker.getWaitingOn(line)) != null) {
+                
+                monitorStack.push(tempLine);
+                inSleeping = true;                
+              } else if (content != null && (tempLine = lineChecker.getParkingToWait(line)) != null) {                
+                monitorStack.push(tempLine);
+                inSleeping = true;
+              } else if (content != null && (tempLine = lineChecker.getWaitingTo(line)) != null) {                
+                monitorStack.push(tempLine);
+                inWaiting = true;
+              }
+                
             } else {
               
               if (!startedParsingThreads && content == null)
                 continue;
               
-              if ((tempLine = lineChecker.getThreadState(line)) != null) {
-              
+              if (content != null && (tempLine = lineChecker.getAt(line)) != null) {
                 content.append(tempLine);
                 content.append("\n");
-                if (title.indexOf("t@") > 0) {
-                  // in this case the title line is missing state
-                  // informations
-                  String state = tempLine.substring(tempLine.indexOf(':') + 1).trim();
-                  if (state.indexOf(' ') > 0) {
-                    title += " nid=none " + state.substring(0, state.indexOf(' '));
-                  } else {
-                    title += " nid=none " + state;
-                  }
-                }
-              //} else if (content != null && (tempLine = lineChecker.getLockedOwnable(line)) != null) {
-              //  concurrentSyncsFlag = true;
-              //  content.append(tempLine);
-              //  content.append("\n");
-              } else if (content != null && (tempLine = lineChecker.getWaitingOn(line)) != null) {
-                content.append(linkifyMonitor(tempLine));
-                monitorStack.push(tempLine);
-                inSleeping = true;
+              } else if ((tempLine = lineChecker.getThreadState(line)) != null) {              
+                content.append(" " + tempLine);
                 content.append("\n");
-              } else if (content != null && (tempLine = lineChecker.getParkingToWait(line)) != null) {
-                content.append(linkifyMonitor(tempLine));
-                monitorStack.push(tempLine);
-                inSleeping = true;
-                content.append("\n");
-              } else if (content != null && (tempLine = lineChecker.getWaitingTo(line)) != null) {
-                content.append(linkifyMonitor(tempLine));
-                monitorStack.push(tempLine);
-                inWaiting = true;
-                content.append("\n");
-              } else if (content != null && (tempLine = lineChecker.getLocked(line)) != null) {
-                content.append(linkifyMonitor(tempLine));
-                inLocking = true;
-                monitorStack.push(tempLine);
-                content.append("\n");
-              } else if (content != null && (tempLine = lineChecker.getAt(line)) != null) {
-                content.append(tempLine);
-                content.append("\n");
-              }
+              }  
             }
             
             /*
@@ -712,16 +732,19 @@ public class FallbackParser extends AbstractDumpParser {
           addToCategory(catThreads, overallTDI, title, null, stringContent, singleLineCounter, true);
           threadCount++;
         }
+        
         if (inWaiting) {
           addToCategory(catWaiting, overallTDI, title, null, stringContent, singleLineCounter, true);
           inWaiting = false;
           waiting++;
-        }
+        } 
+        
         if (inSleeping) {
           addToCategory(catSleeping, overallTDI, title, null, stringContent, singleLineCounter, true);
           inSleeping = false;
           sleeping++;
-        }
+        } 
+        
         if (inLocking) {
           addToCategory(catLocking, overallTDI, title, null, stringContent, singleLineCounter, true);
           inLocking = false;
@@ -729,8 +752,49 @@ public class FallbackParser extends AbstractDumpParser {
         }
         singleLineCounter = 0;
         
+        overallTDI.setJvmType(this.getJvmVendor());
+        overallTDI.setParsedWithFBParser(true);
+        
+        Category unsortedThreadCategory = (Category) catThreads.getUserObject();
+        Category sortedThreads = sortThreadsByHealth(unsortedThreadCategory);        
+        overallTDI.setThreads(sortedThreads);
+        
+        // Create relationship between LockInfo and Threads
+        overallTDI.parseLocks(this);
 
-        int monitorCount = mmap.size();
+        // Requires extra step as Locks are not completely linked with threads in WLST Thread dump
+        overallTDI.linkThreadsWithLocks(overallTDI.getLockTable()); 
+        
+        // The earlier created mmap entries didnt have the complete thread content for those threads holding locks
+        // Search for the actual threads that are holders of the lock and reset the content
+
+        int monitorCount = mmap.size();        
+        
+        Iterator iter = mmap.iterOfKeys();
+        while (iter.hasNext()) {
+          String monitor = (String) iter.next();
+          Map[] threadsInMap = mmap.getFromMonitorMap(monitor);
+          
+          // first the locks
+          // We need to reset the stack trace for those threads that are holders of locks
+          // previously we set the stack trace to be empty as the ownership info was present in a different thread 
+          // that is blocked and not directly in the owner thread
+          Iterator iterLocks = threadsInMap[MonitorMap.LOCK_THREAD_POS].keySet().iterator();
+          while (iterLocks.hasNext()) {
+            String threadOwner = (String) iterLocks.next();
+            // System.out.println("ThreadOwner :" + threadOwner);
+            String stackTrace = (String) threadsInMap[MonitorMap.LOCK_THREAD_POS].get(threadOwner);
+            if (stackTrace == null) {
+              // System.out.println("ThreadOwner :" + threadOwner + ", owner stack is null");
+              // Search for the owner of the lock
+              ThreadInfo ownerThread = overallTDI.getThreadByName(threadOwner);
+              if (ownerThread != null)
+                threadsInMap[MonitorMap.LOCK_THREAD_POS].put(threadOwner, ownerThread.getContent());              
+            }            
+          }
+        }
+
+      
 
         int monitorsWithoutLocksCount = 0;
         int contendedMonitors = 0;
@@ -777,16 +841,8 @@ public class FallbackParser extends AbstractDumpParser {
           threadDump.add(catMonitorsLocks);
         }
 
-        overallTDI.setJvmType(this.getJvmVendor());
-        overallTDI.setParsedWithFBParser(true);
-        
-        Category unsortedThreadCategory = (Category) catThreads.getUserObject();
-        Category sortedThreads = sortThreadsByHealth(unsortedThreadCategory);        
-        overallTDI.setThreads(sortedThreads);
 
-        // Create relationship between LockInfo and Threads
-        overallTDI.parseLocks(this);
-
+         
         // Detect Deadlocks
         overallTDI.detectDeadlock();
 
@@ -872,8 +928,73 @@ public class FallbackParser extends AbstractDumpParser {
     return finished;
   }
 
-  private boolean hasStartedParsingThreads(int threadCount) {
-    return (threadCount > 0);
-  }  
+  public void createLockInfo(ThreadInfo thread) {
+      
+    String content = thread.getContent();
+    if ((content == null) || (thread.getState() != ThreadState.BLOCKED))
+      return;
+    
+    // Check for lock information if thread is blocked...
+    // Sample thread stack for ones generated by WLST
+    /*
+     * "[ACTIVE] ExecuteThread: '62' for queue: 'weblogic.kernel.Default (self-tuning)'" id=1800 BLOCKED on lock=com.bea.alsb.console.reporting.jmsprovider.ReportManagementFlow@114436 ExeuctionContext=[WLSExecutionContext instance: 482b649aa1df79d3:-71abeda7:13a888f91c6:-8000-000000000001ba5c,0
+        mThreadId: 1800
+      mOrderIndex: -9223372036854775256
+       mSuspended: false
+   mCtxContentMap: null
+   m_ctxGlobalMap: 0
+     mCtxLocalMap: 2
+     mInheritable: true
+       mListeners: 2
+ family:WLSContextFamily instance: 
+            mECID: 482b649aa1df79d3:-71abeda7:13a888f91c6:-8000-000000000001ba5c
+          mCtxMap: 1
+       mGlobalMap: 0
+   mPropagateKeys: null
+         mLogKeys: null
+       mLimitKeys: null
+]
+     owned by [STUCK] ExecuteThread: '201' for queue: 'weblogic.kernel.Default (self-tuning)' id=2035
+    at org.apache.beehive.netui.pageflow.FlowController.execute(FlowController.java:322)
+    at org.apache.beehive.netui.pageflow.internal.FlowControllerAction.execute(FlowControllerAction.java:52)
+
+     */
+    
+    int beginIndex, endIndex;
+    String blockedLockId = "";
+    
+    LockInfo blockedForLock = thread.getBlockedForLock();
+    if (blockedForLock == null) {
+      beginIndex = content.indexOf(" lock=") + 6;
+      endIndex = content.indexOf(" ", beginIndex);
+      blockedLockId = content.substring(beginIndex, endIndex);
+      
+      blockedForLock = new LockInfo(blockedLockId);      
+      blockedForLock.getBlockers().add(thread);
+      thread.setBlockedForLock(blockedForLock);
+      
+      //mmap.addWaitToMonitor(blockedLockId, thread.getFilteredName(), content);
+    }
+
+    ThreadInfo lockOwner = blockedForLock.getLockOwner();
+    if (lockOwner == null) {
+      beginIndex = content.indexOf(" owned by ") + 10;
+      if (content.charAt(beginIndex) == '\'')
+        beginIndex++;
+      
+      endIndex = content.indexOf(" id=", beginIndex);
+      
+      String lockOwnerName = content.substring(beginIndex, endIndex).trim();
+      lockOwnerName = lockOwnerName.replaceAll("\\[.*\\] ", "").trim();
+      
+      lockOwner = ThreadInfo.createTempThreadInfo(lockOwnerName);
+      blockedForLock.setLockOwner(lockOwner);
+      //mmap.addLockToMonitor(blockedLockId, lockOwnerName, null);
+    }
+    
+    content = linkifyMonitor(content);
+    thread.setContent(content);
+  }
+
  
 }

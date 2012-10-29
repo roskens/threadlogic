@@ -38,9 +38,9 @@ import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
 import com.oracle.ateam.threadlogic.categories.Category;
 import com.oracle.ateam.threadlogic.parsers.AbstractDumpParser;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
 
@@ -398,7 +398,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
               + "because the JVM option -XX:+PrintConcurrentLocks is not present."
               + "<li>This lock is a custom java.util.concurrent lock either not based off of"
               + " <tt>AbstractOwnableSynchronizer</tt> or not setting the exclusive owner when a lock is granted.</ul>");
-      statData.append("If you see many monitors having no locking thread (and the latter two conditions above do"
+      statData.append("If you see many monitors having no locking thread (and the latter two conditions above do "
           + "not apply), this usually means the garbage collector is running.<br>");
       statData
           .append("In this case you should consider analyzing the Garbage Collector output. If the dump has many monitors with no locking thread<br>");
@@ -531,8 +531,32 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   public ThreadInfo getThread(String threadName) {
     // FIXME - SABHA
     // Remove the [ACTIVE], [STANDBY], [STUCK] labels as they interfere with diff/merge reporting
-    String filteredThreadName = threadName.replaceAll("\" .*$", "\"").replaceAll("\\[.*\\] ", "").trim();
+    String filteredThreadName = threadName.replaceAll("\\[.*\\] ", "").replaceAll("\" .*$", "\"").trim();    
     return this.threadTable.get(filteredThreadName);
+  }
+  
+  public ThreadInfo getThreadByName(String threadName) {
+    String filteredSearchName = threadName.replaceAll("\\[.*\\] ", "").replaceAll("\" .*$", "\"").trim();
+    Collection<ThreadInfo> threads = this.threadTable.values();
+    for(ThreadInfo ti: threads) {
+      String filteredName = ti.getFilteredName();      
+      if (filteredName.contains(filteredSearchName))
+        return ti;
+    }
+    return null;
+  }
+  
+  public ThreadInfo getThreadById(String id) {
+    if (id == null)
+      return null;
+    
+    Collection<ThreadInfo> threads = this.threadTable.values();
+    for(ThreadInfo ti: threads) {
+      String tid = ti.getId();      
+      if (id.contains(id))
+        return ti;
+    }
+    return null;
   }
 
   public Hashtable<String, ThreadInfo> getThreadMap() {
@@ -647,6 +671,14 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   }
 
   public ThreadInfo getLockOwner(String lock) {
+    System.out.println("Lock searched for: " + lock);
+    System.out.println("Lock Table size: " + lockTable.size());
+    Enumeration<String> keys = lockTable.keys();
+    while(keys.hasMoreElements()) {
+      String key = keys.nextElement();
+      System.out.println("Lock : " + key + ", lock:" + lockTable.get(key));
+    }
+    System.out.println("Lock: " + lockTable.get(lock));
     return this.lockTable.get(lock).getLockOwner();
   }
 
