@@ -728,6 +728,16 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           waits++;
         }
       }
+      
+      Iterator iterSleeps = threads[MonitorMap.SLEEP_THREAD_POS].keySet().iterator();
+      while (iterSleeps.hasNext()) {
+        String thread = (String) iterSleeps.next();
+        if (thread != null && !threads[MonitorMap.LOCK_THREAD_POS].containsKey(thread)) {
+          createNode(monitorNode, "sleeps on monitor: " + thread, null,
+              (String) threads[MonitorMap.SLEEP_THREAD_POS].get(thread), 0);
+          sleeps++;
+        }
+      }
 
       mi.setContent(ThreadDumpInfo.getMonitorInfo(locks, waits, sleeps));
       mi.setName(mi.getName() + ":    " + (sleeps) + " Thread(s) sleeping, " + (waits) + " Thread(s) waiting, "

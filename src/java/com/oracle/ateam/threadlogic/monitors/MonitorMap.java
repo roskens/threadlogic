@@ -122,9 +122,6 @@ public class MonitorMap implements Serializable {
         addWaitToMonitor(monitor, threadTitle, currentThread);
       } else if (line.trim().startsWith("- waiting on")) {
         addSleepToMonitor(monitor, threadTitle, currentThread);
-        
-        // Its both locking and waiting for notify
-        addLockToMonitor(monitor, threadTitle, currentThread);        
       } else {
         addLockToMonitor(monitor, threadTitle, currentThread);
       }
@@ -135,9 +132,6 @@ public class MonitorMap implements Serializable {
         addWaitToMonitor(monitor, threadTitle, currentThread);
       } else if (line.trim().startsWith("- waiting on")) {
         addSleepToMonitor(monitor, threadTitle, currentThread);
-        
-        // Its both locking and waiting for notify
-        addLockToMonitor(monitor, threadTitle, currentThread);
       } else {
         addLockToMonitor(monitor, threadTitle, currentThread);
       }

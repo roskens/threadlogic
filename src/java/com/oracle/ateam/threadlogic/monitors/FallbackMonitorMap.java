@@ -64,7 +64,7 @@ public class FallbackMonitorMap extends MonitorMap {
         }
         
       } else if (line.contains(" WAITING on ")) {
-        this.addLockToMonitor(monitor, threadTitle, content);
+        //this.addLockToMonitor(monitor, threadTitle, content);
         this.addSleepToMonitor(monitor, threadTitle, content);
       } 
       
