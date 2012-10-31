@@ -56,8 +56,8 @@ public class AppInfo {
         InputStream is = AppInfo.class.getResourceAsStream("/META-INF/MANIFEST.MF");
         Properties props = new Properties();
         props.load(is);
-        FULL_VERSION = props.getProperty("Build-Version");
-        BUILD_DATE = props.getProperty("Built-Date");        
+        FULL_VERSION = props.getProperty("Implementation-Version");
+        BUILD_DATE = props.getProperty("Build-Date");        
       } catch(Exception e) {
       }
     
