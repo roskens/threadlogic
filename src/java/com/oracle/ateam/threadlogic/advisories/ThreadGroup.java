@@ -24,6 +24,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ThreadGroup extends ThreadLogicElement {
 
+
+
   public class HotCallPattern implements Serializable {
     String threadPattern;
     ArrayList<ThreadInfo> threads;
@@ -44,6 +46,7 @@ public class ThreadGroup extends ThreadLogicElement {
   protected String threadGroupName;
 
   protected boolean isJVMThreadGroup, isWLSThreadGroup;
+  private boolean advisoryRun = false;
 
   protected ArrayList<ThreadInfo> threads = new ArrayList<ThreadInfo>();  
   protected ArrayList<ThreadInfo> waitingThreads = new ArrayList<ThreadInfo>();
@@ -89,10 +92,18 @@ public class ThreadGroup extends ThreadLogicElement {
         exclusionList.add(tadv);
     }
   }
+  
+  public boolean wasAdvisoryRun() {
+    return advisoryRun;
+  }
+
+  public void setAdvisoryRun() {
+    this.advisoryRun = true;
+  }
 
   public void runAdvisory() {
     
-    if (this.getAdvisories().size() != 0) {
+    if (wasAdvisoryRun()) {
       return;
     }
     
@@ -233,6 +244,7 @@ public class ThreadGroup extends ThreadLogicElement {
 
     this.threads = ThreadInfo.sortByHealth(this.threads);
     this.advisories = ThreadAdvisory.sortByHealth(this.advisories);
+    this.setAdvisoryRun();
   }
 
   /**

@@ -261,7 +261,6 @@ xmlns="http://java.net/projects/threadlogic">
 		<PatternList>
 			<Pattern>orabpel.engine.pool</Pattern>
 			<Pattern>orabpel.invoke.pool</Pattern>
-      <!--Pattern>pool-.*-thread-</Pattern-->
       <Pattern>ActionMDB</Pattern>
       <Pattern>BPEL</Pattern>
 		</PatternList>

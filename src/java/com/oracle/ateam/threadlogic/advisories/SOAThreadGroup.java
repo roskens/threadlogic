@@ -15,7 +15,10 @@
  */
 package com.oracle.ateam.threadlogic.advisories;
 
+import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.ThreadInfo;
+import com.oracle.ateam.threadlogic.ThreadState;
+import java.util.regex.Pattern;
 
 
 /**
@@ -46,9 +49,34 @@ public class SOAThreadGroup extends CustomizedThreadGroup {
         ++this.bpelInvokeThreads;
       else if (content.contains("adapter.jms.inbound.JmsConsumer.run"))
         ++this.soaJMSConsumerThreads;
+      
+      if (isIdle(ti)) {
+        ThreadAdvisory soaIdleThreadAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.SOA_IDLE_THREADS);
+        ti.addAdvisory(soaIdleThreadAdvisory);
+        ti.setHealth(HealthLevel.IGNORE);
+      }
     }
   }
   
+  public boolean isIdle(ThreadInfo ti) {
+    
+    String threadStack = ti.getContent();
+    Pattern soaThreadWaitingPattern = Pattern.compile("java.util.concurrent.locks.AbstractQueuedSynchronizer.ConditionObject");
+    
+    boolean threadWaitingForAbstractQueuedSynchronizer = soaThreadWaitingPattern.matcher(threadStack).find();
+            
+    if (threadWaitingForAbstractQueuedSynchronizer           
+          && (  
+              (ti.getState() == ThreadState.PARKING) 
+              || (ti.getState() == ThreadState.TIMED_WAIT) 
+             )
+        ) {
+      int stackDepth = threadStack.split("\n").length;
+      return (stackDepth <= ThreadLogicConstants.ACTIVETHREAD_STACKDEPTH);
+    }
+    
+    return false;
+  }
   public String getCustomizedOverview() {
     StringBuffer statData = new StringBuffer();
     statData.append("<tr bgcolor=\"#dddddd\"><td><font face=System "

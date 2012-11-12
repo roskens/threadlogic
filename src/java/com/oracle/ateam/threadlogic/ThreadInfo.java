@@ -288,7 +288,8 @@ public class ThreadInfo extends ThreadLogicElement {
   }
 
   public void runAdvisory() {
-
+    //System.out.println("Running advisory against Thread: " + this.name);
+    //Thread.dumpStack();
     this.health = HealthLevel.IGNORE;
 
     if (this.isBlockedForLock)

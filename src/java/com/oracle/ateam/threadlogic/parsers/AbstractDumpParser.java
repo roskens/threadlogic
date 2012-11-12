@@ -936,8 +936,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     DefaultMutableTreeNode newNode = null;
     for (int i = 0; i < threads.getNodeCount(); i++) {
       boolean matches = true;
-      // ThreadInfo ti = (ThreadInfo) ((DefaultMutableTreeNode)
-      // threads.getNodeAt(i)).getUserObject();
       ThreadInfo ti = (ThreadInfo) ((DefaultMutableTreeNode) threads.getNodeAt(i)).getUserObject();
       matches = filter.matches(ti, true);
       

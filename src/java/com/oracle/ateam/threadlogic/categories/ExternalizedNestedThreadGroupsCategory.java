@@ -479,11 +479,10 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
         } else {
           nonWlsThreadGroupList.add(tg);
         }
+        
+        createThreadGroupNestedCategories(tg, filter, parentCategory);
       }
-
-      createThreadGroupNestedCategories(tg, filter, parentCategory);
     }
-
   }
 
   private void createThreadGroupNestedCategories(ThreadGroup tg, Filter associatedFilter, NestedCategory parentCategory) {

@@ -59,12 +59,13 @@ public class ThreadLogicConstants {
   public static final String WLS_CLUSTER_MESSAGERECEIVER_RUNNING = "MessageReceiverRunning";
   
   public static final String LISTENER_MISSING = "Socket Listener Missing";
-  public static final String IDLE_THREADS = "ExecuteThread.waitForRequest";
+  public static final String WLS_IDLE_THREADS = "ExecuteThread.waitForRequest";  
   public static final String LISTENER_THREAD = "SocketImpl.socketAccept";  
   public static final String WLS_SERVICES_STARTUP = "ServerServicesManager.startService";
   public static final String WLS_DEFAULT_THREAD_POOL = "weblogic.kernel.default";
   public static final String WLS_DEFAULT_THREAD_POOL_STARVATION = "ThreadStarvation";
   
+  public static final String SOA_IDLE_THREADS = "SOAIdleThread";
   public static final String OSB_WAIT_FOR_SERVICE_CALLOUT = "PipelineContextImpl.SynchronousListener.waitForResponse";
   
   public static final String AQ_ADAPTER_POLLER = "oracle.tip.adapter.db.inbound.InboundWorkWrapper";

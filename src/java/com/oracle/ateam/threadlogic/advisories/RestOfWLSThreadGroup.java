@@ -39,7 +39,7 @@ public class RestOfWLSThreadGroup extends CustomizedThreadGroup {
   public void runGroupAdvisory() {
     int idleThreadCount = 0;
     
-    ThreadAdvisory idleThreadAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.IDLE_THREADS);
+    ThreadAdvisory idleThreadAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.WLS_IDLE_THREADS);
     ThreadAdvisory listenerThreadAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.LISTENER_THREAD);
     
     Pattern defaultWLSThreadPoolNamePattern = Pattern.compile(ThreadLogicConstants.WLS_DEFAULT_THREAD_POOL, Pattern.CASE_INSENSITIVE);

@@ -149,6 +149,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>WebLogic Idle Thread waiting for new request</Descrp>
 		<Advice>Ignore - its an idle thread waiting for a new request to execute</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>SOA Idle Thread</Name>
+		<Health>IGNORE</Health>
+		<Keyword>SOAIdleThread</Keyword>
+		<Descrp>SOA Idle Thread</Descrp>
+		<Advice>Ignore</Advice>
+	</Advisory>
 	<Advisory>
 		<Name>Publish JMS Messages</Name>
 		<Health>NORMAL</Health>
@@ -307,9 +314,9 @@ xmlns="http://java.net/projects/threadlogic">
   <Advisory>
 		<Name>XPath Contention</Name>
 		<Health>WARNING</Health>
-		<Keyword>a java.lang.Class for org.apache.xmlbeans.impl.store.Path, get lock: java.lang.Class.*org.apache.xmlbeans.impl.store.Path.getCompiledPath</Keyword>
-		<Descrp>Apache XMLBeans hitting static synchronized method during xpath execution</Descrp>
-		<Advice>Apply Bug #9727796 to avoid synchronization issues</Advice>
+		<Keyword>a java.lang.Class for org.apache.xmlbeans.impl.store.Path, org.apache.xmlbeans.impl.store.Path.getCompiledPath</Keyword>
+		<Descrp>Apache XMLBeans might be hitting static synchronized method during xpath execution</Descrp>
+		<Advice>Apply Bug #9727796 if threads appear blocked in xpath compilation</Advice>
 	</Advisory> 
 	<Advisory>
 		<Name>WLS JMS Paging</Name>
@@ -332,7 +339,10 @@ xmlns="http://java.net/projects/threadlogic">
   <Advisory>
 		<Name>WLS JMS Session cleanup</Name>
 		<Health>WARNING</Health>
+    <!--
 		<Keyword>JMSSession.waitForState.*JMSSession.stop.*WLConnectionImpl.stop.*JMSConnectionPoller.stopJMSConnection, JMSSession.waitForState.*JMSSession.stop.*JMSSessionPoolTester.close</Keyword>
+    -->
+    <Keyword>JMSSession.waitForState.*JMSSession.stop</Keyword>
 		<Descrp>WebLogic JMS session needs to be stopped before cleanup</Descrp>
 		<Advice>
        JMS Connection poller or SessionPoolTester has detected remote connections to a jms destination is down and is attempting to stop the session before cleaning it up but as the session is in use, it has to wait; This can potentially lead to deadlocks if the Session is continuously in use or is waiting for a lock that is held by JMSConnectionPoller/SessionPoolTester detection thread or some others. Contact support for relevant patches if multiple threads start to block waiting for locks held by this thread.
@@ -1114,7 +1124,7 @@ xmlns="http://java.net/projects/threadlogic">
   <Advisory>
 		<Name>Thread Sleep</Name>
 		<Health>WARNING</Health>
-		<Keyword>Thread.sleep.*weblogic.kernel.ExecuteThread</Keyword>
+		<Keyword>Thread.sleep</Keyword>
     <Descrp>Java Thread sleeping</Descrp>
 		<Advice>Use wait-notify, instead of repeated sleep-awake-check if possible</Advice>
 	</Advisory>

@@ -294,8 +294,7 @@ xmlns="http://java.net/projects/threadlogic">
     <ExcludedAdvisories>
 			<AdvisoryId>Socket Read</AdvisoryId>
 		</ExcludedAdvisories>     
-	</SimpleGroup>    
-
+	</SimpleGroup>
   <SimpleGroup>
 		<Name>Sun Norm Updaters</Name>
 		<Visible>true</Visible>
@@ -431,7 +430,6 @@ xmlns="http://java.net/projects/threadlogic">
       <Pattern>com.sun.hss.services</Pattern>
 		</PatternList>    
 	</SimpleGroup>
-  com/iona/corba/art/workqueue
   <ComplexGroup>
     <Name>Sun HSS Domain</Name>
     <Visible>true</Visible>
@@ -451,7 +449,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Inclusion>true</Inclusion>
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
-			<Pattern>com.iona.corba</Pattern>
+			<Pattern>com.iona</Pattern>
 		</PatternList>    
 	</SimpleGroup>
 </tlogic:GroupsDefn>
