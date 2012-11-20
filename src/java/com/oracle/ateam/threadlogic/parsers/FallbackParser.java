@@ -980,8 +980,13 @@ public class FallbackParser extends AbstractDumpParser {
     String blockedLockId = "";
     
     LockInfo blockedForLock = thread.getBlockedForLock();
-    if (blockedForLock == null) {
-      beginIndex = content.indexOf(" lock=") + 6;
+    beginIndex = content.indexOf(" lock=");
+    if (beginIndex < 0) {
+      beginIndex = content.indexOf(" lock ");
+    }
+    
+    if (blockedForLock == null && beginIndex >= 0) {
+      beginIndex += 6;
       endIndex = content.indexOf(" ", beginIndex);
       blockedLockId = content.substring(beginIndex, endIndex);
       
