@@ -311,10 +311,6 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       statData.append(critAdvisory.getPattern());
     }
     
-    if (i > 2) {
-      statData.append("</b></td></tr>\n\n<tr><td colspan=3>Please check <a href=\"threadgroups://\"><b>Thread Groups Summary</b></a> for more details");
-    }
-    
     if (this.isParsedWithFBParser()) {    
       statData.append("</b></td></tr>\n\n<tr bgcolor=\"#dddddd\"><td><font face=System "
         + ">Was parsed via non VM specific Parser </td><td></td><td><b><font face=System+1>");    

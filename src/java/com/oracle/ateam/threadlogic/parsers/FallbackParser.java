@@ -993,8 +993,10 @@ public class FallbackParser extends AbstractDumpParser {
     }
 
     ThreadInfo lockOwner = blockedForLock.getLockOwner();
-    if (lockOwner == null) {
-      beginIndex = content.indexOf(" owned by ") + 10;
+    beginIndex = content.indexOf(" owned by ");
+    if (lockOwner == null && beginIndex > 0) {      
+              
+      beginIndex += 10;
       if (content.charAt(beginIndex) == '\'')
         beginIndex++;
       
