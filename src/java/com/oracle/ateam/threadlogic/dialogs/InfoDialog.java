@@ -44,6 +44,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import com.oracle.ateam.threadlogic.ThreadLogic;
+import com.oracle.ateam.threadlogic.utils.AppInfo;
 
 /**
  * display copyright notice.
@@ -80,8 +81,10 @@ public class InfoDialog extends JDialog {
         + "with contributions from Robert Whitehurst &lt;maestoso@dev.java.net&gt;.<br><br>"
         + "Icons used are based on Benno System Icons by Benno Meyer.<br>"
         + "Welcome screen uses icons from NuoveXT2 icon set by Alexandre Moore.<br>"
-        + "Contains classes from JEdit for logfile display.</i></p><br><br>" + "<p><i>ThreadLogic<br>"
-        + "Enhancements by <br>" + "&nbsp;&nbsp;  Sabha Parameswaran &lt;sabha.parameswaran@oracle.com&gt;,<br>"
+        + "Contains classes from JEdit for logfile display.</i></p><br><br>" + "<p><i>"
+        + AppInfo.getAppInfo() + "</i></p>"
+        + " Version: " + AppInfo.getVersion() + ", " + AppInfo.getBuildDate()
+        + "<br>Enhancements by <br>" + "&nbsp;&nbsp;  Sabha Parameswaran &lt;sabha.parameswaran@oracle.com&gt;,<br>"
         + "&nbsp;&nbsp;  and Eric Gross &lt;eric.x.gross@oracle.com&gt;,<br>"
         + "Oracle Fusion Middleware Architect Team (A-Team)</i></p><br><br>" +
 

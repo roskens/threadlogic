@@ -281,7 +281,8 @@ public class MainMenu extends JMenuBar {
     menu.setMnemonic(KeyStroke.getKeyStroke(ResourceManager.translate("tools.menu.mnem")).getKeyCode());
     menu.getAccessibleContext().setAccessibleDescription(ResourceManager.translate("tools.menu.description"));
     add(menu);
-
+    
+    /*
     longMenuItem = new JMenuItem(ResourceManager.translate("tools.longrunning"), KeyStroke.getKeyStroke(
         ResourceManager.translate("tools.longrunning.mnem")).getKeyCode());
     longMenuItem.setIcon(ThreadLogic.createImageIcon("FindLRThreads.gif"));
@@ -290,8 +291,10 @@ public class MainMenu extends JMenuBar {
     longMenuItem.addActionListener(listener);
     longMenuItem.setEnabled(false);
     menu.add(longMenuItem);
+    
+     */
     menu.addSeparator();
-
+    
     /*
     menuItem = new JMenuItem("Filters", KeyEvent.VK_F);
     menuItem.setIcon(ThreadLogic.createImageIcon("Filters.gif"));
@@ -448,9 +451,13 @@ public class MainMenu extends JMenuBar {
     collapseButton.setEnabled(false);
     toolBar.add(collapseButton);
     toolBar.addSeparator();
+    
+    /*
     findLRThreadsButton = createToolBarButton("Find long running threads", "FindLRThreads.gif");
     findLRThreadsButton.setEnabled(false);
     toolBar.add(findLRThreadsButton);
+     * 
+     */
 
    /* toolBar.add(createToolBarButton("Filters", "Filters.gif"));
     toolBar.add(createToolBarButton("Custom Categories", "CustomCat.gif"));

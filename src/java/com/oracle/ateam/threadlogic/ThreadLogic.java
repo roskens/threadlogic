@@ -832,11 +832,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     dumpStore = new DumpStore();
 
     topNodes = new Vector();
-      getMainMenu().getLongMenuItem().setEnabled(true);
+      //getMainMenu().getLongMenuItem().setEnabled(true);
       getMainMenu().getSaveSessionMenuItem().setEnabled(true);
       getMainMenu().getExpandButton().setEnabled(true);
       getMainMenu().getCollapseButton().setEnabled(true);
-      getMainMenu().getFindLRThreadsToolBarButton().setEnabled(true);
+      //getMainMenu().getFindLRThreadsToolBarButton().setEnabled(true);
       getMainMenu().getCloseAllMenuItem().setEnabled(true);
       getMainMenu().getExpandAllMenuItem().setEnabled(true);
       getMainMenu().getCollapseAllMenuItem().setEnabled(true);
@@ -1628,13 +1628,19 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     menuItem = new JMenuItem("Diff Selection");
     menuItem.addActionListener(this);
     popup.add(menuItem);
+    
+    /*
     menuItem = new JMenuItem("Find long running threads...");
     menuItem.addActionListener(this);
     popup.add(menuItem);
+     * 
+     */
 
     showDumpMenuItem = new JMenuItem("Show selected Dump in logfile");
     showDumpMenuItem.addActionListener(this);
     showDumpMenuItem.setEnabled(false);
+    
+    /*
     popup.addSeparator();
     menuItem = new JMenuItem("Parse loggc-logfile...");
     menuItem.addActionListener(this);
@@ -1642,7 +1648,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       menuItem.setEnabled(!isFoundClassHistogram);
     }
     popup.add(menuItem);
-
+    */
+    
     menuItem = new JMenuItem("Close logfile...");
     menuItem.addActionListener(this);
     popup.add(menuItem);

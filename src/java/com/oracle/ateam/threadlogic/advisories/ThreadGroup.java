@@ -177,7 +177,7 @@ public class ThreadGroup extends ThreadLogicElement {
         HealthLevel state = savedAdvisory.getHealth();
 
         // Add the advisory if its above or equal to WARNING
-        if (state.ordinal() >= HealthLevel.WARNING.ordinal()) {
+        if (state.ordinal() >= HealthLevel.WARNING.ordinal() && !savedAdvisory.getPattern().contains("Sleep")) {
           this.addAdvisory(savedAdvisory);
         } else if (state == HealthLevel.WATCH) {
           // If the advisory is at WATCH level, add to the hit list

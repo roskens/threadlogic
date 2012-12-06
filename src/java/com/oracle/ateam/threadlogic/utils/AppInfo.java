@@ -67,7 +67,7 @@ public class AppInfo {
       if (BUILD_DATE == null)
         BUILD_DATE = new Date().toString();
       
-      System.out.println(APP_FULL_NAME + "\n version: " + FULL_VERSION + ", " + BUILD_DATE);
+      System.out.println(APP_FULL_NAME + "\n Version: " + FULL_VERSION + ", " + BUILD_DATE);
   }
     
   /**
@@ -83,6 +83,10 @@ public class AppInfo {
 
   public static String getVersion() {
     return FULL_VERSION;
+  }
+  
+  public static String getBuildDate() {
+    return BUILD_DATE;
   }
 
   public static String getCopyright() {
