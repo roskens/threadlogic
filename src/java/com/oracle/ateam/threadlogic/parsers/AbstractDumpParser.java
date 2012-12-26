@@ -30,7 +30,6 @@
  */
 package com.oracle.ateam.threadlogic.parsers;
 
-import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.HeapInfo;
 import com.oracle.ateam.threadlogic.Logfile;
 import com.oracle.ateam.threadlogic.ThreadLogic;
@@ -52,6 +51,7 @@ import com.oracle.ateam.threadlogic.utils.IconFactory;
 import com.oracle.ateam.threadlogic.utils.PrefManager;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
@@ -202,7 +202,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     Hashtable<Integer, String> tdKeyMapper = new Hashtable<Integer, String>();
     
     Vector<Integer> tdiKeys = new Vector<Integer>(dumps.length);
-    Map<Integer, ThreadDumpInfo> tdiMap = new HashMap<Integer, ThreadDumpInfo>();
+    Map<Integer, ThreadDumpInfo> tdiMap = new HashMap<Integer, ThreadDumpInfo>();    
 
     // The original dumpStore uses the full thread label as key which includes
     // the thread state
@@ -217,16 +217,18 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
     for (int i = 0; i < dumps.length; i++) {
       String dumpName = getDumpStringFromTreePath(dumps[i]);
+      
       if (dumpName.indexOf(" at") > 0) {
         dumpName = dumpName.substring(0, dumpName.indexOf(" at"));
       } else if (dumpName.indexOf(" around") > 0) {
         dumpName = dumpName.substring(0, dumpName.indexOf(" around"));
       }
-      Integer tdiID;
+      Integer tdiID = null;
       if (dumpName.contains("Dump No.")) {
         tdiID = Integer.parseInt(dumpName.replaceAll("Dump No.", "").trim());
         
-      } else {
+      } else if (dumpName.contains(File.separator)) {        
+        
         diffAcrossLogs = true;
         // This is a comparison across multiple thread dump files
         // Search for pattern like: javacore.20120130.103911.2883810.0001.txt
@@ -244,6 +246,13 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         } catch(Exception e) {
           tdiID = new Integer(i);
         }
+      } 
+      
+      // Its possible the thread dump got expanded and its internal threads/threadgroups also got selected
+      // Ignore such selection
+      if (tdiID == null) {
+        //System.out.println("### Ignoring .. " + dumpName);
+        continue;
       }
       
       tdKeyMapper.put(tdiID, dumpName);
@@ -256,12 +265,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         Logfile logFile = (Logfile)userObj;
         tdi = logFile.getThreadDumps().get(0);
       }
-      tdiMap.put(tdiID, tdi);
-      
+      tdiMap.put(tdiID, tdi);      
     }
 
     // Sort the ordering by the thread dump ids...
-    Collections.sort(tdiKeys);
+    Collections.sort(tdiKeys);    
 
     ArrayList<ThreadDumpInfo> tdiArrList = new ArrayList<ThreadDumpInfo>();
     for (Integer tdiKey : tdiKeys) {
@@ -269,7 +277,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       keys.add(dumpName);
       tdiArrList.add(tdiMap.get(tdiKey));
     }
-
+    
+    int noOfValidDumps = tdiArrList.size();
+    
     String info = prefix + " between " + keys.get(0) + " and " + keys.get(keys.size() - 1);
     ThreadDiffsTableCategory threadDiffsTableCategory = new ThreadDiffsTableCategory(info, IconFactory.DIFF_DUMPS);
     threadDiffsTableCategory.setThreadDumps(tdiArrList);
@@ -281,6 +291,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     if (tdiArrList.get(0) != null) {
 
       Map<String, ThreadInfo> threadMap0 = tdiArrList.get(0).getThreadMap();
+      
       ThreadInfo[] sortedThreads0 = threadMap0.values().toArray(new ThreadInfo[] {});
       Collection<ThreadInfo> sortedThreadCol0 = ThreadInfo.sortByHealth(sortedThreads0);
 
@@ -292,11 +303,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         ThreadInfo ti0 = (ThreadInfo) dumpIter.next();
         String threadNameId = ti0.getNameId();
         String originalThreadKey = ti0.getName();
-
+        
         int occurence = 0;
-
+        
         if (regex == null || regex.equals("") || threadNameId.matches(regex)) {
-          for (int i = 1; i < dumps.length; i++) {
+          for (int i = 1; i < tdiArrList.size(); i++) {
             Map<String, ThreadInfo> threadMap = tdiArrList.get(i).getThreadMap();
             if (threadMap.containsKey(threadNameId)) {
               occurence++;
@@ -305,7 +316,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             }
           }
 
-          if (occurence >= (minOccurence - 1)) {
+          if (occurence >= (noOfValidDumps - 1)) {
             threadCount++;
 
             String timeTaken0 = (tdiArrList.get(0).getStartTime() != null)?tdiArrList.get(0).getStartTime():"N/A";
@@ -331,7 +342,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             int maxLines = 0;
             ThreadInfo lastThreadInMerge = ti0;
 
-            for (int i = 1; i < dumps.length; i++) {
+            for (int i = 1; i < tdiArrList.size(); i++) {
               if (tdiArrList.get(i).getThreadMap().containsKey(threadNameId)) {
                 String timeTaken = (tdiArrList.get(i).getStartTime() != null)?tdiArrList.get(i).getStartTime():"N/A";
                 Map<String, ThreadInfo> cmpThreadMap = tdiArrList.get(i).getThreadMap();
@@ -377,9 +388,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           }
         }
       }
-    }   
+    } 
     
-    StringBuffer diffInfo = new StringBuffer(getStatInfo(keys, prefix, minOccurence, threadCount));
+    StringBuffer diffInfo = new StringBuffer(getStatInfo(keys, prefix, noOfValidDumps, threadCount));
     diffInfo.append(ThreadDumpInfo.getThreadDumpsOverview(tdiArrList));
     
     ((Category) catMerge.getUserObject()).setInfo(diffInfo.toString());

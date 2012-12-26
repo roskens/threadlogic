@@ -1135,6 +1135,12 @@ xmlns="http://java.net/projects/threadlogic">
     <Descrp>Dump Java Thread stacks programatically</Descrp>
 		<Advice>Ignore</Advice>
 	</Advisory>
-  
+  <Advisory>
+		<Name>MQ Series Shared Conversations</Name>
+		<Health>WARNING</Health>
+		<Keyword> Object.wait.*com.ibm.mq.jmqi.remote.internal.system.RemoteConnection.sendTSH.*MQSession.close</Keyword>
+    <Descrp>Threads communicating with MQ Series might go into wait state for long periods on closure of connections possibly due to shared conversations in MQ 7; Disable shared conversations if threads appear to hang or stay in wait state for long.</Descrp>
+		<Advice>Set the Sharing Conversation property of the Server Connection Channel to zero on MQ Series. Refer to Oracle Support Note Doc ID 1511617.1 or IBM Documentation on Shared Conversations </Advice>
+	</Advisory>  
 </tlogic:AdvisoryMap>
 	

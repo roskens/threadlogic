@@ -386,6 +386,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
     // then upgrade the health to one level up
     if ((health.ordinal() >= HealthLevel.WATCH.ordinal()) && !nameId.toLowerCase().contains("muxer")
             && !threadGrpName.toLowerCase().contains("jvm")
+            && !actualThreadFromLastTDI.getContent().contains("sleep") //Ignore sleeping threads...
         && progressIndicatorList.get(progressIndicatorList.size() - 1) != STATE_CHANGE.PROGRESS) {
 
       switch (health) {
