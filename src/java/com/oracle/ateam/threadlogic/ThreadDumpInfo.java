@@ -43,6 +43,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Thread Dump Information Node. It stores structural data about the thread dump
@@ -91,6 +93,8 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   protected Hashtable<String, LockInfo> lockTable = new Hashtable<String, LockInfo>();
   protected Hashtable<String, ThreadInfo> threadTable = new Hashtable<String, ThreadInfo>();
   protected Hashtable<String, ThreadGroup> threadGroupTable = new Hashtable<String, ThreadGroup>();
+  
+  static ExecutorService fixedPoolExecutor = Executors.newFixedThreadPool(6);
 
   public ThreadDumpInfo(String name, int lineCount) {
     super(name);
@@ -773,14 +777,41 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     return (getName() + postFix);
   }
 
+  public void runThreadsAdvisory() {    
+    
+    // Speed up individual thread analysis using concurrent executors...
+    int totalThreads = this.threadTable.values().size();
+    final AtomicInteger processedThreads = new AtomicInteger(0);
+    for (final ThreadInfo ti : this.threadTable.values()) {
+      fixedPoolExecutor.execute( 
+              new Runnable() { 
+                public void run() { ti.runAdvisory(); processedThreads.incrementAndGet(); }
+              } );
+    }
+    
+    do {
+      try {
+      Thread.sleep(100);
+      } catch(InterruptedException ie) {}
+    } while (totalThreads > processedThreads.get());
+    
+    this.threadList = sortByHealth(this.threadList);    
+  }
+  
+  /*
   public void runThreadsAdvisory() {
-
-    for (ThreadInfo ti : this.threadTable.values()) {
+    System.out.println("Without Executors");
+    long start = System.currentTimeMillis();
+    
+    for (final ThreadInfo ti : this.threadTable.values()) {
       ti.runAdvisory();
     }
-
+    
     this.threadList = sortByHealth(this.threadList);
+    System.out.println("Time spent without Executors: "  + (System.currentTimeMillis() - start));
   }
+   * 
+   */
 
   public synchronized void runAdvisory() {
 
@@ -1078,5 +1109,10 @@ public class ThreadDumpInfo extends ThreadLogicElement {
    */
   public void setNoOfRunningThreads(int noOfRunningThreads) {
     this.noOfRunningThreads = noOfRunningThreads;
+  }
+  
+  public static void shutdownExecutor() {
+    if (fixedPoolExecutor != null)
+      fixedPoolExecutor.shutdown();
   }
 }

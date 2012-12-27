@@ -2184,7 +2184,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    */
   private void closeCurrentDump() {
     TreePath selPath = tree.getSelectionPath();
-
+    if (selPath == null)
+      return;
+    
     boolean isNotFromFile = isNotFromFile((DefaultMutableTreeNode) selPath.getLastPathComponent());
     
     while (selPath != null
@@ -2496,6 +2498,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       }
 
       public void windowClosed(WindowEvent e) {
+        ThreadDumpInfo.shutdownExecutor();
         System.exit(0);
       }
     });
