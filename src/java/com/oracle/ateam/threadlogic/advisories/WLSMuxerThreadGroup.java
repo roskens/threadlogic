@@ -87,10 +87,11 @@ public class WLSMuxerThreadGroup extends CustomizedThreadGroup {
                 || (threadInfo.getState() == ThreadState.PARKING) 
               ) {
               
+      /*
         // Check if this is from a IBM JVM
         // IBM JVM makes the poller marks it as CW/Waiting state as its waiting natively in poll
         // If not IBM, add warning about Muxer blocked in a bad state
-        if (!threadInfo.isIBMJVM()) {
+        if (!threadInfo.isIBMJVM() && !threadInfo.getContent().contains("FdStruct") ) {
 
           ThreadAdvisory warningAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.MUXER_WAITING);        
           advisoryList.add(warningAdvisory);
@@ -103,6 +104,11 @@ public class WLSMuxerThreadGroup extends CustomizedThreadGroup {
         // and the muxer thread appears in Condition Wait while holding lock and blocking other muxer threads
         advisoryList.remove(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.WAITING_WHILE_BLOCKING));    
       }
+       * 
+       */
+      
+      // Remove the waiting_while_blocking pattern for muxers in general... as muxers might be doing small waits for fd events
+      advisoryList.remove(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.WAITING_WHILE_BLOCKING));    
     }
 
     // Make sure the Muxer thread not executing or handling requests itself.

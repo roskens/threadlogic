@@ -570,7 +570,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>ThreadStarvation</Keyword>
 		<Descrp>WLS Default Thread pool is possibly running out of free threads to serve requests</Descrp>
-		<Advice>There are too few idle threads in WLS Default Thread pool to handle new requests or callbacks (like OSB Service callout response or JTA commit callbacks or JMS acks) if system is heavily loaded; If multiple threads show up in Service callout remote response, configure custom work manager with min thread constraints for the Busines service response handling. For JTA commits blocked for remote callbacks, apply Bug fix 9974377 and 10236820 (WLS 10.3) that uses separate WM for JTA commits (needs to be applied on all servers involved in the distributed transaction)</Advice>
+		<Advice>Ignore if the server is still starting up. There are too few idle threads in WLS Default Thread pool to handle new requests or callbacks (like OSB Service callout response or JTA commit callbacks or JMS acks) if system is heavily loaded; If multiple threads show up in Service callout remote response, configure custom work manager with min thread constraints for the Busines service response handling. For JTA commits blocked for remote callbacks, apply Bug fix 9974377 and 10236820 (WLS 10.3) that uses separate WM for JTA commits (needs to be applied on all servers involved in the distributed transaction)</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Reserve Connection from Pool</Name>
@@ -637,7 +637,7 @@ xmlns="http://java.net/projects/threadlogic">
 	</Advisory>
 	<Advisory>
 		<Name>Deployment started</Name>
-		<Health>NORMAL</Health>
+		<Health>WATCH</Health>
 		<Keyword>DeploymentServerService.start</Keyword>
 		<Descrp>Deployment Service has been started</Descrp>
 		<Advice>Server bringing up deployment service. Deployments should complete in a finite time. Precompile application bits with the correct server version ahead of deployment if possible to speed up deployment time</Advice>
@@ -817,6 +817,15 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>Thread handling WLS Persistent FileStoreIO</Descrp>
 		<Advice>thread writing to wls file based persistence</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>WLS Persistent Store recovery</Name>
+		<Health>WATCH</Health>
+		<Keyword>weblogic.messaging.kernel.internal.PersistenceImpl.recover</Keyword>
+		<Descrp>WLS starting recovery of persistent stores (JMS filestores or default stores) at startup</Descrp>
+		<Advice>The recovery will affect server startup based on number of messasges in the jms stores; compact JMS file stores if possible before restart; Refer to JMS Documentation on weblogic.store.Admin utility</Advice>
+	</Advisory>
+  
+  
   <Advisory>
 		<Name>WLS Java Socket Muxer</Name>
 		<Health>WARNING</Health>

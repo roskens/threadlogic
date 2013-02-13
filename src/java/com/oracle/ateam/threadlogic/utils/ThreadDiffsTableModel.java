@@ -398,7 +398,13 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
         health = HealthLevel.WARNING;
         break;
       }
-    }
+    } else if ((actualThreadFromLastTDI.getState() == ThreadState.RUNNING) && !nameId.toLowerCase().contains("muxer")
+            && !threadGrpName.toLowerCase().contains("jvm")           
+        && progressIndicatorList.get(progressIndicatorList.size() - 1) != STATE_CHANGE.PROGRESS) {
+
+      // Even if the thread appears in Running state, but shows no progress, mark it under WATCH
+      return HealthLevel.WATCH;
+    }  
 
     return health;
   }
