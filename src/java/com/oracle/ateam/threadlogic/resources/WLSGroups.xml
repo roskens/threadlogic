@@ -245,12 +245,10 @@ xmlns="http://java.net/projects/threadlogic">
 			<Pattern>oracle.wsm</Pattern>
 			<Pattern>orabpel.sweeper</Pattern>
 			<Pattern>com.collaxa.cube</Pattern>
-			<Pattern>oracle.tip.mediator</Pattern>
-			<Pattern>oracle.tip.b2b</Pattern>
-      <Pattern>oracle.tip.pc</Pattern>
+			<Pattern>oracle.tip</Pattern>
 			<Pattern>oracle.mds</Pattern>
-      <Pattern>com.evermind.util.ReleasableResourcePooledExecutor</Pattern>
-      <Pattern> HTTPClient.</Pattern>
+		      <Pattern>com.evermind.util.ReleasableResourcePooledExecutor</Pattern>
+		      <Pattern> HTTPClient.</Pattern>
 		</PatternList>
 	</SimpleGroup>
 	<SimpleGroup>

@@ -835,7 +835,7 @@ xmlns="http://java.net/projects/threadlogic">
 	</Advisory>
 	<Advisory>
 		<Name>Wait for RMI Response</Name>
-		<Health>NORMAL</Health>
+		<Health>WATCH</Health>
 		<Keyword>ResponseImpl.waitForData</Keyword>
 		<Descrp>Waiting for Remote WLS Server response</Descrp>
 		<Advice>Normal behavior, blocked for remote rmi response</Advice>
@@ -845,7 +845,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>ReentrantLock.lock</Keyword>
 		<Descrp>Thread attempting to acquire java concurrent Reentrant Lock</Descrp>
-    <Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Reentrant Lock</Advice>
+    <Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Reentrant Lock; Enable jvm flag -XX:+UseMembar if threads are blocked for Reentrant locks with OSB</Advice>
 	</Advisory>
   <Advisory>
 		<Name>Trying to acquire Write Lock</Name>
@@ -854,7 +854,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>Thread attempting to acquire java concurrent Write Lock</Descrp>
 		<Advice>
       Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; 
-    Use -XX:+PrintConcurrentLocks to print the details of locks   
+    Use -XX:+PrintConcurrentLocks to print the details of locks; Enable jvm flag -XX:+UseMembar if threads are blocked for Reentrant locks with OSB   
     </Advice>
 	</Advisory>
   <Advisory>
@@ -862,7 +862,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>ReadLock.lock</Keyword>
 		<Descrp>Thread attempting to acquire java concurrent Read Lock</Descrp>
-		<Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Read Lock</Advice>
+		<Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Read Lock; Enable jvm flag -XX:+UseMembar if threads are blocked for Reentrant locks with OSB</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Hot Spots</Name>
