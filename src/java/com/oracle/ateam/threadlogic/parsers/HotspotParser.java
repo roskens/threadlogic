@@ -91,7 +91,8 @@ public class HotspotParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*- parking to wait.*)");
     this.lineChecker.setWaitingToPattern("(.*- waiting to.*)");
     this.lineChecker.setLockedPattern("(.*- locked.*)");
-    this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|Full thread dump|<EndOfDump>).*");
+    this.lineChecker.setEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|Full thread dump|JNI global references|object space|<EndOfDump>).*");
+    this.lineChecker.setExactEndOfDumpPattern(".*(VM Periodic Task Thread|Suspend Checker Thread|JNI global references|object space|<EndOfDump>).*");
     this.setJvmVendor(JVM_VENDOR_LIST[HOTSPOT_VM]);
     
     parseJvmVersion(bis);

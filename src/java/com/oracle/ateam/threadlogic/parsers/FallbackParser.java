@@ -144,7 +144,8 @@ public class FallbackParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*\\.park\\.\\(.*)");
     this.lineChecker.setWaitingToPattern("(.* BLOCKED on.*)");
     
-    this.lineChecker.setEndOfDumpPattern(".*(\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for the running|(Full Thread Dump)|<EndOfDump>).*");
+    this.lineChecker.setEndOfDumpPattern(".*(\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for the running|(Full Thread Dump)|(THREAD TIMING STATISTICS)|<EndOfDump>).*");
+    this.lineChecker.setExactEndOfDumpPattern(".*(\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for the running|(THREAD TIMING STATISTICS)|(Full Thread Dump)|<EndOfDump>).*");
     
     // Handle WLST, JRockit, Sun thread labels
     this.lineChecker.setEndOfTitlePattern(".*( RUNNABLE| WAITING| BLOCKED| TIMED_WAITING).*");
@@ -603,6 +604,21 @@ public class FallbackParser extends AbstractDumpParser {
               // any)
               
               
+              /**
+               * Check for Badly formatted threads starting with "Workmanager and ending with ms
+               * "Workmanager: , Version: 0, Scheduled=false, Started=false, Wait time: 0 ms
+               * " id=1509 idx=0x84 tid=10346 prio=10 alive, sleeping, native_waiting, daemon
+               */
+              
+              
+              if (tempLine.startsWith("\"Workmanager: ") && tempLine.endsWith(" ms")) {
+                // Read further the next line and add it to the title                
+                line = getNextLine().trim();
+                tempLine = tempLine + line;
+                lineCounter++;
+                singleLineCounter++;
+              }
+              
               if (!stillInParsingTitle) {
                 String stringContent = content != null ? content.toString() : null;
                 if (title != null) {
@@ -727,13 +743,25 @@ public class FallbackParser extends AbstractDumpParser {
               if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
                 getBis().reset();                
               }
+              
+              //Add support for ECID and Context Data Parsing
+              if (!checkThreadDumpContextData(overallTDI)) {
+                // no statistical data found, set back original
+                // position.
+                getBis().reset();
+              }
+              
+              getBis().mark(getMarkSize());
+              
             } else {
               // Mark the point as we have successfuly parsed the thread
               getBis().mark(getMarkSize());
             }
           }
-        }
+        }        
+        
         getBis().reset();
+        
         // last thread
         String stringContent = content != null ? content.toString() : null;
         if (title != null) {

@@ -397,10 +397,17 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>WLS Cluster might be unhealthy</Descrp>
 		<Advice>If using Unicast, apply latest Unicast related patches and enable Message Ordering or switch to Multicast; If using Multicast, servers might not be communicating well due to excessive GCs or other issues, check all cluster members health</Advice>
   </Advisory>
+  <Advisory>
+		<Name>WLS Cluster DB Leasing</Name>
+		<Health>NORMAL</Health>
+		<Keyword>weblogic.cluster.singleton.DatabaseLeas</Keyword>
+		<Descrp>WLS Cluster using DB for managing leases</Descrp>
+		<Advice>Ensure database connectivity is healthy to maintain leases</Advice>
+  </Advisory>
 	<Advisory>
 		<Name>DB Execute</Name>
 		<Health>WATCH</Health>    
-    <Keyword>Statement.execute</Keyword>
+    <Keyword>Statement.execute, Statement.fetch</Keyword>
 		<Descrp>Executing operation or query on DB</Descrp>
 		<Advice>Check/Monitor Database SQL Executions if it takes longer and also check for socket connection disruption to database; if the thread continues to show same pattern or remains stuck (use AWR reports to debug)</Advice>
 	</Advisory>
@@ -515,6 +522,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>UnixFileSystem.getBooleanAttributes</Keyword>
 		<Descrp>Thread getting file attributes from file system</Descrp>
 		<Advice>Check for disk slowness or problem with file system (NFS) if pattern continues</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Check Canonical File Path</Name>
+		<Health>WATCH</Health>
+		<Keyword>UnixFileSystem.canonicalize</Keyword>
+		<Descrp>Thread checking canonical file path</Descrp>
+		<Advice>Check for disk slowness or problem with file system (NFS) if pattern continues; Run "df -k" to verify network mounts are not hanging. </Advice>
 	</Advisory>
 	<Advisory>
 		<Name>NIO Select</Name>
@@ -726,6 +740,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>OSB Session activation in progress or committing</Descrp>
 		<Advice>OSB Configuration is being updated via an active session; Ensure the activation goes through and the thread does not enter into blocked state</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>OSB JMS Reporting Action</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.bea.wli.reporting.jmsprovider</Keyword>
+		<Descrp>OSB Reporting JMS Provider execution</Descrp>
+		<Advice>Normal reporting action</Advice>
+	</Advisory>
 	<Advisory>
 		<Name>Large # of Parallel GC Threads</Name>
 		<Health>WARNING</Health>
@@ -825,7 +846,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>The recovery will affect server startup based on number of messasges in the jms stores; compact JMS file stores if possible before restart; Refer to JMS Documentation on weblogic.store.Admin utility</Advice>
 	</Advisory>
   
-  
+  <Advisory>
+		<Name>WLS NM Client</Name>
+		<Health>NORMAL</Health>
+		<Keyword>weblogic.nodemanager.client</Keyword>
+		<Descrp>WLS server is either communicating with NM or running as NM</Descrp>
+		<Advice>Normal Server-NM communication</Advice>
+	</Advisory>
   <Advisory>
 		<Name>WLS Java Socket Muxer</Name>
 		<Health>WARNING</Health>
@@ -1112,14 +1139,17 @@ xmlns="http://java.net/projects/threadlogic">
   <Advisory>
 		<Name>JRockit JFR Repository creation</Name>
 		<Health>WARNING</Health>
-		<Keyword>File.*oracle.jrockit.jfr.Repository.*BootService.start</Keyword>
+		<Keyword>oracle.jrockit.jfr.Repository.*BootService.start</Keyword>
 		<Descrp>JRockit might be unable to create JFR repository at startup</Descrp>
 		<Advice>WLS Server attempts to create JFR repository for use in WLDF during server startup under $TEMP location. If the $TEMP location is not writeable or problems exist with the file system, then the server startup can hang. Check permissions for $TEMP or override the default location with -Djava.io.tmpdir=... parameter in server startup script. </Advice>
 	</Advisory>
   <Advisory>
 		<Name>NIOMuxer Bug 13962335 </Name>
 		<Health>WARNING</Health>
-		<Keyword>sun.nio.ch.SocketDispatcher.read.*sun.nio.ch.SocketChannelImpl.read.*NIOSocketMuxer.*MuxableSocketT3.connect</Keyword>
+    <!--
+		<Keyword>sun.nio.ch.SocketDispatcher.read.*sun.nio.ch.SocketChannelImpl.read.*NIOSocketMuxer.*MuxableSocketT3.connect</Keyword> 
+    -->
+    <Keyword>NIOSocketMuxer.*MuxableSocketT3.connect</Keyword>
 		<Descrp>Check if WLS NIOMuxer is blocked for long, attempting to read from an unreachable endpoint, which can lead to stuck thread and severe Server Hang situations</Descrp>
 		<Advice>Apply Patch for Bug #13962335 on all weblogic servers if the server thread continues in the same read state across multiple thread dumps</Advice>
 	</Advisory>
@@ -1147,7 +1177,7 @@ xmlns="http://java.net/projects/threadlogic">
   <Advisory>
 		<Name>MQ Series Shared Conversations</Name>
 		<Health>WARNING</Health>
-		<Keyword> Object.wait.*com.ibm.mq.jmqi.remote.internal.system.RemoteConnection.sendTSH.*MQSession.close</Keyword>
+		<Keyword> com.ibm.mq.jmqi.remote.internal.system.RemoteConnection.sendTSH.*MQSession.close</Keyword>
     <Descrp>Threads communicating with MQ Series might go into wait state for long periods on closure of connections possibly due to shared conversations in MQ 7; Disable shared conversations if threads appear to hang or stay in wait state for long.</Descrp>
 		<Advice>Set the Sharing Conversation property of the Server Connection Channel to zero on MQ Series. Refer to Oracle Support Note Doc ID 1511617.1 or IBM Documentation on Shared Conversations </Advice>
 	</Advisory>  

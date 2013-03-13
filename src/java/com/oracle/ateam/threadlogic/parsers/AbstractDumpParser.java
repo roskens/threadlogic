@@ -110,6 +110,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   protected String BLOCKED_FOR_LOCK;
   protected String GENERAL_WAITING;
   
+  // Adding support for ECID & Thread Context data as part of generated thread dump
+  protected String THREAD_TIMING_STATISTICS = " THREAD TIMING STATISTICS";
+  protected String THREAD_CONTEXT_INFO = " THREAD CONTEXT INFORMATION";
+  
   protected static final int HOTSPOT_VM = 0;
   protected static final int JROCKIT_VM = 1;
   protected static final int IBM_VM = 2;
@@ -337,6 +341,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   }
                   content.append("</font><br><br>");
                 }
+                
+                if (ti0.getCtxData() != null) {
+                  content.append("<font size=4>Context Data: </font><font size=3>");        
+                  String[] ctxDataSet = ti0.getCtxData().split(ThreadInfo.CONTEXT_DATA_SEPARATOR);
+                  for(String contextData : ctxDataSet)
+                    content.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;" + contextData);
+                  content.append("</font><br><br>");
+                }
                 content.append(fixMonitorLinks(ti0.getContent(), (String) keys.get(0)));
 
             int maxLines = 0;
@@ -370,6 +382,15 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   }
                   content.append("</font><br><br>");
                 }
+                
+                if (cmpThreadInfo.getCtxData() != null) {
+                  content.append("<font size=4>Context Data: </font><font size=3>");        
+                  String[] ctxDataSet = cmpThreadInfo.getCtxData().split(ThreadInfo.CONTEXT_DATA_SEPARATOR);
+                  for(String contextData : ctxDataSet)
+                    content.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;" + contextData);
+                  content.append("</font><br><br>");
+                }
+
                 
                 content.append(fixMonitorLinks(cmpThreadInfo.getContent(), (String) keys.get(i)));
                 int countLines = countLines(cmpThreadInfo.getContent());
@@ -1435,7 +1456,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 overallTDI.setStartTime(parsedStartTime);                
               }
             }
-              
+            
+            
             if ((tempLine = lineChecker.getStackStart(line)) != null) {
 
               // SABHA - Commenting off the GC thread portion, we want to know
@@ -1450,6 +1472,22 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               // thread
               // First, flush state for the previous thread (if
               // any)
+              
+              /**
+               * Check for Badly formatted threads starting with '"Workmanager' and ending with ' ms'
+               * "Workmanager: , Version: 0, Scheduled=false, Started=false, Wait time: 0 ms
+               * " id=1509 idx=0x84 tid=10346 prio=10 alive, sleeping, native_waiting, daemon
+               */
+              
+              tempLine = tempLine.trim();
+              if (tempLine.startsWith("\"Workmanager:") && tempLine.endsWith(" ms")) {
+                // Read further the next line and add it to the current thread title line                
+                line = getNextLine().trim();
+                tempLine = tempLine + line;
+                lineCounter++;
+                singleLineCounter++;
+              }
+              
               concurrentSyncsFlag = false;
               if (content != null) content.append("</font></pre><br>");
               String stringContent = content != null ? content.toString() : null;
@@ -1544,18 +1582,27 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                * 
                */
 
+              getBis().mark(getMarkSize());
+              
               if (!checkThreadDumpStatData(overallTDI)) {
                 // no statistical data found, set back original
                 // position.
                 getBis().reset();
               }
 
-              getBis().mark(getMarkSize());
               
               if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
                 getBis().reset();                
               }
-            } else {
+              
+              if (!checkThreadDumpContextData(overallTDI)) {
+                // no thread context data found, set back original
+                // position.
+                getBis().reset();
+              }
+              
+            } else {              
+              
               // Mark the point as we have successfuly parsed the thread
               getBis().mark(getMarkSize());
             }
@@ -1769,6 +1816,155 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   }
 
   /**
+   * id         ECID                                               RID   Context Values
+   * ---------------------------------------------------------------------------------
+   * id=21  11d1def534ea1be0:6e9ce0e7:13882a8ef89:-8000-0000000000000099 0  WEBSERVICE_PORT.name=execute_pt
+   *                                                                        dbRID=0:8
+   *                                                                        composite_name=DiagProject
+   *                                                                        component_name=TestProject_Mediator1
+   *                                                                        J2EE_MODULE.name=fabric
+   *                                                                        component_instance_id=5184D160CD4211E18F02CB6
+   *                                                                        WEBSERVICE_NAMESPACE.name=http:/TestProject
+   *                                                                        activity_name=AQ_Java_Embedding1
+   *                                                                        J2EE_APP.name=soa-infra
+   *                                                                        WEBSERVICE.name=TestProject
+   *                                                                        composite_instance_id=60004
+   * id=286 11d1def534ea1be0:6e9ce0e7:13882a8ef89:-8000-0000000000000024 0  dbRID=0:12
+   * id=712 11d1def534ea1be0:6e9ce0e7:13882a8ef89:-8000-0000000000000003 0  dbRID=0:7
+   *
+   * @param threadDump
+   * @return
+   * @throws java.io.IOException
+   */
+  
+  protected boolean checkThreadDumpContextData(ThreadDumpInfo tdi) throws IOException {
+    boolean finished = false;
+    boolean reachedExactEndOfDump = false;
+    boolean foundTimingStatistics = false;
+    boolean foundContextData = false;
+    
+    String threadId ,ecid;
+    StringBuffer contextValBuf = null;
+    
+    int lines = 0;
+
+    threadId = ecid = null;
+            
+    while (getBis().ready() && !finished) {
+      String line = getNextLine();
+      
+      if (line == null) {
+        finished = true;
+        return false;
+      }
+      
+      line = line.trim();
+      
+      // We have reached start of a new thread dump, so stop      
+      if (this.lineChecker.getFullDump(line) != null) {
+        finished = true;        
+        return false;
+      }
+    
+      // The Thread Context Data section occurs after thread dump
+      // We have not reached end of the thread dump, so continue      
+      if (!reachedExactEndOfDump) {
+        if ( this.lineChecker.getExactEndOfDump(line) == null) {
+          continue;
+        } else {
+          reachedExactEndOfDump = true;
+          getBis().mark(getMarkSize());
+        } 
+      }
+      
+      // Start count of lines that came after actual End of the thread Dump
+      lines++;      
+      if (!foundTimingStatistics ) {
+        // Sometimes the Timing Statistics Section might not be present ahead of the Thread Context Section
+        // So check for both
+        if (line.indexOf(THREAD_TIMING_STATISTICS) > 0)  {
+          foundTimingStatistics = true;          
+        } else if (line.indexOf(THREAD_CONTEXT_INFO) > 0) {
+          foundContextData = foundTimingStatistics = true;
+        } else if (lines >= getMaxCheckLines()) {
+          finished = true;
+        }
+      } else {
+        // Found Timing Statistics section that occurs before Thread Context Info section
+        if (line.equals("") || line.startsWith("----"))
+          continue;
+        
+        // There will be one statistic line per thread
+        // Keep going till we reach Thread Context Info banner
+        // then start parsing ECID and other Context data per thread        
+        if (!foundContextData) {          
+            // Found begining marker of Thread Context Info 
+            foundContextData = (line.indexOf(THREAD_CONTEXT_INFO) > 0);
+            
+            //skip just found Thread Context Info banner and proceed to actual data...
+            if (foundContextData)
+              continue;
+            
+        } else if (line.indexOf(THREAD_CONTEXT_INFO) > 0){
+          // We have reached Thread Context Info marker again
+          // Treat that as end of processing and return
+          finished = true;
+        }
+        
+        // We are in Thread Context Info Section
+        // start processing line entries
+        if (foundContextData && !finished) {
+            
+            // Parse the line entry
+          
+            // If its start of a new thread context info
+            if (line.startsWith("id=")) {
+              
+              // Save previous thread context
+              if (threadId != null) {
+                
+                //System.out.println("ThreadId: " + threadId);
+                //System.out.println("ThreadContextData: " + contextValBuf.toString());
+                tdi.addThreadContextData(threadId, contextValBuf.toString());
+                threadId = ecid = null;
+              }
+              
+              // Parse new thread context info
+              String[] entries = line.trim().split("\\s+");
+              threadId = entries[0].substring(3);
+              ecid = entries[1];
+              contextValBuf = new StringBuffer("mECID=" + ecid + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+              
+              // The 4th column contains the context data
+              if (entries.length > 3)
+                contextValBuf.append(entries[3] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+            } else {              
+              // This line entry only contains context data and is part of current thread context
+              if (contextValBuf == null)
+                contextValBuf = new StringBuffer();
+              
+              contextValBuf.append(line + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+            }            
+          }
+        } 
+      }
+
+    // Save the last entry
+    if (threadId != null && contextValBuf != null) {
+      tdi.addThreadContextData(threadId, contextValBuf.toString());
+    }
+    
+    // We have hit the end marker for the Thread Context Info 
+    // finish parsing
+    finished = true;
+    
+    if (!foundContextData)
+      getBis().reset();
+        
+    return foundContextData;
+  }
+
+  /**
    * check if any dead lock information is logged in the stream
    * 
    * @param threadDump
@@ -1906,9 +2102,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     Pattern waitingToPattern;
     Pattern lockedPattern;
     Pattern endOfDumpPattern;
+    Pattern exactEndOfDumpPattern;
     Pattern lockReleasedPattern;
     Pattern gcThreadPattern = createPattern(".*(\".*G[Cc].*hread.*\").*");
-    Pattern endOfTitlePattern;
+    Pattern endOfTitlePattern;    
 
     @Override
     public String getFullDump(String line) {
@@ -2029,6 +2226,17 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       }
       return null;
     }
+    
+    @Override
+    public String getExactEndOfDump(String line) {
+      if (endOfDumpPattern != null) {
+        Matcher matcher = exactEndOfDumpPattern.matcher(line);
+        if (matcher.matches()) {
+          return matcher.group(1);
+        }
+      }
+      return null;
+    }
 
     @Override
     public String getLockReleased(String line) {
@@ -2088,6 +2296,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     @Override
     public void setEndOfDumpPattern(String pattern) {
       endOfDumpPattern = createPattern(pattern);
+    }
+    
+    @Override
+    public void setExactEndOfDumpPattern(String pattern) {
+      exactEndOfDumpPattern = createPattern(pattern);
     }
 
     @Override

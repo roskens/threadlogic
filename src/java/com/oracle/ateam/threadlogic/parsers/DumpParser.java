@@ -85,6 +85,10 @@ public interface DumpParser {
     public String getLocked(String line);
 
     public String getEndOfDump(String line);
+    
+    //Adding marker to identify exact end of thread dump
+    // for integration with ECID/Context Data
+    public String getExactEndOfDump(String line);
 
     public String getLockReleased(String line);
 
@@ -108,7 +112,9 @@ public interface DumpParser {
 
     public void setLockedPattern(String pattern);
 
-    public void setEndOfDumpPattern(String pattern);
+    public void setEndOfDumpPattern(String pattern);    
+    
+    public void setExactEndOfDumpPattern(String pattern);
 
     public void setLockReleasedPattern(String pattern);
 

@@ -73,6 +73,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   private Category threads;
   private Category deadlocks;
   private HeapInfo heapInfo;
+  
 
   protected String deadLockMsg;
   protected DeadLockEntry deadlockEntry;
@@ -93,6 +94,8 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   protected Hashtable<String, LockInfo> lockTable = new Hashtable<String, LockInfo>();
   protected Hashtable<String, ThreadInfo> threadTable = new Hashtable<String, ThreadInfo>();
   protected Hashtable<String, ThreadGroup> threadGroupTable = new Hashtable<String, ThreadGroup>();
+  
+  private Hashtable<String, String> threadContextDataMap = new Hashtable<String, String>();
   
   static ExecutorService fixedPoolExecutor = Executors.newFixedThreadPool(6);
 
@@ -502,6 +505,11 @@ public class ThreadDumpInfo extends ThreadLogicElement {
       ti.setParentThreadDump(this);
       ti.setIsIBMJVM(this.isIBMJVM);
       this.threadList.add(ti);
+      
+      String nid = ti.getNid();      
+      String contextData = this.getThreadContextData(nid);
+      if (contextData != null)
+        ti.setCtxData(contextData);
       
       if (ti.isMainThread()) {
         String[] stackLines = ti.getContent().split("(\n)|(\r\n)");        
@@ -1114,5 +1122,18 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   public static void shutdownExecutor() {
     if (fixedPoolExecutor != null)
       fixedPoolExecutor.shutdown();
+  }
+  
+  public void addThreadContextData(String id, String contextData) {
+    if (id != null)
+      this.threadContextDataMap.put(id, contextData);
+  }
+  
+  
+  public String getThreadContextData(String id) {
+    if (id == null)
+      return null;
+    
+    return this.threadContextDataMap.get(id);
   }
 }

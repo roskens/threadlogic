@@ -46,6 +46,11 @@ public class ThreadInfo extends ThreadLogicElement {
   
   // Add support for ECIDs
   private String ecid;
+  
+  // Add support for ContextData
+  private String ctxData;
+  
+  public static final String CONTEXT_DATA_SEPARATOR = ";;"; 
 
   public ThreadInfo(String name, String info, String content, int stackLines, String[] tableTokens) {
     super(name);
@@ -182,6 +187,22 @@ public class ThreadInfo extends ThreadLogicElement {
   public String getId() {
     if ( tokens != null && tokens.length > 2)
       return tokens[1];
+    return null;
+  }
+  
+  public String getNid() {
+    
+    if ( tokens != null) {
+      // For wlst generated dump, there are no nids, only ids
+      String nid = tokens[1];
+      
+      // if Token[2] is not null, return that
+      if ((tokens.length > 2) && (tokens[2] != null))
+        nid = tokens[2];
+      
+      return nid;
+    }
+    
     return null;
   }
 
@@ -398,11 +419,35 @@ public class ThreadInfo extends ThreadLogicElement {
 
      */
     
-    int beginIndex = content.indexOf("mECID: ");
+    int beginIndex = content.indexOf("mECID");
     if (beginIndex < 0) 
       return;    
     
-    int endIndex = content.indexOf("\n", beginIndex+7);
-    setEcid(content.substring(beginIndex + 7, endIndex).trim());  
+    int endIndex = content.indexOf("\n", beginIndex+6);
+    setEcid(content.substring(beginIndex + 6, endIndex).trim());  
+  }
+
+  /**
+   * @return the ctxData
+   */
+  public String getCtxData() {
+    return ctxData;
+  }
+
+  /**
+   * @param ctxData the ctxData to set
+   */
+  public void setCtxData(String ctxData) {
+    this.ctxData = ctxData;
+    
+    int beginIndex = ctxData.indexOf("mECID");
+    if (beginIndex < 0) 
+      return;    
+    
+    int endIndex = ctxData.indexOf(ThreadInfo.CONTEXT_DATA_SEPARATOR, beginIndex+6);
+    if (endIndex > 0) 
+      setEcid(ctxData.substring(beginIndex + 6, endIndex).trim());
+    else
+      setEcid(ctxData.substring(beginIndex + 6).trim());
   }
 }

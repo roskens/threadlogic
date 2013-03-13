@@ -410,7 +410,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         displayContent(null);
       }
 
-      getMainMenu().getFindLRThreadsToolBarButton().setEnabled(true);
+      try {
+        getMainMenu().getFindLRThreadsToolBarButton().setEnabled(true);
+      } catch(Exception e) { }
       getMainMenu().getExpandButton().setEnabled(true);
       getMainMenu().getCollapseButton().setEnabled(true);
     }
@@ -1166,6 +1168,17 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         }
         sb.append("</font><br><br>");
       }
+      
+      //Display Thread Context Data if available
+      if (ti.getCtxData() != null) {
+        sb.append("<font size=5>Context Data: </font><font size=3>");
+        
+        String[] ctxDataSet = ti.getCtxData().split(ThreadInfo.CONTEXT_DATA_SEPARATOR);
+        for(String contextData : ctxDataSet)
+          sb.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;" + contextData);
+        sb.append("</font><br><br>");
+      }
+      
       if (ti.getInfo() != null) {
         sb.append(ti.getInfo());
         sb.append(ti.getContent());
