@@ -425,6 +425,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>JRockit VM is trying to allocate memory</Descrp>
 		<Advice>Allocate more heap/memory, watch more closely for OOM/insufficient memory if pattern occurs in multiple threads or thread dumps</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>Threaddump generation</Name>
+		<Health>IGNORE</Health>
+		<Keyword>oracle.dfw.impl.dump.ThreadDump, sun.management.ThreadImpl.getThreadInfo</Keyword>
+		<Descrp>Generating thread dump</Descrp>
+		<Advice>Ignore</Advice>
+	</Advisory>
 	<Advisory>
 		<Name>Test health of JDBC Connection</Name>
 		<Health>WATCH</Health>
@@ -823,6 +830,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>oracle.tip.adapter.aq.*AbstractDequeueAgent</Keyword>
 		<Descrp>AQ Message dequeuing</Descrp>
 		<Advice>Normal AQ message dequeue thread</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Oracle SOA File Adapter</Name>
+		<Health>NORMAL</Health>
+		<Keyword>oracle.tip.adapter.file.inbound.ProcessWork</Keyword>
+		<Descrp>Oracle SOA File Adapter running</Descrp>
+		<Advice>Normal</Advice>
 	</Advisory>
   <Advisory>
 		<Name>WLS Persistent Store Thread</Name>

@@ -347,7 +347,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   String[] ctxDataSet = ti0.getCtxData().split(ThreadInfo.CONTEXT_DATA_SEPARATOR);
                   for(String contextData : ctxDataSet)
                     content.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;" + contextData);
-                  content.append("</font><br><br>");
+                  content.append("</font><br>");
                 }
                 content.append(fixMonitorLinks(ti0.getContent(), (String) keys.get(0)));
 
@@ -388,9 +388,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   String[] ctxDataSet = cmpThreadInfo.getCtxData().split(ThreadInfo.CONTEXT_DATA_SEPARATOR);
                   for(String contextData : ctxDataSet)
                     content.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;" + contextData);
-                  content.append("</font><br><br>");
+                  content.append("</font><br>");
                 }
-
                 
                 content.append(fixMonitorLinks(cmpThreadInfo.getContent(), (String) keys.get(i)));
                 int countLines = countLines(cmpThreadInfo.getContent());
@@ -739,7 +738,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       while (iterLocks.hasNext()) {
         String thread = (String) iterLocks.next();
         String stackTrace = (String) threads[MonitorMap.LOCK_THREAD_POS].get(thread);
-        if (threads[MonitorMap.SLEEP_THREAD_POS].containsKey(thread)) {
+        if (threads[MonitorMap.SLEEP_THREAD_POS].containsKey(thread)) {          
           createNode(monitorNode, "locks and sleeps on monitor: " + thread, null, stackTrace, 0);
           sleeps++;
         } else if (threads[MonitorMap.WAIT_THREAD_POS].containsKey(thread)) {
@@ -1468,25 +1467,22 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                * continue; }
                */
 
-              // We are starting a group of lines for a different
-              // thread
-              // First, flush state for the previous thread (if
-              // any)
-              
               /**
                * Check for Badly formatted threads starting with '"Workmanager' and ending with ' ms'
                * "Workmanager: , Version: 0, Scheduled=false, Started=false, Wait time: 0 ms
                * " id=1509 idx=0x84 tid=10346 prio=10 alive, sleeping, native_waiting, daemon
                */
               
-              tempLine = tempLine.trim();
-              if (tempLine.startsWith("\"Workmanager:") && tempLine.endsWith(" ms")) {
-                // Read further the next line and add it to the current thread title line                
-                line = getNextLine().trim();
-                tempLine = tempLine + line;
-                lineCounter++;
-                singleLineCounter++;
-              }
+              // Check if the thread contains "Workmanager:" and ending with " ms" 
+              // In that case, rerun the pattern to get correct thread label
+              String additionalLines = readAheadForWMThreadLabels(line);
+              if (additionalLines.length() > line.length())
+                tempLine = additionalLines;              
+              
+              // We are starting a group of lines for a different
+              // thread
+              // First, flush state for the previous thread (if
+              // any)              
               
               concurrentSyncsFlag = false;
               if (content != null) content.append("</font></pre><br>");
@@ -1764,6 +1760,34 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
     return (null);
   }
+  
+  /**
+   * Check for Badly formatted threads starting with "Workmanager and ending with ms
+   * "Workmanager: , Version: 0, Scheduled=false, Started=false, Wait time: 0 ms
+   * " id=1509 idx=0x84 tid=10346 prio=10 alive, sleeping, native_waiting, daemon
+   * @param line
+   * @return
+   * @throws java.io.IOException
+   * 
+   */
+  protected String readAheadForWMThreadLabels(String line) throws IOException {
+    String currentLine = line.trim();
+    if (!(currentLine.contains("\"Workmanager:") && currentLine.endsWith(" ms"))) {
+      return line;
+    }
+    
+    // Read further the next line and add it to the current thread title line                
+    String newLine = null;    
+    do {                  
+      lineCounter++;
+      newLine = getNextLine();
+    } while (newLine.trim().equals("")); 
+
+    currentLine = line + newLine;     
+    //System.out.println("Returning Modified line: " + currentLine);
+    
+    return currentLine;
+  }
 
   abstract boolean checkForClassHistogram(DefaultMutableTreeNode threadDump) throws IOException;
 
@@ -1843,12 +1867,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     boolean foundTimingStatistics = false;
     boolean foundContextData = false;
     
-    String threadId ,ecid;
-    StringBuffer contextValBuf = null;
-    
     int lines = 0;
-
-    threadId = ecid = null;
+    String threadId = null;
+    StringBuffer contextValBuf = null;
             
     while (getBis().ready() && !finished) {
       String line = getNextLine();
@@ -1926,18 +1947,29 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 //System.out.println("ThreadId: " + threadId);
                 //System.out.println("ThreadContextData: " + contextValBuf.toString());
                 tdi.addThreadContextData(threadId, contextValBuf.toString());
-                threadId = ecid = null;
+                threadId = null;
               }
+              
               
               // Parse new thread context info
               String[] entries = line.trim().split("\\s+");
-              threadId = entries[0].substring(3);
-              ecid = entries[1];
-              contextValBuf = new StringBuffer("mECID=" + ecid + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+              contextValBuf = new StringBuffer();
               
-              // The 4th column contains the context data
-              if (entries.length > 3)
-                contextValBuf.append(entries[3] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+              switch(entries.length) {                
+                case (4):
+                  // The 4th column contains the context data
+                  contextValBuf.append(entries[3] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+                case (3):
+                  // The 3rd column contains the RID
+                  contextValBuf.append("RID=" + entries[2] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+                case (2):
+                  // The 2nd column contains the ECID
+                  contextValBuf.append("mECID=" + entries[1] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+                default:
+                  // The 1st column contains the Thread Id
+                  threadId = entries[0].substring(3);                  
+              }
+                
             } else {              
               // This line entry only contains context data and is part of current thread context
               if (contextValBuf == null)

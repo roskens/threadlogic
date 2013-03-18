@@ -49,9 +49,9 @@ public class IBMJDKParser extends AbstractDumpParser {
   private String monObject = "3LKMONOBJECT";
   private String monPattern = "3LKMONOBJECT\\s*([^:.]*): (owner|Flat locked by|<unowned>) (\\\".*[^(]) \\(.*";
   private String waitNotify = "3LKWAITNOTIFY";
-  private String waiter = "3LKWAITER";
+  private String waiter = "3LKWAITER";  
   private String parsedStartTime;
-  
+
   public IBMJDKParser(BufferedReader bis, Map threadStore, int lineCounter, boolean withCurrentTimeStamp,
       int startCounter, DateMatcher dm) {
     super(bis, dm);
@@ -82,8 +82,9 @@ public class IBMJDKParser extends AbstractDumpParser {
     GENERAL_WAITING = "3LKWAITER\\s*(.*\")";
   }
 
-    /**
+  /**
    * @param bis the BufferedReader
+   * @param dm Date Matcher pattern
    */  
   protected void resetDmPattern(BufferedReader bis, DateMatcher dm) {
     int count = 0;
@@ -107,6 +108,7 @@ public class IBMJDKParser extends AbstractDumpParser {
       }
     } catch(Exception e) { }
   }
+
   
   /**
    * @param bis the BufferedReader
@@ -168,6 +170,7 @@ public class IBMJDKParser extends AbstractDumpParser {
       try {
         Map threads = new HashMap();
         overallTDI = new ThreadDumpInfo("Dump No. " + counter++, 0);
+        overallTDI.setIsIBMJVM();        
         overallTDI.setJvmType(this.getJvmVendor());
         overallTDI.setJvmVersion(this.getJvmVersion());
         
@@ -217,9 +220,9 @@ public class IBMJDKParser extends AbstractDumpParser {
         long startTime = 0;
         int singleLineCounter = 0;
         boolean concurrentSyncsFlag = false;
-        Matcher matched = getDm().getLastMatch();
+        Matcher matched = getDm().getLastMatch();        
         String parsedStartTime = null;
-
+        
         Hashtable<String, LockInfo> lockTable = new Hashtable<String, LockInfo>();
 
         while (getBis().ready() && !finished) {
@@ -243,7 +246,7 @@ public class IBMJDKParser extends AbstractDumpParser {
                   String tokens[] = parsedStartTime.substring(index + 5).trim().split(" ");
                   
                   parsedStartTime = tokens[0].replaceAll("/", "-") + " " + tokens[2];
-                  System.out.println("ParedStartTime:" + parsedStartTime);
+                  System.out.println("ParsedStartTime:" + parsedStartTime);
                   if (!getDm().isDefaultMatches() && isMillisTimeStamp()) {
                     try {
                       // the factor is a hack for a bug in
@@ -286,7 +289,16 @@ public class IBMJDKParser extends AbstractDumpParser {
                   break;
                 }
 
-                if ((tokens = parseMonitor(line)) != null) {
+                //if ((tokens = parseMonitor(line)) != null) {
+                if (line.indexOf(monObject) >= 0)  {
+                  tokens = parseMonitor(line);
+                  
+                  // Check if the thread contains "Workmanager:" and ending with " ms" 
+                  // In that case, rerun the pattern to get correct thread label
+                  String additionalLines = readAheadForWMThreadLabels(line);
+                  if (additionalLines.length() > line.length())
+                    tokens = parseMonitor(additionalLines);
+                  
                   // only care about tokens 1 and 3 (if 3 exists)
                   lockedObject = tokens[1]; // Object being locked
                   String lockingThread = tokens[3]; // Thread locking the object
@@ -313,6 +325,12 @@ public class IBMJDKParser extends AbstractDumpParser {
                     // locking++;
                   }
                 } else if (lockedObject != null && line.indexOf(waiter) >= 0) {
+                  // Check if the thread contains "Workmanager:" and ending with " ms" 
+                  // In that case, rerun the pattern to get correct thread label
+                  String additionalLines = readAheadForWMThreadLabels(line);
+                  if (additionalLines.length() > line.length())
+                    line = additionalLines;
+                  
                   mmap.addWaitToMonitor(lockedObject, lineChecker.getWaitingTo(line), null);
                   // System.out.println("1BlockedForMonitor[" + lockedObject +
                   // "], thread: " + line + ", lineCheker : " +
@@ -332,10 +350,16 @@ public class IBMJDKParser extends AbstractDumpParser {
 
                   // waiting++;
                 } else if (lockedObject != null && line.indexOf(waitNotify) >= 0) {
+                  // Check if the thread contains "Workmanager:" and ending with " ms" 
+                  // In that case, rerun the pattern to get correct thread label
+                  String additionalLines = readAheadForWMThreadLabels(line);
+                  if (additionalLines.length() > line.length())
+                    line = additionalLines;
+                  
                   mmap.addSleepToMonitor(lockedObject, lineChecker.getWaitingOn(line), null);
                   // System.out.println("1WaitingOnMonitor[" + lockedObject +
                   // "], thread: " + line + ", lineCheker : " +
-                  // lineChecker.getWaitingTo(line));
+                  // lineChecker.getWaitingOn(line));
                   // sleeping++;
                 }
               }
@@ -346,6 +370,13 @@ public class IBMJDKParser extends AbstractDumpParser {
                 // skip GC Threads
                 continue;
               }
+              
+              // Check if the thread contains "Workmanager:" and ending with " ms" 
+              // In that case, rerun the pattern to get correct thread label
+              String additionalLines = readAheadForWMThreadLabels(line);
+              if (additionalLines.length() > line.length())
+                tempLine = lineChecker.getStackStart(additionalLines);
+              
               // We are starting a group of lines for a different
               // thread
               // First, flush state for the previous thread (if
@@ -359,6 +390,7 @@ public class IBMJDKParser extends AbstractDumpParser {
                 Iterator iter = mmap.iterOfKeys();
                 while (iter.hasNext()) {
                   String shortTitle = title.substring(0, title.indexOf("\"", 1) + 1);
+                  //System.out.println("1Complete title: " + title + ", Map Searching for shortTitle: " + shortTitle);
                   String monitor = (String) iter.next();
                   Map[] t = mmap.getFromMonitorMap(monitor);
                   Set lockMap = t[MonitorMap.LOCK_THREAD_POS].keySet();
@@ -455,18 +487,21 @@ public class IBMJDKParser extends AbstractDumpParser {
             if (lockMap.contains(shortTitle)) {
               inLocking = true;
               lockMap.remove(shortTitle);
+              //System.out.println("Lock map contained shortTitle: " + shortTitle + ", removing it... and adding to LockMonitor with title : " + title );
               mmap.addLockToMonitor(monitor, title, stringContent);
             }
             Set waitingMap = t[MonitorMap.WAIT_THREAD_POS].keySet();
             if (waitingMap.contains(shortTitle)) {
               inWaiting = true;
               waitingMap.remove(shortTitle);
+              //System.out.println("Lock map contained shortTitle: " + shortTitle + ", removing it... and adding to waitMonitor with title : " + title );
               mmap.addWaitToMonitor(monitor, title, stringContent);
             }
             Set sleepingMap = t[MonitorMap.SLEEP_THREAD_POS].keySet();
             if (sleepingMap.contains(shortTitle)) {
               inSleeping = true;
               sleepingMap.remove(shortTitle);
+              //System.out.println("Lock map contained shortTitle: " + shortTitle + ", removing it... and adding to SleepMonitor with title : " + title );
               mmap.addSleepToMonitor(monitor, title, stringContent);
             }
           }
@@ -601,6 +636,13 @@ public class IBMJDKParser extends AbstractDumpParser {
         tokens[i] = matcher.group(i);
       }
     }
+    if (tokens != null)
+      return tokens;
+    
+    // Above pattern does not work when there are no owners, so parse it the hard way...
+    // Example:3LKMONOBJECT       weblogic/work/ExecuteThread@0x070000005787D288/0x070000005787D2A0: <unowned>
+    tokens = new String[4];
+    tokens[1] = line.split("\\s+")[1].replace(":", "");
     return tokens;
   }
 

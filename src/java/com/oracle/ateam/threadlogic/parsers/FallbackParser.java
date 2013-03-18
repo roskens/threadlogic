@@ -611,13 +611,11 @@ public class FallbackParser extends AbstractDumpParser {
                */
               
               
-              if (tempLine.startsWith("\"Workmanager: ") && tempLine.endsWith(" ms")) {
-                // Read further the next line and add it to the title                
-                line = getNextLine().trim();
-                tempLine = tempLine + line;
-                lineCounter++;
-                singleLineCounter++;
-              }
+              // Check if the thread contains "Workmanager:" and ending with " ms" 
+              // In that case, rerun the pattern to get correct thread label
+              String additionalLines = readAheadForWMThreadLabels(line);
+              if (additionalLines.length() > line.length())
+                tempLine = additionalLines;
               
               if (!stillInParsingTitle) {
                 String stringContent = content != null ? content.toString() : null;

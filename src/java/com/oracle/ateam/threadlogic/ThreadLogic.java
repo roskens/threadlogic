@@ -1171,7 +1171,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       
       //Display Thread Context Data if available
       if (ti.getCtxData() != null) {
-        sb.append("<font size=5>Context Data: </font><font size=3>");
+        sb.append("<font size=4>Context Data: </font><font size=3>");
         
         String[] ctxDataSet = ti.getCtxData().split(ThreadInfo.CONTEXT_DATA_SEPARATOR);
         for(String contextData : ctxDataSet)
