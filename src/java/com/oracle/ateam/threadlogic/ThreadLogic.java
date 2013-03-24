@@ -2301,7 +2301,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     init();
     revalidate();
 
-    getMainMenu().getLongMenuItem().setEnabled(false);
     getMainMenu().getCloseMenuItem().setEnabled(false);
     getMainMenu().getSaveSessionMenuItem().setEnabled(false);
     getMainMenu().getCloseToolBarButton().setEnabled(false);

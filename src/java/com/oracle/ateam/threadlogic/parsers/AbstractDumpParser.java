@@ -1434,6 +1434,15 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   parsedStartTime = null;
                   matched = null;
                   getDm().resetLastMatch();
+                } else if (matched == null ) {
+                  matched = getDm().checkForDateMatch(line);
+                  if (matched != null) {                
+                     parsedStartTime = ((matched.groupCount() == 1)? matched.group(1): matched.group(0));
+                     overallTDI.setStartTime(parsedStartTime);                                 
+                     parsedStartTime = null;
+                     matched = null;
+                     getDm().resetLastMatch();
+                  }
                 }
               }
               dumpKey = overallTDI.getName();
@@ -1578,7 +1587,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                * 
                */
 
-              getBis().mark(getMarkSize());
+              //getBis().mark(getMarkSize());
               
               if (!checkThreadDumpStatData(overallTDI)) {
                 // no statistical data found, set back original
@@ -1591,10 +1600,15 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 getBis().reset();                
               }
               
-              if (!checkThreadDumpContextData(overallTDI)) {
-                // no thread context data found, set back original
-                // position.
-                getBis().reset();
+              // Check for ECID & Thread Context Data
+              if (!checkThreadDumpContextData(overallTDI)) { 
+                // If no thread context data found, set back original position.
+                try {
+                  getBis().reset();
+                } catch(IOException ioe) { 
+                  // Dont let it block further processing
+                  ioe.printStackTrace(); 
+                }
               }
               
             } else {              
@@ -1875,15 +1889,15 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       String line = getNextLine();
       
       if (line == null) {
-        finished = true;
         return false;
       }
       
       line = line.trim();
+      //System.out.println("Current Line in ContextDataCheck: " + line);
       
       // We have reached start of a new thread dump, so stop      
       if (this.lineChecker.getFullDump(line) != null) {
-        finished = true;        
+        //System.out.println("Breaking now as we hit Full Dump for Current Line: " + line);
         return false;
       }
     
@@ -1989,10 +2003,6 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     // We have hit the end marker for the Thread Context Info 
     // finish parsing
     finished = true;
-    
-    if (!foundContextData)
-      getBis().reset();
-        
     return foundContextData;
   }
 

@@ -136,7 +136,7 @@ public class FallbackParser extends AbstractDumpParser {
   
 
   public void setUnknownVMMarkers() {
-    this.lineChecker.setFullDumpPattern(".*(Thread dump for the running)|(Full Thread Dump).*");
+    this.lineChecker.setFullDumpPattern(".*(^Thread dump for|^Thread Dump at|^Full Thread Dump).*");
     this.lineChecker.setAtPattern("\\s*[^\"][a-z ]*\\..*\\(.*\\)");     
     this.lineChecker.setThreadStatePattern("(.*: .*)|(\\])");
 
@@ -144,8 +144,8 @@ public class FallbackParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*\\.park\\.\\(.*)");
     this.lineChecker.setWaitingToPattern("(.* BLOCKED on.*)");
     
-    this.lineChecker.setEndOfDumpPattern(".*(\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for the running|(Full Thread Dump)|(THREAD TIMING STATISTICS)|<EndOfDump>).*");
-    this.lineChecker.setExactEndOfDumpPattern(".*(\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for the running|(THREAD TIMING STATISTICS)|(Full Thread Dump)|<EndOfDump>).*");
+    this.lineChecker.setEndOfDumpPattern(".*(^\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for|Full Thread Dump|THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|<EndOfDump>).*");
+    this.lineChecker.setExactEndOfDumpPattern(".*(THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|Full Thread Dump|<EndOfDump>).*");
     
     // Handle WLST, JRockit, Sun thread labels
     this.lineChecker.setEndOfTitlePattern(".*( RUNNABLE| WAITING| BLOCKED| TIMED_WAITING).*");
@@ -526,8 +526,7 @@ public class FallbackParser extends AbstractDumpParser {
                 if (startTime != 0) {
                   startTime = 0;
                 } else if (matched != null && matched.matches()) {
-                  
-                  parsedStartTime = ((matched.groupCount() == 1)? matched.group(1): matched.group(0));
+                  parsedStartTime = ((matched.groupCount() == 1)? matched.group(1): matched.group(0));                  
                   
                   if (!getDm().isDefaultMatches() && isMillisTimeStamp()) {
                     try {
@@ -553,6 +552,15 @@ public class FallbackParser extends AbstractDumpParser {
                   parsedStartTime = null;
                   matched = null;
                   getDm().resetLastMatch();
+                } else if (matched == null ) {
+                  matched = getDm().checkForDateMatch(line);
+                  if (matched != null) {                
+                     parsedStartTime = ((matched.groupCount() == 1)? matched.group(1): matched.group(0));
+                     overallTDI.setStartTime(parsedStartTime);                                 
+                     parsedStartTime = null;
+                     matched = null;
+                     getDm().resetLastMatch();
+                  }
                 }
               }
               dumpKey = overallTDI.getName();
@@ -564,14 +572,18 @@ public class FallbackParser extends AbstractDumpParser {
             }
           } else {            
             // Problem with JRockit is the Timestamp occurs after the FULL THREAD DUMP tag
-            // So the above logic fails as we wont get to parse for the date as its reverse for Hotspot (time occurs before Full Thread Dump marker)
+            // So the above logic fails as we wont get to parse for the date as its reverse for Hotspot 
+            // (time occurs before Full Thread Dump marker)
             // So parse the timestamp here for jrockit....
             if ( !startedParsingThreads && (parsedStartTime == null)  
                     && !getDm().isPatternError() && (getDm().getRegexPattern() != null)) {
               Matcher m = getDm().checkForDateMatch(line);
               if (m != null) {                
                  parsedStartTime = ((m.groupCount() == 1)? m.group(1): m.group(0));
-                overallTDI.setStartTime(parsedStartTime);                
+                 overallTDI.setStartTime(parsedStartTime);            
+                 parsedStartTime = null;
+                 matched = null;
+                 getDm().resetLastMatch();
               }
             }
             
@@ -608,8 +620,7 @@ public class FallbackParser extends AbstractDumpParser {
                * Check for Badly formatted threads starting with "Workmanager and ending with ms
                * "Workmanager: , Version: 0, Scheduled=false, Started=false, Wait time: 0 ms
                * " id=1509 idx=0x84 tid=10346 prio=10 alive, sleeping, native_waiting, daemon
-               */
-              
+               */              
               
               // Check if the thread contains "Workmanager:" and ending with " ms" 
               // In that case, rerun the pattern to get correct thread label
@@ -618,6 +629,7 @@ public class FallbackParser extends AbstractDumpParser {
                 tempLine = additionalLines;
               
               if (!stillInParsingTitle) {
+                
                 String stringContent = content != null ? content.toString() : null;
                 if (title != null) {
                   threads.put(title, content.toString());
@@ -663,7 +675,6 @@ public class FallbackParser extends AbstractDumpParser {
                 boolean newStartWasNumeric = (beginChar >= '0' && beginChar <= '9');
                 useFiller = (prevEndWasNumeric && !newStartWasNumeric)?" ":"";                
               }
-              
               titleBuffer.append(useFiller + tempLine.replace("\\n*", ""));
               
               if (content == null) {
@@ -676,7 +687,7 @@ public class FallbackParser extends AbstractDumpParser {
               // If we are still in title parsing, check if the thread label has ended...
               // Otherwise continue to treat as still in title parsing                  
               stillInParsingTitle = ( lineChecker.getEndOfTitlePattern(line) == null);              
-                      
+              
               if ((titleBuffer != null) && !stillInParsingTitle) {
                 title = titleBuffer.toString();
                 titleBuffer = null;
@@ -685,7 +696,7 @@ public class FallbackParser extends AbstractDumpParser {
               }              
 
               // For the wlst generated new format of thread dump, the lock info appears in the title itself
-              // so we cannog get directly inLocking
+              // so we cannot get directly inLocking
               if (content != null && (tempLine = lineChecker.getWaitingOn(line)) != null) {
                 
                 monitorStack.push(tempLine);
@@ -697,10 +708,10 @@ public class FallbackParser extends AbstractDumpParser {
                 monitorStack.push(tempLine);
                 inWaiting = true;
               }
-                
+              
             } else {
               
-              if (!startedParsingThreads && content == null)
+              if (!startedParsingThreads && content == null)                
                 continue;
               
               if (content != null && (tempLine = lineChecker.getAt(line)) != null) {
@@ -719,7 +730,10 @@ public class FallbackParser extends AbstractDumpParser {
              */
             // last thread reached?
             if ( startedParsingThreads && (tempLine = lineChecker.getEndOfDump(line)) != null) {
-              finished = true;              
+              finished = true;
+              
+              //getBis().mark(getMarkSize());
+              
               if ((checkForDeadlocks(threadDump)) == 0) {
                 // no deadlocks found, set back original
                 // position.
@@ -742,23 +756,24 @@ public class FallbackParser extends AbstractDumpParser {
                 getBis().reset();                
               }
               
-              //Add support for ECID and Context Data Parsing
+              // Add support for ECID and Context Data Parsing              
               if (!checkThreadDumpContextData(overallTDI)) {
                 // no statistical data found, set back original
                 // position.
-                getBis().reset();
-              }
-              
-              getBis().mark(getMarkSize());
+                try {
+                  getBis().reset();
+                } catch(IOException ioe) {  
+                  // Dont let it block further processing
+                  ioe.printStackTrace(); 
+                }
+              }              
               
             } else {
               // Mark the point as we have successfuly parsed the thread
               getBis().mark(getMarkSize());
             }
           }
-        }        
-        
-        getBis().reset();
+        }
         
         // last thread
         String stringContent = content != null ? content.toString() : null;
