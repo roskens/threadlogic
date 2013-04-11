@@ -44,8 +44,9 @@ public class ThreadInfo extends ThreadLogicElement {
   protected ThreadDumpInfo tdi;
   protected ThreadGroup tg;
   
-  // Add support for ECIDs
+  // Add support for ECIDs & composie
   private String ecid;
+  private String compositeName;
   
   // Add support for ContextData
   private String ctxData;
@@ -424,7 +425,16 @@ public class ThreadInfo extends ThreadLogicElement {
       return;    
     
     int endIndex = content.indexOf("\n", beginIndex+6);
-    setEcid(content.substring(beginIndex + 6, endIndex).trim());  
+    setEcid(content.substring(beginIndex + 6, endIndex).trim());
+    
+    //Search for composite name
+    String compositeField = "composite_name";
+    beginIndex = content.indexOf(compositeField);
+    if (beginIndex < 0) 
+      return;    
+    
+    endIndex = content.indexOf("\n", beginIndex+6);
+    setCompositeName(content.substring(beginIndex + compositeField.length() + 1, endIndex).trim());
   }
 
   /**
@@ -449,5 +459,30 @@ public class ThreadInfo extends ThreadLogicElement {
       setEcid(ctxData.substring(beginIndex + 6, endIndex).trim());
     else
       setEcid(ctxData.substring(beginIndex + 6).trim());
+    
+    String compositeField = "composite_name";
+    beginIndex = ctxData.indexOf(compositeField);
+    if (beginIndex < 0) 
+      return;    
+    
+    endIndex = ctxData.indexOf(ThreadInfo.CONTEXT_DATA_SEPARATOR, beginIndex+2);
+    if (endIndex > 0)
+      setCompositeName(ctxData.substring(beginIndex + compositeField.length() + 1, endIndex).trim());
+    else
+      setCompositeName(ctxData.substring(beginIndex + compositeField.length() + 1).trim());
+  }
+
+  /**
+   * @return the compositeName
+   */
+  public String getCompositeName() {
+    return compositeName;
+  }
+
+  /**
+   * @param compositeName the compositeName to set
+   */
+  public void setCompositeName(String compositeName) {
+    this.compositeName = compositeName;
   }
 }

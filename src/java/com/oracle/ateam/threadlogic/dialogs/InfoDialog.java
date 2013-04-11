@@ -84,7 +84,7 @@ public class InfoDialog extends JDialog {
         + "Contains classes from JEdit for logfile display.</i></p><br><br>" + "<p><i>"
         + AppInfo.getAppInfo() + "</i></p>"
         + " Version: " + AppInfo.getVersion() + ", " + AppInfo.getBuildDate()
-        + "<br>Enhancements by <br>" + "&nbsp;&nbsp;  Sabha Parameswaran &lt;sabha.parameswaran@oracle.com&gt;,<br>"
+        + "<br>Enhancements by <br>" + "&nbsp;&nbsp;  Sabha Parameswaran &lt;sabha@java.net&gt;,<br>"
         + "&nbsp;&nbsp;  and Eric Gross &lt;eric.x.gross@oracle.com&gt;,<br>"
         + "Oracle Fusion Middleware Architect Team (A-Team)</i></p><br><br>" +
 
