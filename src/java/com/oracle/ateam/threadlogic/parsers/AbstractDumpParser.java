@@ -159,8 +159,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     } else {
       return null;
     }
-  }
-
+  }  
+  
   /**
    * find long running threads.
    * 
@@ -203,10 +203,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     
     boolean diffAcrossLogs = false;
     Vector keys = new Vector(dumps.length);
-    Hashtable<Integer, String> tdKeyMapper = new Hashtable<Integer, String>();
+    Hashtable<String, String> tdKeyMapper = new Hashtable<String, String>();
     
-    Vector<Integer> tdiKeys = new Vector<Integer>(dumps.length);
-    Map<Integer, ThreadDumpInfo> tdiMap = new HashMap<Integer, ThreadDumpInfo>();    
+    Vector<String> tdiKeys = new Vector<String>(dumps.length);
+    Map<String, ThreadDumpInfo> tdiMap = new HashMap<String, ThreadDumpInfo>();    
 
     // The original dumpStore uses the full thread label as key which includes
     // the thread state
@@ -221,6 +221,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
     for (int i = 0; i < dumps.length; i++) {
       String dumpName = getDumpStringFromTreePath(dumps[i]);
+      String parentDump = getDumpStringFromTreePath(dumps[i].getParentPath());
+      //System.out.println( (i+1) + "-Dump Name: " + dumpName + ", complete Treepath: " + parentDump);
       
       if (dumpName.indexOf(" at") > 0) {
         dumpName = dumpName.substring(0, dumpName.indexOf(" at"));
@@ -258,9 +260,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         //System.out.println("### Ignoring .. " + dumpName);
         continue;
       }
-      
-      tdKeyMapper.put(tdiID, dumpName);
-      tdiKeys.add(tdiID);
+      tdKeyMapper.put(parentDump + tdiID, dumpName);
+      tdiKeys.add(parentDump + tdiID);
       ThreadDumpInfo tdi = null;
       Object userObj = ((DefaultMutableTreeNode) dumps[i].getLastPathComponent()).getUserObject();
       if (userObj instanceof ThreadDumpInfo) {
@@ -269,14 +270,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         Logfile logFile = (Logfile)userObj;
         tdi = logFile.getThreadDumps().get(0);
       }
-      tdiMap.put(tdiID, tdi);      
+      tdiMap.put(parentDump + tdiID, tdi);      
     }
 
     // Sort the ordering by the thread dump ids...
     Collections.sort(tdiKeys);    
 
     ArrayList<ThreadDumpInfo> tdiArrList = new ArrayList<ThreadDumpInfo>();
-    for (Integer tdiKey : tdiKeys) {
+    for (String tdiKey : tdiKeys) {
       String dumpName = tdKeyMapper.get(tdiKey);
       keys.add(dumpName);
       tdiArrList.add(tdiMap.get(tdiKey));

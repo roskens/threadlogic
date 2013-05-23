@@ -423,7 +423,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>Allocator.nativeGetNewTLA</Keyword>
 		<Descrp>JRockit VM is trying to allocate memory</Descrp>
-		<Advice>Allocate more heap/memory, watch more closely for OOM/insufficient memory if pattern occurs in multiple threads or thread dumps</Advice>
+		<Advice>Allocate more heap/memory, watch more closely for OOM/insufficient memory if pattern occurs in multiple threads or thread dumps; Ensure fixed nursery size is specified using -Xns parameter (rather than continously resizing) and specify -Xverbose:gcpause,memory to get detailed gc metrics</Advice>
 	</Advisory>
   <Advisory>
 		<Name>Threaddump generation</Name>
@@ -836,6 +836,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>NORMAL</Health>
 		<Keyword>oracle.tip.adapter.file.inbound.ProcessWork</Keyword>
 		<Descrp>Oracle SOA File Adapter running</Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Oracle Mediator waiting</Name>
+		<Health>NORMAL</Health>
+		<Keyword>oracle.tip.mediator.common.listener.DBLocker.enqueueLockedMessages</Keyword>
+		<Descrp>Oracle Mediator waiting for messages from DB</Descrp>
 		<Advice>Normal</Advice>
 	</Advisory>
   <Advisory>
