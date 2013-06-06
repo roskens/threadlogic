@@ -638,7 +638,7 @@ xmlns="http://java.net/projects/threadlogic">
 	<Advisory>
 		<Name>Web Application Request</Name>
 		<Health>NORMAL</Health>
-		<Keyword>HttpServlet.service</Keyword>
+		<Keyword>HttpServlet.service, jsp_servlet, weblogic.servlet</Keyword>
 		<Descrp>Servlet Request</Descrp>
 		<Advice>Normal Servlet call</Advice>
 	</Advisory>
@@ -717,7 +717,8 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WARNING</Health>
 		<Keyword>WebLayerBlocked</Keyword>
 		<Descrp>Web Application is waiting for an Event</Descrp>
-		<Advice>Web Application should not go into WAIT state as it means the end user would have to wait for indeterminate time for a synchronous response; Change the code or logic to return the results or response right away instead of blocking or waiting for an event; Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution; Ignorable for OSB Webservice callout as the pattern requires the invoker thread to wait while actual response is handled by another thread </Advice>
+		<Advice>Web Application should not go into WAIT state as it means the end user would have to wait for indeterminate time for a synchronous response; Change the code or logic to return the results or response right away instead of blocking or waiting for an event; Use custom Work Manager and dispatch policy to avoid thread starvation or to use dedicated threads for execution; Ignorable for OSB Webservice callout as the pattern requires the invoker thread to wait while actual response is handled by another thread ; Ignore if thread is waiting for response from Coherence ..
+    </Advice>
 	</Advisory>
   <Advisory>
 		<Name>EJB Blocked</Name>
@@ -795,6 +796,20 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>com.tangosol.coherence.component.util.SafeService.memberLeaving</Keyword>
 		<Descrp>A new member joined Coherence Cluster service</Descrp>
 		<Advice>Careful using cluster or cache services when member is leaving, dont use locks</Advice>
+	</Advisory>
+	<Advisory>
+		<Name>Coherence Near Cache Get</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.tangosol.net.cache.CachingMap.get</Keyword>
+		<Descrp>Get from Coherence Near Cache</Descrp>
+		<Advice>If it involves further calls to Grid.poll, then it is a near cache miss</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Coherence Remote Polling</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.tangosol.coherence.component.util.daemon.queueProcessor.service.Grid.poll</Keyword>
+		<Descrp>Poll for data/cache entry from remote Coherence members</Descrp>
+		<Advice>Normal</Advice>
 	</Advisory>  
 	<Advisory>
 		<Name>Coherence waiting for EventQueue to drain</Name>
@@ -1158,6 +1173,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>If multiple threads are requesting for memory, implies the server either needs more heap or jvm memory/gc settings need some tweaking </Advice>
 	</Advisory>
   <Advisory>
+		<Name>Possible CPU Overload</Name>
+		<Health>WATCH</Health>
+		<Keyword>java.lang.System.currentTimeMillis</Keyword>
+		<Descrp>CPU might be overloaded</Descrp>
+		<Advice>Pattern should occur rarely in stacktrace; Might indicate CPU overload/saturation</Advice>
+	</Advisory>
+  <Advisory>
 		<Name>JRockit JFR Repository creation</Name>
 		<Health>WARNING</Health>
 		<Keyword>oracle.jrockit.jfr.Repository.*BootService.start</Keyword>
@@ -1195,12 +1217,19 @@ xmlns="http://java.net/projects/threadlogic">
     <Descrp>Dump Java Thread stacks programatically</Descrp>
 		<Advice>Ignore</Advice>
 	</Advisory>
-  <Advisory>
+  	<Advisory>
 		<Name>MQ Series Shared Conversations</Name>
 		<Health>WARNING</Health>
-		<Keyword> com.ibm.mq.jmqi.remote.internal.system.RemoteConnection.sendTSH.*MQSession.close</Keyword>
+		<Keyword>com.ibm.mq.jmqi.remote.internal.system.RemoteConnection.sendTSH.*MQSession.close</Keyword>
     <Descrp>Threads communicating with MQ Series might go into wait state for long periods on closure of connections possibly due to shared conversations in MQ 7; Disable shared conversations if threads appear to hang or stay in wait state for long.</Descrp>
 		<Advice>Set the Sharing Conversation property of the Server Connection Channel to zero on MQ Series. Refer to Oracle Support Note Doc ID 1511617.1 or IBM Documentation on Shared Conversations </Advice>
 	</Advisory>  
+	<Advisory>
+		<Name>ONS Event Wait</Name>
+		<Health>NORMAL</Health>
+		<Keyword>oracle.ons.NotificationQueue.dequeue</Keyword>		         
+                <Descrp>Thread waiting for ONS Event</Descrp>
+                <Advice>Normal ONS event thread with Gridlink </Advice>
+	</Advisory> 
 </tlogic:AdvisoryMap>
 	
