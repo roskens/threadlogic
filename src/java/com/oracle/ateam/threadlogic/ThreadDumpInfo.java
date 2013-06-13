@@ -156,7 +156,11 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   }
   
   public String getBlockedThreadsStatus() {
-      int threadsWaitingForLock = (getWaitingThreads() != null)? getWaitingThreads().getNodeCount(): 0;
+      // Use the blocked thread count directly instead of going by waiting threads 
+      // (as some appear as waiting but are actually blocked)
+      //int threadsWaitingForLock = (getWaitingThreads() != null)? getWaitingThreads().getNodeCount(): 0;
+    
+      int threadsWaitingForLock = this.noOfBlockedThreads;
       
       String threadsWaitingLockColor = "";
       if (threadsWaitingForLock > 50)

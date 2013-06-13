@@ -377,16 +377,16 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Normal group communication within unicast cluster</Advice>
 	</Advisory>
   <Advisory>
-		<Name>WLS Unicast Clustering unhealthy</Name>
+		<Name>WLS Unicast Cluster unhealthy</Name>
 		<Health>FATAL</Health>
 		<Keyword>SocketImpl.*weblogic.cluster.messaging.internal.GroupImpl</Keyword>
 		<Descrp>Unicast messaging among Cluster members is not healthy</Descrp>
 		<Advice>Unicast group members are unable to communicate properly, apply latest Unicast related patches and enable Message Ordering or switch to Multicast</Advice>
   </Advisory>
   <Advisory>
-		<Name>WLS Clustering unhealthy</Name>
+		<Name>WLS Cluster unhealthy</Name>
 		<Health>WARNING</Health>
-		<Keyword>WLS Clustering unhealthy</Keyword>
+		<Keyword>WLS Cluster unhealthy</Keyword>
 		<Descrp>WLS Clustering subystem might be unhealthy</Descrp>
 		<Advice>If using Unicast, apply latest Unicast related patches and enable Message Ordering or switch to Multicast</Advice>
   </Advisory>
@@ -423,7 +423,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>Allocator.nativeGetNewTLA</Keyword>
 		<Descrp>JRockit VM is trying to allocate memory</Descrp>
-		<Advice>Allocate more heap/memory, watch more closely for OOM/insufficient memory if pattern occurs in multiple threads or thread dumps; Ensure fixed nursery size is specified using -Xns parameter (rather than continously resizing) and specify -Xverbose:gcpause,memory to get detailed gc metrics</Advice>
+		<Advice>Allocate more heap/memory, watch more closely for OOM/insufficient memory if pattern occurs in multiple threads or thread dumps; Ensure fixed nursery size is specified using -Xns parameter (rather than continously resizing) and specify -Xverbose:gcpause,memory to get detailed gc metrics; if TLA min and preferred sizes specified, remove min size</Advice>
 	</Advisory>
   <Advisory>
 		<Name>Threaddump generation</Name>
@@ -638,7 +638,7 @@ xmlns="http://java.net/projects/threadlogic">
 	<Advisory>
 		<Name>Web Application Request</Name>
 		<Health>NORMAL</Health>
-		<Keyword>HttpServlet.service, jsp_servlet, weblogic.servlet</Keyword>
+		<Keyword>HttpServlet.service, jsp.servlet, weblogic.servlet</Keyword>
 		<Descrp>Servlet Request</Descrp>
 		<Advice>Normal Servlet call</Advice>
 	</Advisory>
@@ -666,7 +666,7 @@ xmlns="http://java.net/projects/threadlogic">
   <Advisory>
 		<Name>JSP Compilation</Name>
 		<Health>NORMAL</Health>
-		<Keyword>weblogic.servlet.jsp.JavelinxJspPrecompiler.compile</Keyword>
+		<Keyword>JavelinxJspPrecompiler.compile</Keyword>
 		<Descrp>JSP compilation</Descrp>
 		<Advice>Precompile application bits and JPSs against the correct server version ahead of deployment if possible</Advice>
 	</Advisory>
@@ -1075,9 +1075,16 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Ensure its not an overhead/drain on performance if multiple threads attempting to query/invoke/get/update MBeans</Advice>
 	</Advisory>
   <Advisory>
-		<Name>WLS Replicated Session</Name>
+		<Name>WLS Replicated Session Secondary</Name>
 		<Health>NORMAL</Health>
-		<Keyword>weblogic.servlet.internal.session.ReplicatedSessionContext</Keyword>
+		<Keyword>ReplicatedSessionData.update</Keyword>             
+		<Descrp>WLS webapp is using replicated session (in clustered instance)</Descrp>
+		<Advice>Normal, HTTP Session is replicated on secondary</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>WLS Replicated Session Primary</Name>
+		<Health>NORMAL</Health>
+		<Keyword>ReplicatedSessionData.syncSession</Keyword>
 		<Descrp>WLS webapp is using replicated session (in clustered instance)</Descrp>
 		<Advice>Normal, HTTP Session would get replicated to a chosen secondary</Advice>
 	</Advisory>

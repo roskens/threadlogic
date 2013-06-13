@@ -55,6 +55,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
     } else if (DICTIONARY_KEYS.length() == 0) {
       DICTIONARY_KEYS = internalKeys;
     }
+    System.out.println("Complete keyword patterns: " + DICTIONARY_KEYS);
     populateThreadTypeMapper();      
   }
 
@@ -479,7 +480,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
         break;
       }
     }
-
+    
     Pattern vmPattern = Pattern.compile(ThreadAdvisory.DICTIONARY_KEYS, Pattern.DOTALL);
     Matcher m = vmPattern.matcher(threadStack);
 
