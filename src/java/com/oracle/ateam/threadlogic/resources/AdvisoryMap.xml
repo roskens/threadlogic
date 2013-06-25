@@ -419,11 +419,11 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>Poller Thread</Advice>
 	</Advisory>
 	<Advisory>
-		<Name>JRockit allocating new Memory</Name>
+		<Name>JRockit needs Memory</Name>
 		<Health>WATCH</Health>
 		<Keyword>Allocator.nativeGetNewTLA</Keyword>
-		<Descrp>JRockit VM is trying to allocate memory</Descrp>
-		<Advice>Allocate more heap/memory, watch more closely for OOM/insufficient memory if pattern occurs in multiple threads or thread dumps; Ensure fixed nursery size is specified using -Xns parameter (rather than continously resizing) and specify -Xverbose:gcpause,memory to get detailed gc metrics; if TLA min and preferred sizes specified, remove min size</Advice>
+		<Descrp>JRockit VM is trying to allocate TLA memory</Descrp>
+		<Advice>Allocate more heap/memory, watch more closely for OOM/insufficient memory if pattern occurs in multiple threads or thread dumps; Ensure fixed nursery size is specified using -Xns parameter (rather than continously resizing) and specify -Xverbose:gcpause,memory,memdbg to get detailed gc metrics; if TLA min and preferred sizes are specified, remove min and reduce preferred size</Advice>
 	</Advisory>
   <Advisory>
 		<Name>Threaddump generation</Name>

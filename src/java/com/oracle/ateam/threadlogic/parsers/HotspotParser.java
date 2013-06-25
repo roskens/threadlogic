@@ -177,6 +177,17 @@ public class HotspotParser extends AbstractDumpParser {
 
     return (classHistogram.getRowCount() > 0);
   }
+  
+  /**
+   * checks for the Lock Chains and adds it to the tree node passed
+   * 
+   * @param threadDump
+   *          which tree node to add the lock chain info.
+   */
+  public boolean checkForLockChains(DefaultMutableTreeNode threadDump) throws IOException {
+    return false;
+  } 
+
 
   private void addHistogramToDump(DefaultMutableTreeNode threadDump, HistogramTableModel classHistogram) {
     DefaultMutableTreeNode catHistogram;

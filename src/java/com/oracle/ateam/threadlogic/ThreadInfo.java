@@ -485,4 +485,21 @@ public class ThreadInfo extends ThreadLogicElement {
   public void setCompositeName(String compositeName) {
     this.compositeName = compositeName;
   }
+  
+  /**
+   * @param matchAdvisory ThreadAdvisory to check against
+   */
+  public boolean hasAdvisory(ThreadAdvisory matchAdvisory) {
+    
+    if ((matchAdvisory == null) || (advisories.size() ==0))
+      return false;
+        
+    for(ThreadAdvisory advisory : advisories) {
+      
+      if (advisory.equals(matchAdvisory))
+        return true;
+    }
+    return false;
+  }  
+  
 }

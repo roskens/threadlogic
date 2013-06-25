@@ -33,18 +33,37 @@ public class WLSClusterThreadGroup extends CustomizedThreadGroup {
   }
   
   public void runGroupAdvisory() {
-    if (getThreads().size() > 5) {
-      ThreadAdvisory advisory = ThreadAdvisory.lookupThreadAdvisory("WLS Clustering unhealthy");
-      addAdvisory(advisory);
-      if (this.getHealth().ordinal() < advisory.getHealth().ordinal());
-        this.setHealth(advisory.getHealth());
-        
-      for(ThreadInfo ti: threads) {
-        ti.addAdvisory(advisory);
-        if (ti.getHealth().ordinal() < advisory.getHealth().ordinal()) {
-          ti.setHealth(advisory.getHealth());
+    int noOfNonWebApplnThreads = 0;
+    ThreadAdvisory clusterUnhealthyAdvisory 
+                                  = ThreadAdvisory.lookupThreadAdvisoryByName("WLS Cluster unhealthy");
+    ThreadAdvisory webApplnAdvisory = ThreadAdvisory.lookupThreadAdvisoryByName("Web Application Request");
+    ThreadAdvisory sessionReplnAdvisory = 
+                              ThreadAdvisory.lookupThreadAdvisoryByName("WLS Replicated Session Secondary");
+    
+    for(ThreadInfo ti: threads) { 
+      
+      // If the thread is involved in Cluster but not part of web, 
+      // then increment count
+      if (!ti.hasAdvisory(webApplnAdvisory)) {
+        ++noOfNonWebApplnThreads;        
+      }
+    }
+    
+    // If there are more than 5 threads involved in cluster related work 
+    // that is neither web nor session replication related,
+    // Mark the cluster threads as bad
+    if (noOfNonWebApplnThreads >= 5) {        
+
+      addAdvisory(clusterUnhealthyAdvisory);
+      if (this.getHealth().ordinal() < clusterUnhealthyAdvisory.getHealth().ordinal())
+        this.setHealth(clusterUnhealthyAdvisory.getHealth());      
+
+      for(ThreadInfo ti: threads) { 
+        if (!ti.hasAdvisory(webApplnAdvisory)) {
+          ti.getAdvisories().add(clusterUnhealthyAdvisory);
+          ti.setHealth(clusterUnhealthyAdvisory.getHealth());          
         }
-      }      
+      }
     }
   }  
   

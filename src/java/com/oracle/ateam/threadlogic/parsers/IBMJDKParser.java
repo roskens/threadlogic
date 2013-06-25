@@ -704,6 +704,12 @@ public class IBMJDKParser extends AbstractDumpParser {
   }
 
   @Override
+  public boolean checkForLockChains(DefaultMutableTreeNode threadDump) throws IOException {
+    return false;
+  } 
+
+  
+  @Override
   String linkifyDeadlockInfo(String line) {
     // TODO Auto-generated method stub
     return null;

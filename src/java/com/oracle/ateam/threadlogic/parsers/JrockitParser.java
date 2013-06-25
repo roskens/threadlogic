@@ -32,6 +32,8 @@
 package com.oracle.ateam.threadlogic.parsers;
 
 import com.oracle.ateam.threadlogic.ThreadDumpInfo;
+import com.oracle.ateam.threadlogic.ThreadInfo;
+import com.oracle.ateam.threadlogic.categories.Category;
 import com.oracle.ateam.threadlogic.monitors.JRockitMonitorMap;
 import com.oracle.ateam.threadlogic.parsers.AbstractDumpParser.LineChecker;
 import com.oracle.ateam.threadlogic.utils.DateMatcher;
@@ -39,6 +41,7 @@ import com.oracle.ateam.threadlogic.utils.DateMatcher;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -223,7 +226,7 @@ public class JrockitParser extends AbstractDumpParser {
     } catch(Exception e) { 
 
       System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name  );
-      e.printStackTrace();
+      //e.printStackTrace();
       return doHardParsing(name);
     }
 
@@ -268,6 +271,94 @@ public class JrockitParser extends AbstractDumpParser {
   public boolean checkForClassHistogram(DefaultMutableTreeNode threadDump) throws IOException {
     return false;
   }
+  
+  /**
+   * checks for the Lock Chains and adds it to the tree node passed
+   * Useful to figure out thread holding ReentrantLock which is not visible in the thread stack traces
+   * 
+   * @param threadDump
+   *          which tree node to add the lock chain info.
+   */
+  public boolean checkForLockChains(DefaultMutableTreeNode catThreadNode) throws IOException {
+    boolean finished = false;
+    boolean found = false;
+    int lines = 0;
+    
+    String blockedThreadPatternMask = "^.*\"([^\\\"]+)\".*waiting for ([^ ]+) held by:.*";
+    String ownerThreadPatternMask = "^.*\"([^\\\"]+)\".*";
+
+    Pattern blockedThreadPattern = Pattern.compile(blockedThreadPatternMask);
+    Pattern ownerThreadPattern = Pattern.compile(ownerThreadPatternMask);
+
+    Category catThreads = (Category)catThreadNode.getUserObject();
+    String blockedThread, lockObj, ownerThread;
+    blockedThread = lockObj = ownerThread = null;
+    
+    // Save the thread info in a hashtable for quick retreival of the thread stack later based on thread name
+    Hashtable<String, ThreadInfo> threadMap = new Hashtable();
+    for (int i = 0; i < catThreads.getNodeCount(); i++) {
+      ThreadInfo ti = (ThreadInfo) ((DefaultMutableTreeNode) catThreads.getNodeAt(i)).getUserObject();
+      threadMap.put(ti.getFilteredName(), ti);         
+    }
+    
+    while (getBis().ready() && !finished) {
+      String line = getNextLine();
+      if (!found && !line.equals("")) {
+        if (line.trim().contains(" lock chains")) {
+          found = true;
+        } else if (lines >= getMaxCheckLines()) {
+          finished = true;
+        } else {
+          lines++;
+        }
+      } else if (found) {
+        
+        if ( this.lineChecker.getExactEndOfDump(line) != null) {
+          finished = true;
+          getBis().mark(getMarkSize());
+        } 
+      
+        
+        // Ignore lines with 'Chain' or '========='
+        if (!(line.startsWith("==========") || line.startsWith("Chain "))) {
+    
+          Matcher m = blockedThreadPattern.matcher(line);
+
+          if (m.matches()) {
+
+          blockedThread = "\"" + m.group(1).replaceAll("\\[.*\\] ", "") + "\"";
+          lockObj = m.group(2);
+
+          } else {
+            m = ownerThreadPattern.matcher(line);
+            if (m.matches()) {
+              ownerThread = "\"" + m.group(1).replaceAll("\\[.*\\] ", "") + "\"";
+              /*
+              System.out.println("Blocked Thread: " + blockedThread);
+              System.out.println("Owner Thread: " + ownerThread);
+              System.out.println("Lock Obj: " + lockObj);
+              */
+              
+              ThreadInfo ownerThreadInfo = threadMap.get(ownerThread);
+              
+              // We already know the thread is in waiting state, so no need to call addSleepToMonitor()
+              // Call addLockToMonitor() just to cover cases like threads that are holding locks 
+              // that are not visible in the thread stack trace (like ReentrantLocks)
+              mmap.addLockToMonitor(lockObj, ownerThreadInfo.getName(), ownerThreadInfo.getContent());              
+              
+              blockedThread = lockObj = ownerThread = null;
+            }
+          }
+        }
+      }
+    }
+
+    if (found)
+      getBis().mark(getMarkSize());
+    
+    return (found);
+  }
+  
 
   @Override
   public String linkifyDeadlockInfo(String line) {

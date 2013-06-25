@@ -103,6 +103,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   protected Map threadStore = null;
   protected int counter = 1;
   protected int lineCounter = 0;
+  protected boolean foundLockChains = false;  
   protected boolean foundClassHistograms = false;
   protected boolean withCurrentTimeStamp = false;
 
@@ -1104,7 +1105,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   }
 
   private int fillBlockingThreadMaps(MonitorMap mmap, Map directChildMap) {
-    int blockedThread = 0;
+    int blockedThread = 0;    
     for (Iterator iter = mmap.iterOfKeys(); iter.hasNext();) {
       String monitor = (String) iter.next();
       Map[] threads = mmap.getFromMonitorMap(monitor);
@@ -1125,7 +1126,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         if (thread != null && !threads[MonitorMap.LOCK_THREAD_POS].containsKey(thread)) {
           blockedThread++;
           createNode(monitorNode, "Thread - " + thread, null, (String) threads[MonitorMap.WAIT_THREAD_POS].get(thread),
-              0);
+              0);          
         }
       }
 
@@ -1159,7 +1160,24 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     }
 
     ThreadInfo mi = (ThreadInfo) threadOrMonitorNode.getUserObject();
-    if (ThreadDumpInfo.areALotOfWaiting(count)) {
+    
+    // Don't mark the thread category as having Lot of Waiters 
+    // if the threads are waiting for java.util.concurrent.locks.AbstractQueuedSynchronizer 
+    /*
+     * 
+     * "pool-3-thread-8" id=91 idx=0x168 tid=22940 prio=5 alive, parked, native_blocked
+	     -- Parking to wait for: java/util/concurrent/locks/AbstractQueuedSynchronizer$ConditionObject@0x140211ee0
+      at jrockit/vm/Locks.park0(J)V(Native Method)
+      at jrockit/vm/Locks.park(Locks.java:2230)
+      at sun/misc/Unsafe.park(ZJ)V(Native Method)
+      at java/util/concurrent/locks/LockSupport.park(LockSupport.java:156)
+      at java/util/concurrent/locks/AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1987)
+      at java/util/concurrent/LinkedBlockingQueue.take(LinkedBlockingQueue.java:399)
+      at java/util/concurrent/ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:947)
+      at java/util/concurrent/ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:907)
+     * 
+     */
+    if ( !mi.getName().contains("java/util/concurrent/locks/AbstractQueuedSynchronizer") && ThreadDumpInfo.areALotOfWaiting(count)) {
       mi.setALotOfWaiting(true);
     }
     if (isThreadNode) {
@@ -1601,6 +1619,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 getBis().reset();                
               }
               
+              // Support for parsing Lock Chains in JRockit
+              if (!(foundLockChains = checkForLockChains(catThreads))) {
+                getBis().reset();                
+              }
+              
               // Check for ECID & Thread Context Data
               if (!checkThreadDumpContextData(overallTDI)) { 
                 // If no thread context data found, set back original position.
@@ -1805,6 +1828,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   }
 
   abstract boolean checkForClassHistogram(DefaultMutableTreeNode threadDump) throws IOException;
+  
+  abstract boolean checkForLockChains(DefaultMutableTreeNode threadDump) throws IOException;
 
   /**
    * Heap PSYoungGen total 6656K, used 3855K [0xb0850000, 0xb0f50000,
@@ -1903,7 +1928,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       }
     
       // The Thread Context Data section occurs after thread dump
-      // We have not reached end of the thread dump, so continue      
+      // In JRockit, the lock chain info would have been parsed already which ends with ExactEndOfDump marker (END OF THREAD DUMP)
+      // So no need to check if we have reached End of Dump
+      /*
       if (!reachedExactEndOfDump) {
         if ( this.lineChecker.getExactEndOfDump(line) == null) {
           continue;
@@ -1912,6 +1939,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           getBis().mark(getMarkSize());
         } 
       }
+      */
       
       // Start count of lines that came after actual End of the thread Dump
       lines++;      

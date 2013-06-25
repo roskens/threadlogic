@@ -58,6 +58,9 @@ public class ThreadLogicConstants {
   public static final String WLS_SUBSYSTEM_REQUEST_OVERFLOW = "WLSSubsystemRequestOverflow";
   public static final String WLS_CLUSTER_MESSAGERECEIVER_RUNNING = "MessageReceiverRunning";
   
+  public static final String WLS_WEB_REQUEST = "MessageReceiverRunning";
+  public static final String WLS_SESSION_REPLICATION = "MessageReceiverRunning";
+  
   public static final String LISTENER_MISSING = "Socket Listener Missing";
   public static final String WLS_IDLE_THREADS = "ExecuteThread.waitForRequest";  
   public static final String LISTENER_THREAD = "SocketImpl.socketAccept";  
