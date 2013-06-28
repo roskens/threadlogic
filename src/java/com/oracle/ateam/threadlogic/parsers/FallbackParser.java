@@ -70,21 +70,22 @@ import javax.swing.tree.MutableTreeNode;
 public class FallbackParser extends AbstractDumpParser {
 
   private int jvmType;
-  private static Pattern defaultThreadPattern = Pattern.compile(".*( WAITING| RUNNABLE| TIMED_WAITING| alive, | nid=0x).*");
+  private static Pattern defaultThreadPattern = Pattern.compile(".*( WAITING| RUNNABLE| TIMED_WAITING| prio=[0-9]+ alive, | daemon prio=[0-9]+ tid=0x).*");
 
   // Search keywords for jrockit or ibm specific tags in thread dumps if search for markers fail
   // Default to Hotspot for everything for else
-  protected static final String JROCKIT_TAG = " alive, ";
+  protected static final String JROCKIT_TAG = ".* prio=[0-9]+ alive, .*";
   
   // Even if there are ibm markers, harder to parse a wlst generated IBM Thread dump with the IBMParser
   // use the Sun HotspotParser still as special case as adding the whole file/markers is difficult...
-  protected static final String IBM_TAG = "com.ibm.misc.SignalDispatcher";
+  protected static final String IBM_TAG = ".*com.ibm.misc.SignalDispatcher.*";
   
   // Search keywords for Hotspot tag in thread dumps if search for markers fail
   // Default to Hotspot for everything for else  
-  protected static final String HOTSPOT_TAG = "daemon prio=10 tid=";  
+  protected static final String HOTSPOT_TAG = ".* daemon prio=[0-9]+ tid=0x.*";  
   
-  boolean determinedJVMType = false;
+  protected boolean determinedJVMType = false;
+  protected int jvmID = UNKNOWN_VM;
 
   /**
    * Creates a new instance of SunJDKParser
@@ -124,7 +125,7 @@ public class FallbackParser extends AbstractDumpParser {
 
       String entry = (m.groupCount() == 1? m.group(1): m.group());
 
-      if (entry.indexOf(" nid=0x") >= 0) {
+      if (entry.indexOf(" tid=0x") >= 0) {
           return HOTSPOT_VM;
       } else if (entry.indexOf(" alive, ") >= 0) {
           return JROCKIT_VM;
@@ -220,26 +221,13 @@ public class FallbackParser extends AbstractDumpParser {
   }
   
   public DumpParser recreateParserBasedOnVendor() {
-      if (!this.determinedJVMType)
+      if (!this.determinedJVMType || (this.jvmID == UNKNOWN_VM))
         return this;
-      
-      int jvmVendorId = VM_ID_LIST.length -1;
-      for(int id= 0; id < VM_ID_LIST.length; id++) {
-        if (JVM_VENDOR_LIST[id].contains(this.getJvmVendor())) {
-          jvmVendorId = id;
-          break;
-        }
-      }      
-      
-      if (jvmVendorId == (VM_ID_LIST.length - 1))
-        return this;
-      
-      
       
       DumpParser dp = this;
       boolean switchedParser = false;
               
-      switch(jvmVendorId) {
+      switch(this.jvmID) {
         case(HOTSPOT_VM): 
           switchedParser = true;
           dp = new HotspotParser(getBis(), threadStore,  lineCounter, withCurrentTimeStamp, counter, getDm()); 
@@ -250,8 +238,8 @@ public class FallbackParser extends AbstractDumpParser {
           dp = new JrockitParser(getBis(), threadStore,  lineCounter, getDm()); 
           break;                
           
-        // There were no IBM matching thread dump here as it already came into fallback parser
-        // so continue with fallback parsers.
+        // There were no IBM matching thread dump here as it already went with fallback parser
+        // so continue with fallback parsers for both IBM and WLST or other types of generated dumps.
       }
       
       if (switchedParser) {
@@ -656,15 +644,21 @@ public class FallbackParser extends AbstractDumpParser {
               continue;
               
             if (!determinedJVMType) {
-              if (line.indexOf(JROCKIT_TAG) >= 0) {                
+              if (line.matches(JROCKIT_TAG)) {
+                this.jvmID = JROCKIT_VM;
                 this.setJvmVendor(JVM_VENDOR_LIST[JROCKIT_VM]);
-                determinedJVMType = true;
-              } else if (line.indexOf(IBM_TAG) >= 0) {
+                determinedJVMType = true;       
+                
+              } else if (line.matches(IBM_TAG)) {
+                this.jvmID = IBM_VM;
                 this.setJvmVendor(JVM_VENDOR_LIST[IBM_VM]);
                 determinedJVMType = true;
-              } else if (line.indexOf(HOTSPOT_TAG) >= 0) {
+                
+              } else if (line.matches(HOTSPOT_TAG)) {
+                this.jvmID = HOTSPOT_VM;
                 this.setJvmVendor(JVM_VENDOR_LIST[HOTSPOT_VM]);
                 determinedJVMType = true;
+                
               }
             }
             
