@@ -26,8 +26,10 @@ import com.oracle.ateam.threadlogic.filter.FilterChecker;
 import com.oracle.ateam.threadlogic.filter.HealthLevelFilter;
 import com.oracle.ateam.threadlogic.jedit.JEditTextArea;
 import com.oracle.ateam.threadlogic.jedit.PopupMenu;
+import com.oracle.ateam.threadlogic.parsers.AbstractDumpParser;
 import com.oracle.ateam.threadlogic.parsers.DumpParser;
 import com.oracle.ateam.threadlogic.parsers.DumpParserFactory;
+import com.oracle.ateam.threadlogic.parsers.FallbackParser;
 import com.oracle.ateam.threadlogic.utils.AppInfo;
 import com.oracle.ateam.threadlogic.utils.Browser;
 import com.oracle.ateam.threadlogic.utils.HistogramTableModel;
@@ -1450,7 +1452,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       Logfile logFile = (Logfile) top.getUserObject();
       logFile.setUsedParser(dp);
 
-      while ((dp != null) && dp.hasMoreDumps()) {
+      while ((dp != null) && dp.hasMoreDumps()) {        
+        
         MutableTreeNode node = dp.parseNext();
         top.add(node);
         
@@ -1461,6 +1464,13 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         if (!isFoundClassHistogram) {
           isFoundClassHistogram = dp.isFoundClassHistograms();
         }
+        
+        // Try to switch parsers if we have determined the native jvm vendor
+        if (dp instanceof FallbackParser && ((FallbackParser)dp).determinedJvmVendor()) {
+            dp = ((FallbackParser)dp).recreateParserBasedOnVendor();
+            logFile.setUsedParser(dp);
+        }
+        
       }
     } finally {
       if (dp != null) {
@@ -2306,7 +2316,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     getMainMenu().getCloseToolBarButton().setEnabled(false);
     getMainMenu().getExpandButton().setEnabled(false);
     getMainMenu().getCollapseButton().setEnabled(false);
-    getMainMenu().getFindLRThreadsToolBarButton().setEnabled(false);
     getMainMenu().getCloseAllMenuItem().setEnabled(false);
     getMainMenu().getExpandAllMenuItem().setEnabled(false);
     getMainMenu().getCollapseAllMenuItem().setEnabled(false);

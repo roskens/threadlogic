@@ -74,12 +74,17 @@ public class FallbackParser extends AbstractDumpParser {
 
   // Search keywords for jrockit or ibm specific tags in thread dumps if search for markers fail
   // Default to Hotspot for everything for else
-  protected static final String JROCKIT_TAG = "jrockit";
+  protected static final String JROCKIT_TAG = " alive, ";
   
   // Even if there are ibm markers, harder to parse a wlst generated IBM Thread dump with the IBMParser
   // use the Sun HotspotParser still as special case as adding the whole file/markers is difficult...
   protected static final String IBM_TAG = "com.ibm.misc.SignalDispatcher";
   
+  // Search keywords for Hotspot tag in thread dumps if search for markers fail
+  // Default to Hotspot for everything for else  
+  protected static final String HOTSPOT_TAG = "daemon prio=10 tid=";  
+  
+  boolean determinedJVMType = false;
 
   /**
    * Creates a new instance of SunJDKParser
@@ -136,7 +141,7 @@ public class FallbackParser extends AbstractDumpParser {
   
 
   public void setUnknownVMMarkers() {
-    this.lineChecker.setFullDumpPattern(".*(^Thread dump for|^Thread Dump at|^Full Thread Dump).*");
+    this.lineChecker.setFullDumpPattern(".*(^Thread dump for|^Thread Dump at|^Full Thread Dump|FULL THREAD DUMP).*");
     this.lineChecker.setAtPattern("\\s*[^\"][a-z ]*\\..*\\(.*\\)");     
     this.lineChecker.setThreadStatePattern("(.*: .*)|(\\])");
 
@@ -144,8 +149,8 @@ public class FallbackParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*\\.park\\.\\(.*)");
     this.lineChecker.setWaitingToPattern("(.* BLOCKED on.*)");
     
-    this.lineChecker.setEndOfDumpPattern(".*(^\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for|Full Thread Dump|THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|<EndOfDump>).*");
-    this.lineChecker.setExactEndOfDumpPattern(".*(THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|Full Thread Dump|<EndOfDump>).*");
+    this.lineChecker.setEndOfDumpPattern(".*(^\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for|Full Thread Dump| THREAD DUMP|THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|<EndOfDump>).*");
+    this.lineChecker.setExactEndOfDumpPattern(".*(THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|Full Thread Dump|END OF THREAD DUMP|<EndOfDump>).*");
     
     // Handle WLST, JRockit, Sun thread labels
     this.lineChecker.setEndOfTitlePattern(".*( RUNNABLE| WAITING| BLOCKED| TIMED_WAITING).*");
@@ -206,6 +211,59 @@ public class FallbackParser extends AbstractDumpParser {
     } catch(Exception e) { 
       return null;
     }
+  }
+  
+  
+  
+  public boolean determinedJvmVendor() {
+      return this.determinedJVMType;
+  }
+  
+  public DumpParser recreateParserBasedOnVendor() {
+      if (!this.determinedJVMType)
+        return this;
+      
+      int jvmVendorId = VM_ID_LIST.length -1;
+      for(int id= 0; id < VM_ID_LIST.length; id++) {
+        if (JVM_VENDOR_LIST[id].contains(this.getJvmVendor())) {
+          jvmVendorId = id;
+          break;
+        }
+      }      
+      
+      if (jvmVendorId == (VM_ID_LIST.length - 1))
+        return this;
+      
+      
+      
+      DumpParser dp = this;
+      boolean switchedParser = false;
+              
+      switch(jvmVendorId) {
+        case(HOTSPOT_VM): 
+          switchedParser = true;
+          dp = new HotspotParser(getBis(), threadStore,  lineCounter, withCurrentTimeStamp, counter, getDm()); 
+          break;        
+        
+        case(JROCKIT_VM): 
+          switchedParser = true;
+          dp = new JrockitParser(getBis(), threadStore,  lineCounter, getDm()); 
+          break;                
+          
+        // There were no IBM matching thread dump here as it already came into fallback parser
+        // so continue with fallback parsers.
+      }
+      
+      if (switchedParser) {
+        // Reset the buffer....
+        try {      
+          if (getBis() != null) {
+            getBis().reset();
+          }
+        } catch(Exception e) { e.printStackTrace(); }
+      }
+      
+      return dp;
   }
 
 
@@ -511,10 +569,7 @@ public class FallbackParser extends AbstractDumpParser {
         boolean startedParsingThreads = false;
         boolean stillInParsingTitle = false;
         StringBuffer titleBuffer = null;
-
-        // Default to Hotspot unless we find any jrockit or ibm tags..        
-        boolean determinedJVMType = (this.jvmType != UNKNOWN_VM);
-    
+        
         while (getBis().ready() && !finished) {
           line = getNextLine();
           lineCounter++;
@@ -607,6 +662,9 @@ public class FallbackParser extends AbstractDumpParser {
               } else if (line.indexOf(IBM_TAG) >= 0) {
                 this.setJvmVendor(JVM_VENDOR_LIST[IBM_VM]);
                 determinedJVMType = true;
+              } else if (line.indexOf(HOTSPOT_TAG) >= 0) {
+                this.setJvmVendor(JVM_VENDOR_LIST[HOTSPOT_VM]);
+                determinedJVMType = true;
               }
             }
             
@@ -696,7 +754,7 @@ public class FallbackParser extends AbstractDumpParser {
               
               // If we are still in title parsing, check if the thread label has ended...
               // Otherwise continue to treat as still in title parsing                  
-              stillInParsingTitle = ( lineChecker.getEndOfTitlePattern(line) == null);              
+              stillInParsingTitle = ( lineChecker.getEndOfTitlePattern(line) != null);              
               
               if ((titleBuffer != null) && !stillInParsingTitle) {
                 title = titleBuffer.toString();
@@ -724,13 +782,13 @@ public class FallbackParser extends AbstractDumpParser {
               if (!startedParsingThreads && content == null)                
                 continue;
               
-              if (content != null && (tempLine = lineChecker.getAt(line)) != null) {
-                content.append(tempLine);
+              if (content != null) { // && (tempLine = lineChecker.getAt(line)) != null) {
+                content.append(" " + line);
                 content.append("\n");
-              } else if ((tempLine = lineChecker.getThreadState(line)) != null) {              
+              }/* else if ((tempLine = lineChecker.getThreadState(line)) != null) {              
                 content.append(" " + tempLine);
                 content.append("\n");
-              }  
+              }  */
             }
             
             /*
@@ -750,9 +808,9 @@ public class FallbackParser extends AbstractDumpParser {
                 getBis().reset();
               }
               
-              // Eat away JRockit generated lock chains as it might interfere with parsing of next available dump
-              if (line.contains("lock chain") && !readPastBlockedChains()) {                
-                getBis().reset();
+              // Support for parsing Lock Chains in JRockit
+              if (!(foundLockChains = checkForLockChains(catThreads))) {
+                getBis().reset();                
               }
               
 
@@ -776,7 +834,8 @@ public class FallbackParser extends AbstractDumpParser {
                   // Dont let it block further processing
                   ioe.printStackTrace(); 
                 }
-              }              
+              }
+              
               
             } else {
               // Mark the point as we have successfuly parsed the thread
@@ -953,7 +1012,10 @@ public class FallbackParser extends AbstractDumpParser {
   }
   
   
-  
+  protected boolean checkThreadDumpStatData(ThreadDumpInfo tdi) throws IOException {
+    // bea parser doesn't support heap data
+    return false;
+  }
     
     protected boolean readPastBlockedChains() throws IOException {
     boolean finished = false;

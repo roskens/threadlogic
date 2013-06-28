@@ -554,7 +554,7 @@ xmlns="http://java.net/projects/threadlogic">
   <Advisory>
 		<Name>Tx commit</Name>
 		<Health>WATCH</Health>
-		<Keyword>ServerTransactionImpl.commit</Keyword>
+		<Keyword>ServerTransactionImpl.commit, SubCoordinatorImpl.startCommit</Keyword>
 		<Descrp>Transaction commiting</Descrp>
 		<Advice>Transactiong getting commited; If multiple threads show up in Transaction commit waiting state or remote response, apply Bug fix 9974377 and 10236820 (WLS 10.3) that uses separate WM for JTA commits</Advice>
 	</Advisory>
@@ -1235,8 +1235,15 @@ xmlns="http://java.net/projects/threadlogic">
 		<Name>ONS Event Wait</Name>
 		<Health>NORMAL</Health>
 		<Keyword>oracle.ons.NotificationQueue.dequeue</Keyword>		         
-                <Descrp>Thread waiting for ONS Event</Descrp>
-                <Advice>Normal ONS event thread with Gridlink </Advice>
-	</Advisory> 
+    <Descrp>Thread waiting for ONS Event</Descrp>
+    <Advice>Normal ONS event thread with Gridlink </Advice>
+	</Advisory>  
+  <Advisory>
+		<Name>Cavisson SQL Dump</Name>
+		<Health>WARNING</Health>
+		<Keyword>com.cavisson.ndutils.NDSys.dumpSQL</Keyword>		         
+    <Descrp>Cavisson capturing SQL dump; can introduce bottleneck among threads and degrade perf</Descrp>
+    <Advice>Remove or disable Cavisson SQL dump instrumentation </Advice>
+	</Advisory>
 </tlogic:AdvisoryMap>
 	
