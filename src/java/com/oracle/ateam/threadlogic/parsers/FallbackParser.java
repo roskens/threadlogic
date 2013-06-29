@@ -150,6 +150,7 @@ public class FallbackParser extends AbstractDumpParser {
     this.lineChecker.setParkingToWaitPattern("(.*\\.park\\.\\(.*)");
     this.lineChecker.setWaitingToPattern("(.* BLOCKED on.*)");
     
+    
     this.lineChecker.setEndOfDumpPattern(".*(^\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for|Full Thread Dump| THREAD DUMP|THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|<EndOfDump>).*");
     this.lineChecker.setExactEndOfDumpPattern(".*(THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|Full Thread Dump|END OF THREAD DUMP|<EndOfDump>).*");
     
@@ -743,7 +744,7 @@ public class FallbackParser extends AbstractDumpParser {
                 content = new StringBuffer("<pre><font size=" + ThreadLogic.getFontSizeModifier(-1)
                     + ">");
               }
-              content.append(tempLine);
+              content.append(" "+tempLine);
               content.append("\n");              
               
               // If we are still in title parsing, check if the thread label has ended...
@@ -752,10 +753,11 @@ public class FallbackParser extends AbstractDumpParser {
               
               if ((titleBuffer != null) && !stillInParsingTitle) {
                 title = titleBuffer.toString();
-                titleBuffer = null;
-                if (!startedParsingThreads)
+                titleBuffer = null;                
+              }
+              
+              if (!startedParsingThreads)
                   startedParsingThreads = true;
-              }              
 
               // For the wlst generated new format of thread dump, the lock info appears in the title itself
               // so we cannot get directly inLocking
@@ -776,13 +778,12 @@ public class FallbackParser extends AbstractDumpParser {
               if (!startedParsingThreads && content == null)                
                 continue;
               
-              if (content != null) { // && (tempLine = lineChecker.getAt(line)) != null) {
+              // There is no real pattern for stack lines in wlst generated dump
+              // so just ensure its not end of the thread dump
+              if ((content != null) && ((tempLine = lineChecker.getEndOfDump(line)) == null)) {
                 content.append(" " + line);
                 content.append("\n");
-              }/* else if ((tempLine = lineChecker.getThreadState(line)) != null) {              
-                content.append(" " + tempLine);
-                content.append("\n");
-              }  */
+              }
             }
             
             /*
@@ -954,8 +955,6 @@ public class FallbackParser extends AbstractDumpParser {
           overallTDI.setMonitorsWithoutLocks((Category) catMonitorsLocks.getUserObject());
           threadDump.add(catMonitorsLocks);
         }
-
-
          
         // Detect Deadlocks
         overallTDI.detectDeadlock();
