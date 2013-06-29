@@ -1407,7 +1407,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         boolean concurrentSyncsFlag = false;
         Matcher matched = getDm().getLastMatch();
         String parsedStartTime = null;
-
+        
         while (getBis().ready() && !finished) {
           line = getNextLine();
           lineCounter++;
@@ -1909,8 +1909,18 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     
     int lines = 0;
     String threadId = null;
-    StringBuffer contextValBuf = null;
-            
+    StringBuffer contextValBuf = null;    
+  
+    
+    // The Thread Context Info line might have got eaten earlier...
+    // so check for next occuring lines like:
+    // ===== THREAD CONTEXT INFORMATION =====
+    //
+    //id         ECID                                               RID   Context Values
+    Matcher threadContextInfoMatcher = null;
+    Pattern threadContextInfoPattern = Pattern.compile(".*(" + THREAD_CONTEXT_INFO 
+                                                      + "|id\\s*ECID\\s*RID\\s*Context).*");
+
     while (getBis().ready() && !finished) {
       String line = getNextLine();
       
@@ -1946,16 +1956,18 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       if (!foundTimingStatistics ) {
         // Sometimes the Timing Statistics Section might not be present ahead of the Thread Context Section
         // So check for both
+        threadContextInfoMatcher = threadContextInfoPattern.matcher(line);
+        
         if (line.indexOf(THREAD_TIMING_STATISTICS) > 0)  {
           foundTimingStatistics = true;          
-        } else if (line.indexOf(THREAD_CONTEXT_INFO) > 0) {
+        } else if (threadContextInfoMatcher.matches()) {
           foundContextData = foundTimingStatistics = true;
         } else if (lines >= getMaxCheckLines()) {
           finished = true;
         }
       } else {
         // Found Timing Statistics section that occurs before Thread Context Info section
-        if (line.equals("") || line.startsWith("----"))
+        if (line.trim().equals("") || line.startsWith("----"))
           continue;
         
         // There will be one statistic line per thread

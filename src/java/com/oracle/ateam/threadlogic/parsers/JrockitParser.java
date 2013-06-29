@@ -340,6 +340,8 @@ public class JrockitParser extends AbstractDumpParser {
               */
               
               ThreadInfo ownerThreadInfo = threadMap.get(ownerThread);
+              if (ownerThreadInfo == null)
+                continue;
               
               // We already know the thread is in waiting state, so no need to call addSleepToMonitor()
               // Call addLockToMonitor() just to cover cases like threads that are holding locks 

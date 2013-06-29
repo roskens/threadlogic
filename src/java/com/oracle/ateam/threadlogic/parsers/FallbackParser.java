@@ -151,8 +151,8 @@ public class FallbackParser extends AbstractDumpParser {
     this.lineChecker.setWaitingToPattern("(.* BLOCKED on.*)");
     
     
-    this.lineChecker.setEndOfDumpPattern(".*(^\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump at|Thread dump for|Full Thread Dump| THREAD DUMP|THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|<EndOfDump>).*");
-    this.lineChecker.setExactEndOfDumpPattern(".*(THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|Full Thread Dump|END OF THREAD DUMP|<EndOfDump>).*");
+    this.lineChecker.setEndOfDumpPattern(".*(^\\d{1,2}/\\d{1,2}/\\d{1,2}\\s*\\d{1,2}:\\d{1,2}\\s*[A|P]M|Thread Dump|Thread dump|THREAD DUMP|THREAD TIMING STATISTICS|THREAD CONTEXT INFORMATION|Disconnected from |Exiting WebLogic| lock chains|<EndOfDump>).*");
+    this.lineChecker.setExactEndOfDumpPattern(".*(THREAD TIMING STATISTICS|Disconnected from |Exiting WebLogic|Thread Dump|Thread dump|END OF THREAD DUMP|<EndOfDump>).*");
     
     // Handle WLST, JRockit, Sun thread labels
     this.lineChecker.setEndOfTitlePattern(".*( RUNNABLE| WAITING| BLOCKED| TIMED_WAITING).*");
@@ -804,7 +804,7 @@ public class FallbackParser extends AbstractDumpParser {
               }
               
               // Support for parsing Lock Chains in JRockit
-              if (!(foundLockChains = checkForLockChains(catThreads))) {
+              if (!(foundLockChains = readPastBlockedChains())) {
                 getBis().reset();                
               }
               
@@ -1010,28 +1010,19 @@ public class FallbackParser extends AbstractDumpParser {
     return false;
   }
     
-    protected boolean readPastBlockedChains() throws IOException {
+  protected boolean readPastBlockedChains() throws IOException {
     boolean finished = false;
     boolean found = false;
     int lineCounter = 0;   
     Matcher m = null;
     
-    Pattern endOfChainOrDump = Pattern.compile(".*( lock chains|END OF THREAD DUMP).*");
+    Pattern endOfChainOrDump = Pattern.compile(".*(THREAD DUMP|THREAD CONTEXT INFO|Thread Dump).*");
     while (getBis().ready() && !finished) {
       String line = getNextLine();
-
-      if (!found && lineCounter++ < 100 && !line.equals("") ) {
+      
+      if (!found && !line.equals("") ) {
         m = endOfChainOrDump.matcher(line);
         if (m.matches()) {
-          found = true;
-          if (line.contains("END OF THREAD DUMP")) {
-            finished = true;
-            break;
-          }
-        }
-      } else if (found) {
-        
-        if (line.indexOf("END OF THREAD DUMP") >= 0) {
           finished = true;
           break;
         } 
