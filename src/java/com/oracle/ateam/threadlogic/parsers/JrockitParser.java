@@ -197,7 +197,7 @@ public class JrockitParser extends AbstractDumpParser {
    * @return true, if the start of a bea thread dump is detected.
    */
   public static boolean checkForSupportedThreadDump(String logLine) {
-    return (logLine.trim().indexOf("===== FULL THREAD DUMP ===============") >= 0);
+    return (logLine.trim().indexOf("FULL THREAD DUMP") >= 0);
   }
 
   protected String[] getThreadTokens(String name) {

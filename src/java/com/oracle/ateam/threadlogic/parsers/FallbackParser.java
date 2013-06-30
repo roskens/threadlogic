@@ -69,7 +69,7 @@ import javax.swing.tree.MutableTreeNode;
  */
 public class FallbackParser extends AbstractDumpParser {
 
-  private int jvmType;
+  private int jvmType = UNKNOWN_VM;
   private static Pattern defaultThreadPattern = Pattern.compile(".*( WAITING| RUNNABLE| TIMED_WAITING| prio=[0-9]+ alive, | daemon prio=[0-9]+ tid=0x).*");
 
   // Search keywords for jrockit or ibm specific tags in thread dumps if search for markers fail
@@ -85,7 +85,6 @@ public class FallbackParser extends AbstractDumpParser {
   protected static final String HOTSPOT_TAG = ".* daemon prio=[0-9]+ tid=0x.*";  
   
   protected boolean determinedJVMType = false;
-  protected int jvmID = UNKNOWN_VM;
 
   /**
    * Creates a new instance of SunJDKParser
@@ -135,6 +134,8 @@ public class FallbackParser extends AbstractDumpParser {
       
     } else if (logLine.contains("Full Thread Dump")) {
         return UNKNOWN_VM;
+    } else if (logLine.contains(IBM_TAG)) {
+      return IBM_VM;
     }
     
     return -1;    
@@ -147,7 +148,7 @@ public class FallbackParser extends AbstractDumpParser {
     this.lineChecker.setThreadStatePattern("(.*: .*)|(\\])");
 
     this.lineChecker.setWaitingOnPattern("(.*WAITING on.*)");
-    this.lineChecker.setParkingToWaitPattern("(.*\\.park\\.\\(.*)");
+    this.lineChecker.setParkingToWaitPattern("(.*\\.park\\.\\(.*)|(.*Parking to wait.*)");
     this.lineChecker.setWaitingToPattern("(.* BLOCKED on.*)");
     
     
@@ -175,17 +176,28 @@ public class FallbackParser extends AbstractDumpParser {
    *          containing monitor
    */
   protected String linkifyMonitor(String line) {
-    if (line == null)
+    
+    return line;
+    
+    /*
+    if (line == null) 
       return null;
+    
+    boolean foundLockWithHotspotPattern = true;
     
     try {
         int index = line.indexOf(" lock=");
-        
+        if (index < 0) {
+          foundLockWithHotspotPattern = false;
+          index = line.indexOf(" lock: ");
+        }
+    
         while (index > 0){
           index += 6;
           String begin = line.substring(0, index);
 
           String end = "";
+          
           int endIndex = line.indexOf(' ', index);
           int newlineIndex = line.indexOf('\n', index);
           
@@ -206,13 +218,20 @@ public class FallbackParser extends AbstractDumpParser {
           monitor = sbuf.toString();
           line = (begin + monitor + end);
 
-          index = line.indexOf(" lock=", endIndex + 10);
+          if (foundLockWithHotspotPattern)
+            index = line.indexOf(" lock=", endIndex + 10);
+          else
+            index = line.indexOf(" lock:", endIndex + 10);
         }
+       
         
       return line;
     } catch(Exception e) { 
+      e.printStackTrace();
       return null;
     }
+     * 
+     */
   }
   
   
@@ -222,13 +241,13 @@ public class FallbackParser extends AbstractDumpParser {
   }
   
   public DumpParser recreateParserBasedOnVendor() {
-      if (!this.determinedJVMType || (this.jvmID == UNKNOWN_VM))
+      if (!this.determinedJVMType || (this.jvmType == UNKNOWN_VM))
         return this;
       
       DumpParser dp = this;
       boolean switchedParser = false;
               
-      switch(this.jvmID) {
+      switch(this.jvmType) {
         case(HOTSPOT_VM): 
           switchedParser = true;
           dp = new HotspotParser(getBis(), threadStore,  lineCounter, withCurrentTimeStamp, counter, getDm()); 
@@ -249,7 +268,7 @@ public class FallbackParser extends AbstractDumpParser {
           if (getBis() != null) {
             getBis().reset();
           }
-        } catch(Exception e) { e.printStackTrace(); }
+        } catch(Exception e) { }
       }
       
       return dp;
@@ -645,21 +664,12 @@ public class FallbackParser extends AbstractDumpParser {
               continue;
               
             if (!determinedJVMType) {
-              if (line.matches(JROCKIT_TAG)) {
-                this.jvmID = JROCKIT_VM;
-                this.setJvmVendor(JVM_VENDOR_LIST[JROCKIT_VM]);
-                determinedJVMType = true;       
-                
-              } else if (line.matches(IBM_TAG)) {
-                this.jvmID = IBM_VM;
-                this.setJvmVendor(JVM_VENDOR_LIST[IBM_VM]);
+              
+              int jvmTypeId = checkForSupportedThreadDump(line);
+              if (jvmTypeId >= 0) {
                 determinedJVMType = true;
-                
-              } else if (line.matches(HOTSPOT_TAG)) {
-                this.jvmID = HOTSPOT_VM;
-                this.setJvmVendor(JVM_VENDOR_LIST[HOTSPOT_VM]);
-                determinedJVMType = true;
-                
+                this.jvmType = jvmTypeId;
+                this.setJvmVendor(JVM_VENDOR_LIST[jvmTypeId]);
               }
             }
             
@@ -796,41 +806,42 @@ public class FallbackParser extends AbstractDumpParser {
               finished = true;
               
               //getBis().mark(getMarkSize());
-              
-              if ((checkForDeadlocks(threadDump)) == 0) {
-                // no deadlocks found, set back original
-                // position.
-                getBis().reset();
-              }
-              
-              // Support for parsing Lock Chains in JRockit
-              if (!(foundLockChains = readPastBlockedChains())) {
-                getBis().reset();                
-              }
-              
-
-              if (!checkThreadDumpStatData(overallTDI)) {
-                // no statistical data found, set back original
-                // position.
-                getBis().reset();
-              }              
-              
-              if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
-                getBis().reset();                
-              }
-              
-              // Add support for ECID and Context Data Parsing              
-              if (!checkThreadDumpContextData(overallTDI)) {
-                // no statistical data found, set back original
-                // position.
-                try {
+              try {
+                
+                if ((checkForDeadlocks(threadDump)) == 0) {
+                  // no deadlocks found, set back original
+                  // position.
                   getBis().reset();
-                } catch(IOException ioe) {  
-                  // Dont let it block further processing
-                  ioe.printStackTrace(); 
                 }
+
+                // Support for parsing Lock Chains in JRockit
+                if (!(foundLockChains = readPastBlockedChains())) {
+
+                  getBis().reset();                
+                }
+
+
+                if (!checkThreadDumpStatData(overallTDI)) {
+                  // no statistical data found, set back original
+                  // position.
+                  getBis().reset();
+                }              
+
+                if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
+                  getBis().reset();                
+                }
+
+                // Add support for ECID and Context Data Parsing              
+                if (!checkThreadDumpContextData(overallTDI)) {
+                  // no statistical data found, set back original
+                  // position.                  
+                  getBis().reset();
+                }
+                
+              } catch(IOException ioe) { 
+                // Dont let it block further processing
+                ioe.printStackTrace(); 
               }
-              
               
             } else {
               // Mark the point as we have successfuly parsed the thread
@@ -1081,6 +1092,9 @@ public class FallbackParser extends AbstractDumpParser {
     if (beginIndex < 0) {
       beginIndex = content.indexOf(" lock ");
     }
+    if (beginIndex < 0) {
+      beginIndex = content.indexOf(" lock:");
+    }
     
     if (blockedForLock == null && beginIndex >= 0) {
       beginIndex += 6;
@@ -1094,6 +1108,8 @@ public class FallbackParser extends AbstractDumpParser {
       //mmap.addWaitToMonitor(blockedLockId, thread.getFilteredName(), content);
     }
 
+    System.out.println("Thread : " + content + ", blocked forLock: " + blockedForLock);
+    
     ThreadInfo lockOwner = blockedForLock.getLockOwner();
     beginIndex = content.indexOf(" owned by ");
     if (lockOwner == null && beginIndex > 0) {      
