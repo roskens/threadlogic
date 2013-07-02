@@ -78,7 +78,7 @@ public class JrockitParser extends AbstractDumpParser {
     this.lineChecker.setWaitingOnPattern("(.*-- Waiting for notification on.*)");
     this.lineChecker.setParkingToWaitPattern("(.*-- Parking to wait for.*)");
     this.lineChecker.setWaitingToPattern("(.*-- Blocked trying to get lock.*)");
-    this.lineChecker.setLockedPattern("(.*-- (Holding lock|Lock released while waiting).*)");
+    this.lineChecker.setLockedPattern("(.*-- (Holding lock).*)");
     this.lineChecker.setEndOfDumpPattern("(.*(^[MTWFSa-z]{3}[a-zA-Z]{3}\\s*d{1,2}\\s\\d{1,2}:\\d{1,2}:\\d{1,2}\\s\\d\\d\\d\\d"
             + "|END OF THREAD DUMP| lock chains|Open lock chains|FULL THREAD DUMP).*)");    
     this.lineChecker.setExactEndOfDumpPattern("(.*END OF THREAD DUMP.*)"); 
@@ -280,9 +280,11 @@ public class JrockitParser extends AbstractDumpParser {
    *          which tree node to add the lock chain info.
    */
   public boolean checkForLockChains(DefaultMutableTreeNode catThreadNode) throws IOException {
+    
     boolean finished = false;
     boolean found = false;
     int lines = 0;
+    
     
     String blockedThreadPatternMask = "^.*\"([^\\\"]+)\".*waiting for ([^ ]+) held by:.*";
     String ownerThreadPatternMask = "^.*\"([^\\\"]+)\".*";
@@ -291,8 +293,8 @@ public class JrockitParser extends AbstractDumpParser {
     Pattern ownerThreadPattern = Pattern.compile(ownerThreadPatternMask);
 
     Category catThreads = (Category)catThreadNode.getUserObject();
-    String blockedThread, lockObj, ownerThread;
-    blockedThread = lockObj = ownerThread = null;
+    String blockedThread, prevBlockedThread, lockObj, prevLockObj, ownerThread;
+    blockedThread = prevBlockedThread = prevLockObj = lockObj = ownerThread = null;
     
     // Save the thread info in a hashtable for quick retreival of the thread stack later based on thread name
     Hashtable<String, ThreadInfo> threadMap = new Hashtable();
@@ -304,7 +306,7 @@ public class JrockitParser extends AbstractDumpParser {
     while (getBis().ready() && !finished) {
       String line = getNextLine();
       if (!found && !line.equals("")) {
-        if (line.trim().contains(" lock chains")) {
+        if (line.trim().contains(" lock chains") ) {
           found = true;
         } else if (lines >= getMaxCheckLines()) {
           finished = true;
@@ -320,24 +322,54 @@ public class JrockitParser extends AbstractDumpParser {
       
         
         // Ignore lines with 'Chain' or '========='
-        if (!(line.startsWith("==========") || line.startsWith("Chain "))) {
+        if (line.startsWith("==========") || line.startsWith("Chain ")) {
     
+          // Reset all saved threads, lock objects
+          prevBlockedThread = blockedThread = lockObj = prevLockObj = ownerThread = null;
+          
+        } else {
+          
           Matcher m = blockedThreadPattern.matcher(line);
-
           if (m.matches()) {
 
-          blockedThread = "\"" + m.group(1).replaceAll("\\[.*\\] ", "") + "\"";
-          lockObj = m.group(2);
+            blockedThread = "\"" + m.group(1).replaceAll("\\[.*\\] ", "") + "\"";
+            lockObj = m.group(2);            
 
+            // If there was previously another blocked thread waiting for a resource held by current thread
+            /*
+             * "[ACTIVE] ExecuteThread: '35' for queue: 'weblogic.kernel.Default (self-tuning)'" id=264 idx=0x50 tid=6408 waiting for com/hyperion/atf/internal/services/naming/NamingEntry@0x0000000003173FD8 held by:
+              "[STUCK] ExecuteThread: '14' for queue: 'weblogic.kernel.Default (self-tuning)'" id=243 idx=0x3b0 tid=8208 waiting for java/util/Collections$SynchronizedSortedMap@0x000000003C8762E0 held by:
+
+              "[STUCK] ExecuteThread: '0' for queue: 'weblogic.kernel.Default (self-tuning)'" id=14 idx=0x38 tid=7456 in chain 2
+             * 
+             */
+            if ((prevBlockedThread != null) && (prevLockObj != null)) {
+
+                // The current blocked thread is owner of the previous lock object
+                ThreadInfo ownerThreadInfo = threadMap.get(blockedThread);
+                if (ownerThreadInfo == null)
+                  continue;
+
+                // We already know the thread is in waiting state, so no need to call addSleepToMonitor()
+                // Call addLockToMonitor() just to cover cases like threads that are holding locks 
+                // that are not visible in the thread stack trace (like ReentrantLocks)
+                mmap.addLockToMonitor(prevLockObj, ownerThreadInfo.getName(), ownerThreadInfo.getContent()); 
+                //System.out.println("Added owner: " + blockedThread + ", for lock: " + prevLockObj);
+            }          
+
+            prevLockObj = lockObj;
+            prevBlockedThread = blockedThread;
+              
           } else {
+            // Just the owner thread line
             m = ownerThreadPattern.matcher(line);
             if (m.matches()) {
               ownerThread = "\"" + m.group(1).replaceAll("\\[.*\\] ", "") + "\"";
-              /*
-              System.out.println("Blocked Thread: " + blockedThread);
-              System.out.println("Owner Thread: " + ownerThread);
-              System.out.println("Lock Obj: " + lockObj);
-              */
+              
+              //System.out.println("Blocked Thread: " + blockedThread);
+              //System.out.println("Owner Thread: " + ownerThread);
+              //System.out.println("Lock Obj: " + lockObj);
+              
               
               ThreadInfo ownerThreadInfo = threadMap.get(ownerThread);
               if (ownerThreadInfo == null)
@@ -346,9 +378,10 @@ public class JrockitParser extends AbstractDumpParser {
               // We already know the thread is in waiting state, so no need to call addSleepToMonitor()
               // Call addLockToMonitor() just to cover cases like threads that are holding locks 
               // that are not visible in the thread stack trace (like ReentrantLocks)
-              mmap.addLockToMonitor(lockObj, ownerThreadInfo.getName(), ownerThreadInfo.getContent());              
+              mmap.addLockToMonitor(lockObj, ownerThreadInfo.getName(), ownerThreadInfo.getContent());
               
-              blockedThread = lockObj = ownerThread = null;
+              // Reset all previously saved threads/locks...
+              prevBlockedThread = blockedThread = lockObj = prevLockObj = ownerThread = null;
             }
           }
         }
@@ -358,7 +391,7 @@ public class JrockitParser extends AbstractDumpParser {
     if (found)
       getBis().mark(getMarkSize());
     
-    return (found);
+    return (found);     
   }
   
 

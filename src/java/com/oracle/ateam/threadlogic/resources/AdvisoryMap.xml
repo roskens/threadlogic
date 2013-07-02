@@ -1245,5 +1245,12 @@ xmlns="http://java.net/projects/threadlogic">
     <Descrp>Cavisson capturing SQL dump; can introduce bottleneck among threads and degrade perf</Descrp>
     <Advice>Remove or disable Cavisson SQL dump instrumentation </Advice>
 	</Advisory>
+  <Advisory>
+		<Name>BTM Instrumentation</Name>
+		<Health>WATCH</Health>
+		<Keyword>com.amberpoint.nanoagent</Keyword>		         
+    <Descrp>Heavy code instrumentation or dynamic discovery can introduce overhead, slowness or degrade perf under heavy loads</Descrp>
+    <Advice>Disable BTM Amberpoint code instrumentation on perf degrade or slowness</Advice>
+	</Advisory>
 </tlogic:AdvisoryMap>
 	

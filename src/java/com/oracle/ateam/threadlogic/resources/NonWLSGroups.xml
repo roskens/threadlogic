@@ -452,4 +452,13 @@ xmlns="http://java.net/projects/threadlogic">
 			<Pattern>com.iona</Pattern>
 		</PatternList>    
 	</SimpleGroup>
+  <SimpleGroup>
+		<Name>Acsera</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>com.acsera.javaagent</Pattern>
+		</PatternList>    
+	</SimpleGroup>
 </tlogic:GroupsDefn>

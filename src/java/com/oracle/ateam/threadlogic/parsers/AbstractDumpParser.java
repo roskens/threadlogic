@@ -1118,7 +1118,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       ThreadInfo mmi = new ThreadInfo("Monitor - " + monitor, null, "", 0, null);
       DefaultMutableTreeNode monitorNode = new DefaultMutableTreeNode(mmi);
       threadNode.add(monitorNode);
-
+      
       // Look over all threads blocked on this monitor
       for (Iterator iterWaits = threads[MonitorMap.WAIT_THREAD_POS].keySet().iterator(); iterWaits.hasNext();) {
         String thread = (String) iterWaits.next();
@@ -1126,7 +1126,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         if (thread != null && !threads[MonitorMap.LOCK_THREAD_POS].containsKey(thread)) {
           blockedThread++;
           createNode(monitorNode, "Thread - " + thread, null, (String) threads[MonitorMap.WAIT_THREAD_POS].get(thread),
-              0);          
+              0);                    
         }
       }
 
@@ -1229,11 +1229,13 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
         Map[] threads2 = mmap.getFromMonitorMap(monitor2);
         if (threads2[MonitorMap.WAIT_THREAD_POS].containsKey(threadLine1)) {
+          
           // Get the node of the thread that is holding this lock
           DefaultMutableTreeNode thread2Node = (DefaultMutableTreeNode) allBlockingThreadsMap.get(monitor2);
           // Get the node of the monitor itself
           DefaultMutableTreeNode monitor2Node = (DefaultMutableTreeNode) thread2Node.getFirstChild();
-
+          
+          
           // If a redundant node for thread2 exists with no children, remove it
           // To compare, we have to remove "Thread - " from the front of display
           // strings
@@ -1251,6 +1253,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             monitor2Node.insert(thread1Node, 0);
           } catch (IllegalArgumentException iae) {
             // This means we have a deadlock... ignore for now.
+            // Lets not remove the node, blocked lock chain information gets lost
+            break;
           }
           directChildMap.remove(monitor1);
           break;

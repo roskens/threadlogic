@@ -421,4 +421,13 @@ xmlns="http://java.net/projects/threadlogic">
       <SimpleGroupId>Oracle JMS AdapterTemp</SimpleGroupId>
 		</Exclusions>
 	</ComplexGroup>
+  <SimpleGroup>
+		<Name>BTM</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>com.amberpoint</Pattern>
+		</PatternList>    
+	</SimpleGroup>
 </tlogic:GroupsDefn>
