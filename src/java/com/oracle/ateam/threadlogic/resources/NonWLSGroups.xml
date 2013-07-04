@@ -231,6 +231,9 @@ xmlns="http://java.net/projects/threadlogic">
 		<PatternList>
 			<Pattern>oracle.ons</Pattern>
 		</PatternList>
+    <ExcludedAdvisories>			
+			  <AdvisoryId>Socket Read</AdvisoryId>
+		</ExcludedAdvisories>
 	</SimpleGroup>  
   <SimpleGroup>
 		<Name>Quartz Pool</Name>
@@ -459,6 +462,15 @@ xmlns="http://java.net/projects/threadlogic">
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
 			<Pattern>com.acsera.javaagent</Pattern>
+		</PatternList>    
+	</SimpleGroup>
+  <SimpleGroup>
+		<Name>Cavisson</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>com.cavisson</Pattern>
 		</PatternList>    
 	</SimpleGroup>
 </tlogic:GroupsDefn>

@@ -1181,7 +1181,7 @@ xmlns="http://java.net/projects/threadlogic">
 	</Advisory>
   <Advisory>
 		<Name>Possible CPU Overload</Name>
-		<Health>WATCH</Health>
+		<Health>WARNING</Health>
 		<Keyword>java.lang.System.currentTimeMillis</Keyword>
 		<Descrp>CPU might be overloaded</Descrp>
 		<Advice>Pattern should occur rarely in stacktrace; Might indicate CPU overload/saturation</Advice>
@@ -1251,6 +1251,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>com.amberpoint.nanoagent</Keyword>		         
     <Descrp>Heavy code instrumentation or dynamic discovery can introduce overhead, slowness or degrade perf under heavy loads</Descrp>
     <Advice>Disable BTM Amberpoint code instrumentation on perf degrade or slowness</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>UCP Pool Conn</Name>
+		<Health>WATCH</Health>
+		<Keyword>UCPRACModuleImpl.getConnection</Keyword>		         
+    <Descrp>Trying to get jdbc connection from UCP Gridlink pool for RAC</Descrp>
+    <Advice>If multiple threads appear with this pattern, set to Seconds to Trust Idle connection to 10 or 15 seconds, enable Pinned-to-thread and apply Bug# 17038851</Advice>
 	</Advisory>
 </tlogic:AdvisoryMap>
 	

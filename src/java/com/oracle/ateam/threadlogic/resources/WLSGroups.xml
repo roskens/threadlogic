@@ -251,6 +251,9 @@ xmlns="http://java.net/projects/threadlogic">
 			<PatternList>
 				<Pattern>ONSSubscriberBase.receive</Pattern>
 			</PatternList>
+      <ExcludedAdvisories>			
+			  <AdvisoryId>Socket Read</AdvisoryId>
+		</ExcludedAdvisories>        
 	</SimpleGroup>
 	<SimpleGroup>
 		<Name>Oracle ADF</Name>
