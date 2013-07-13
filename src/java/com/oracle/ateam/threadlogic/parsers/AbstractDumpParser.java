@@ -158,7 +158,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     if (elems.length > 1) {
       return (elems[elems.length - 1].substring(0, elems[elems.length - 1].lastIndexOf(']')).trim());
     } else {
-      return null;
+      String pathStr = path.toString();
+      return (pathStr.substring(1, pathStr.lastIndexOf(']')).trim());
     }
   }  
   
@@ -209,35 +210,36 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     Vector<String> tdiKeys = new Vector<String>(dumps.length);
     Map<String, ThreadDumpInfo> tdiMap = new HashMap<String, ThreadDumpInfo>();    
 
-    // The original dumpStore uses the full thread label as key which includes
-    // the thread state
-    // If the thread becomes blcoked or unblcoked, the state changes and so the
-    // same thread key cannot be used across thread dumps..
-    // Thread name is "ExecuteThread: '1' for queue: 'weblogic.socket.Muxer'"
-    // id=29 idx=0xc0 tid=19931 prio=5 alive, blocked, native_blocked, daemon
-    // Thread name to do searches across TDs should be just
-    // "ExecuteThread: '1' for queue: 'weblogic.socket.Muxer'" without rest of
-    // the labels
-    // So use filtered Thread names for searches of threads across TDIs
-
+    String prevLogFilePath = null;
     for (int i = 0; i < dumps.length; i++) {
       String dumpName = getDumpStringFromTreePath(dumps[i]);
       String parentDump = getDumpStringFromTreePath(dumps[i].getParentPath());
-      //System.out.println( (i+1) + "-Dump Name: " + dumpName + ", complete Treepath: " + parentDump);
+      //System.out.println("Dumps path: " + dumps[i] + ", parentPath: " + dumps[i].getParentPath() );
+      //System.out.println("2Dumps path: " + dumpName + ", parentPath: " + parentDump);
+      
+      String currentLogFilePath = (dumpName.startsWith("Dump No"))? parentDump:dumpName;
+      if (prevLogFilePath == null)
+        prevLogFilePath = currentLogFilePath;
+      
+      //System.out.println("LogFile: " + currentLogFilePath);
+      
+      // Check if we are comparing against different log files
+      if (!currentLogFilePath.equals(prevLogFilePath))
+        diffAcrossLogs = true;
       
       if (dumpName.indexOf(" at") > 0) {
-        dumpName = dumpName.substring(0, dumpName.indexOf(" at"));
+        dumpName = dumpName.substring(0, dumpName.indexOf(" at")).trim();
       } else if (dumpName.indexOf(" around") > 0) {
-        dumpName = dumpName.substring(0, dumpName.indexOf(" around"));
+        dumpName = dumpName.substring(0, dumpName.indexOf(" around")).trim();
       }
+      
       Integer tdiID = null;
       if (dumpName.contains("Dump No.")) {
         tdiID = Integer.parseInt(dumpName.replaceAll("Dump No.", "").trim());
         
-      } else if (dumpName.contains(File.separator)) {        
+      } else if (dumpName.contains(File.separator)) {                
         
-        diffAcrossLogs = true;
-        // This is a comparison across multiple thread dump files
+        // This is a comparison across multiple thread dump files that have no individual Dumps selected
         // Search for pattern like: javacore.20120130.103911.2883810.0001.txt
         int index = dumpName.lastIndexOf('.');
         String strippedName = dumpName;
@@ -253,7 +255,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         } catch(Exception e) {
           tdiID = new Integer(i);
         }
-      } 
+      }
+       
       
       // Its possible the thread dump got expanded and its internal threads/threadgroups also got selected
       // Ignore such selection
@@ -261,8 +264,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         //System.out.println("### Ignoring .. " + dumpName);
         continue;
       }
-      tdKeyMapper.put(parentDump + tdiID, dumpName);
-      tdiKeys.add(parentDump + tdiID);
+      tdKeyMapper.put(currentLogFilePath + tdiID, dumpName);
+      tdiKeys.add(currentLogFilePath + tdiID);
       ThreadDumpInfo tdi = null;
       Object userObj = ((DefaultMutableTreeNode) dumps[i].getLastPathComponent()).getUserObject();
       if (userObj instanceof ThreadDumpInfo) {
@@ -271,27 +274,57 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         Logfile logFile = (Logfile)userObj;
         tdi = logFile.getThreadDumps().get(0);
       }
-      tdiMap.put(parentDump + tdiID, tdi);      
+      //System.out.println("Saving in tdiMap: " + currentLogFilePath + tdiID + " = TdI: " + tdi);
+      tdiMap.put(currentLogFilePath + tdiID, tdi);      
     }
 
-    // Sort the ordering by the thread dump ids...
-    Collections.sort(tdiKeys);    
+    // Sort the ordering by the thread dump ids along with log file names...
+    if (diffAcrossLogs) {
+      Collections.sort(tdiKeys);
+    } else {
+      // Thread dumps all belong to the same log file
+      // Strip off the log file name and sort by dump instances...
+      
+      Vector<Integer> tdiIntKeys = new Vector<Integer>();
+      for(String olderTdiKey: tdiKeys) {
+        Integer tdiId = Integer.parseInt(olderTdiKey.substring(prevLogFilePath.length()));
+        tdiIntKeys.add(tdiId);
+      }
+      Collections.sort(tdiIntKeys);
+      tdiKeys.clear();
+      for(Integer sortedTdiId: tdiIntKeys)
+        tdiKeys.add(prevLogFilePath + sortedTdiId);
+    }   
 
     ArrayList<ThreadDumpInfo> tdiArrList = new ArrayList<ThreadDumpInfo>();
     for (String tdiKey : tdiKeys) {
       String dumpName = tdKeyMapper.get(tdiKey);
-      keys.add(dumpName);
+      keys.add(dumpName);      
       tdiArrList.add(tdiMap.get(tdiKey));
-    }
+    }            
     
-    int noOfValidDumps = tdiArrList.size();
+    int noOfValidDumps = tdiArrList.size();    
     
-    String info = prefix + " between " + keys.get(0) + " and " + keys.get(keys.size() - 1);
+    String info = prefix + " between " + keys.get(0) + " and " + keys.get(keys.size() - 1);    
+    if (diffAcrossLogs) {
+      String startingLog = tdiMap.get(tdiKeys.get(0)).getLogFile().getName();
+      String endingLog = tdiMap.get(tdiKeys.get(tdiKeys.size() - 1)).getLogFile().getName();    
+      info = prefix + " between " + keys.get(0) + " of " + startingLog + " and " + keys.get(keys.size() - 1) + " of " + endingLog;
+    }    
+    
     ThreadDiffsTableCategory threadDiffsTableCategory = new ThreadDiffsTableCategory(info, IconFactory.DIFF_DUMPS);
     threadDiffsTableCategory.setThreadDumps(tdiArrList);
 
     DefaultMutableTreeNode catMerge = new DefaultMutableTreeNode(threadDiffsTableCategory);
-    root.add(catMerge);
+    
+    // If we are doing merge across different Log files, then add it as a new top node
+    if (diffAcrossLogs) {
+      ThreadLogic.getTopNodes().add(catMerge);       
+    } else {
+      // diff of dumps within same log file, add it as child node
+      root.add(catMerge);    
+    }
+    
     int threadCount = 0;
 
     if (tdiArrList.get(0) != null) {
@@ -303,6 +336,17 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
       Iterator dumpIter = sortedThreadCol0.iterator();
       while (dumpIter.hasNext()) {
+
+        // The original dumpStore uses the full thread label as key which includes
+        // the thread state
+        // If the thread becomes blocked or unblocked, the state changes and so the
+        // same thread key cannot be used across thread dumps..
+        // Thread name is "ExecuteThread: '1' for queue: 'weblogic.socket.Muxer'"
+        // id=29 idx=0xc0 tid=19931 prio=5 alive, blocked, native_blocked, daemon
+        // Thread name to do searches across TDs should be just
+        // "ExecuteThread: '1' for queue: 'weblogic.socket.Muxer'" without rest of
+        // the labels
+        // So use filtered Thread names for searches of threads across TDIs
 
         // Need to use a filtered thread name that does not carry any of the
         // states....
@@ -2573,3 +2617,4 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   }
 
 }
+

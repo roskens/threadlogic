@@ -33,6 +33,7 @@
 
 package com.oracle.ateam.threadlogic.dialogs;
 
+import com.oracle.ateam.threadlogic.ThreadLogic;
 import com.oracle.ateam.threadlogic.utils.TableSorter;
 import com.oracle.ateam.threadlogic.utils.ThreadsTableModel;
 
@@ -55,7 +56,6 @@ public class SearchDialog extends JDialog implements ActionListener, ItemListene
   private JCheckBox checkThreadContent;
 
   private JComponent searchComp;
-  private JTable searchTable;
   
   private boolean searchAgainstThreadContent = false;
 
@@ -147,5 +147,13 @@ public class SearchDialog extends JDialog implements ActionListener, ItemListene
 
   public void reset() {
   }
+  
 
+  public String getSearchText() {
+    if (this.searchField != null)
+      return this.searchField.getText();
+    
+    return null;
+  }
+  
 }

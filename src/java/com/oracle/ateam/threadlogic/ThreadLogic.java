@@ -26,7 +26,6 @@ import com.oracle.ateam.threadlogic.filter.FilterChecker;
 import com.oracle.ateam.threadlogic.filter.HealthLevelFilter;
 import com.oracle.ateam.threadlogic.jedit.JEditTextArea;
 import com.oracle.ateam.threadlogic.jedit.PopupMenu;
-import com.oracle.ateam.threadlogic.parsers.AbstractDumpParser;
 import com.oracle.ateam.threadlogic.parsers.DumpParser;
 import com.oracle.ateam.threadlogic.parsers.DumpParserFactory;
 import com.oracle.ateam.threadlogic.parsers.FallbackParser;
@@ -39,6 +38,7 @@ import com.oracle.ateam.threadlogic.utils.ResourceManager;
 import com.oracle.ateam.threadlogic.utils.StatusBar;
 import com.oracle.ateam.threadlogic.utils.SwingWorker;
 import com.oracle.ateam.threadlogic.utils.TableSorter;
+import com.oracle.ateam.threadlogic.utils.ThreadDiffsTableModel;
 import com.oracle.ateam.threadlogic.utils.ThreadsTableModel;
 import com.oracle.ateam.threadlogic.utils.ThreadsTableModel.ThreadData;
 import com.oracle.ateam.threadlogic.utils.ThreadsTableSelectionModel;
@@ -47,6 +47,7 @@ import com.oracle.ateam.threadlogic.utils.TreeRenderer;
 import com.oracle.ateam.threadlogic.utils.ViewScrollPane;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.dnd.DropTargetDropEvent;
@@ -135,6 +136,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultHighlighter;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
@@ -1121,16 +1124,56 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   public void valueChanged(ListSelectionEvent e) {
     // displayCategory(e.getFirstIndex());
     ThreadsTableSelectionModel ttsm = (ThreadsTableSelectionModel) e.getSource();
-    TableSorter ts = (TableSorter) ttsm.getTable().getModel();
+    JTable table = ttsm.getTable();
+    TableSorter ts = (TableSorter) table.getModel();
+    
+    int advisoryColmn = 0;
+    for(advisoryColmn = 0 ; advisoryColmn < table.getColumnCount();advisoryColmn++) {
+      String colName = table.getColumnName(advisoryColmn);
+      if (colName.equals("Advisories"))
+        break;
+    }    
 
-    int[] rows = ttsm.getTable().getSelectedRows();
+    int[] rows = table.getSelectedRows();
+    int[] cols = table.getSelectedColumns();
     StringBuffer sb = new StringBuffer();
     ThreadsTableModel threadsModel = (ThreadsTableModel) ts.getTableModel();
     for (int i = 0; i < rows.length; i++) {
       int index = ts.modelIndex(rows[i]);
       appendThreadInfo(sb, threadsModel.getInfoObjectAtRow(index));
     }
-    displayContent(sb.toString());
+    
+        
+    //Sabha
+    String htmlContent = sb.toString();
+    String dumpNoSearchString = null;
+    
+    // If the ThreadModel is for the Merge/ThreadDiffs and user has selected Progress or Comparison columns, 
+    // then try to highlight the thread stack content belonging to the selected dump
+    if ((threadsModel instanceof ThreadDiffsTableModel) && (cols[cols.length - 1] > advisoryColmn)) {
+      
+      /*
+      dumpNoSearchString = table.getColumnName(cols[0]);
+      dumpNoSearchString = "Dump " + dumpNoSearchString.replaceAll(" Vs.*", "");
+      displayContentWithHighlights(htmlContent, dumpNoSearchString, "Dump No");
+       * 
+       */
+      // There can be cases when we are doing diff between log files and every dump is tagged as "Dump No. 1"
+      int diffColumnOffset = cols[0] - advisoryColmn;
+      
+      // Highlight the content that occurs between two "Dump No" with occurence indicated by diffColumnOffset 
+      displayContentWithHighlights(htmlContent, "Dump No", "Dump No", diffColumnOffset);
+      
+    } else if (searchDialog != null && searchDialog.getSearchText() != null) {
+      // Highlight in case of search also
+      displayContentWithHighlights(htmlContent, searchDialog.getSearchText(), null, 1);
+      
+    } else {    
+      // If its default display or any other columns are selected, then just display the regular content
+      displayContent(htmlContent);
+    }
+    
+    
     setThreadDisplay(true);
   }
 
@@ -1344,6 +1387,55 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       htmlPane.setContentType("text/html");
       htmlPane.setText("<html><body bgcolor=\"#ffffff\">" +text+ "</body></html>");
       htmlPane.setCaretPosition(0);
+    } else {
+      htmlPane.setText("");
+    }
+  }
+  
+  private void displayContentWithHighlights(String text, String beginPattern, String endPattern, int occurenceCount) {
+    
+    if (splitPane.getBottomComponent() != htmlView) {
+      splitPane.setBottomComponent(htmlView);
+    }
+    if (text != null) {
+      htmlPane.setContentType("text/html");
+      htmlPane.setText("<html><body bgcolor=\"#ffffff\">" +text+ "</body></html>");
+      htmlPane.setCaretPosition(0);
+      
+      if (beginPattern != null && !beginPattern.equals("")) {        
+        
+        int beginIndex, endIndex;
+        beginIndex = endIndex = -1;
+        try {
+          int searchCount = 0;
+          // Handle case insensitive search by changing to all lower case for both pattern and content
+          String htmlContent = htmlPane.getDocument().getText(0, htmlPane.getDocument().getLength()).toLowerCase();
+          
+          // Find the matching pattern and keep going forward till we hit the occurenceCount or ran out of match
+          do {
+            beginIndex = htmlContent.indexOf(beginPattern.toLowerCase(), beginIndex+1);
+            
+          } while ((beginIndex >= 0) && (occurenceCount > ++searchCount));
+          
+          if (beginIndex >= 0) {
+            
+            if (endPattern != null) {
+              endIndex = htmlContent.indexOf(endPattern.toLowerCase(), beginIndex + 5);
+            } else {
+              int spaceIndex = htmlContent.indexOf(" ", beginIndex+1);
+              int packageIndex = htmlContent.indexOf(".", beginIndex+1);
+              endIndex = (spaceIndex < packageIndex)? spaceIndex:packageIndex;
+            }
+          
+            htmlPane.getHighlighter().addHighlight(beginIndex, endIndex, 
+                          new DefaultHighlighter.DefaultHighlightPainter(Color.yellow));
+            htmlPane.setCaretPosition(beginIndex + 30);
+          }
+        
+        } catch(BadLocationException  e) { 
+          e.printStackTrace();
+        }
+      }
     } else {
       htmlPane.setText("");
     }
@@ -1854,7 +1946,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
           ((Logfile)logFile).getUsedParser().mergeDumps(mergeRoot, dumpMap, paths, paths.length,
               null);
           createTree();
-          this.getRootPane().revalidate();
+          this.getRootPane().revalidate();          
         }
       } else if ("Show selected Dump in logfile".equals(source.getText())) {
         navigateToDumpInLogfile();
@@ -2714,5 +2806,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     return bis;
   }
   
+  public static Vector getTopNodes() {
+    return myThreadLogic.topNodes;
+  }
+  
+  
 }
+
 
