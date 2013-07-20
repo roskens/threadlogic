@@ -473,4 +473,13 @@ xmlns="http://java.net/projects/threadlogic">
 			<Pattern>com.cavisson</Pattern>
 		</PatternList>    
 	</SimpleGroup>
+  <SimpleGroup>
+		<Name>ODI</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>oracle.odi</Pattern>
+		</PatternList>    
+	</SimpleGroup>
 </tlogic:GroupsDefn>

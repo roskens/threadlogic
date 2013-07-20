@@ -26,6 +26,7 @@ import com.oracle.ateam.threadlogic.filter.FilterChecker;
 import com.oracle.ateam.threadlogic.filter.HealthLevelFilter;
 import com.oracle.ateam.threadlogic.jedit.JEditTextArea;
 import com.oracle.ateam.threadlogic.jedit.PopupMenu;
+import com.oracle.ateam.threadlogic.parsers.AbstractDumpParser;
 import com.oracle.ateam.threadlogic.parsers.DumpParser;
 import com.oracle.ateam.threadlogic.parsers.DumpParserFactory;
 import com.oracle.ateam.threadlogic.parsers.FallbackParser;
@@ -1143,36 +1144,27 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       appendThreadInfo(sb, threadsModel.getInfoObjectAtRow(index));
     }
     
-        
-    //Sabha
     String htmlContent = sb.toString();
-    String dumpNoSearchString = null;
+    displayContent(htmlContent);
     
-    // If the ThreadModel is for the Merge/ThreadDiffs and user has selected Progress or Comparison columns, 
-    // then try to highlight the thread stack content belonging to the selected dump
+    // If the ThreadModel is for the Merge/ThreadDiffs and user has selected thread progress columns, 
+    // then try to highlight the thread stack content belonging to the selected dump    
     if ((threadsModel instanceof ThreadDiffsTableModel) && (cols[cols.length - 1] > advisoryColmn)) {
       
-      /*
-      dumpNoSearchString = table.getColumnName(cols[0]);
-      dumpNoSearchString = "Dump " + dumpNoSearchString.replaceAll(" Vs.*", "");
-      displayContentWithHighlights(htmlContent, dumpNoSearchString, "Dump No");
-       * 
-       */
-      // There can be cases when we are doing diff between log files and every dump is tagged as "Dump No. 1"
+      // There can be cases when we are doing diff between log files 
+      // and every dump is tagged as "Dump No. 1"
       int diffColumnOffset = cols[0] - advisoryColmn;
       
-      // Highlight the content that occurs between two "Dump No" with occurence indicated by diffColumnOffset 
-      displayContentWithHighlights(htmlContent, "Dump No", "Dump No", diffColumnOffset);
+      // Highlight the content that occurs between two "Dump " with occurence 
+      // indicated by diffColumnOffset 
+      
+      highlightTextBetweenMarkers(AbstractDumpParser.DUMP_MARKER, 
+                                  AbstractDumpParser.DUMP_MARKER, diffColumnOffset);
       
     } else if (searchDialog != null && searchDialog.getSearchText() != null) {
       // Highlight in case of search also
-      displayContentWithHighlights(htmlContent, searchDialog.getSearchText(), null, 1);
-      
-    } else {    
-      // If its default display or any other columns are selected, then just display the regular content
-      displayContent(htmlContent);
+      this.highlightSearchData(searchDialog.getSearchText());
     }
-    
     
     setThreadDisplay(true);
   }
@@ -1392,52 +1384,76 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     }
   }
   
-  private void displayContentWithHighlights(String text, String beginPattern, String endPattern, int occurenceCount) {
+  private void highlightSearchData(String pattern) {
     
-    if (splitPane.getBottomComponent() != htmlView) {
-      splitPane.setBottomComponent(htmlView);
+    if (pattern != null && !pattern.equals("")) {        
+
+      try {
+        // Handle case insensitive search by changing to all lower case for both pattern and content
+        String htmlContent = htmlPane.getDocument().getText(0, htmlPane.getDocument().getLength()).toLowerCase();
+
+        int beginIndex, endIndex;
+        beginIndex = endIndex = 0;
+
+        // Find the matching pattern and keep going forward till we hit the occurenceCount or ran out of match
+        beginIndex = htmlContent.indexOf(pattern.toLowerCase(), beginIndex+1);
+
+        if (beginIndex >= 0) {
+
+          int spaceIndex = htmlContent.indexOf(" ", beginIndex+pattern.length());
+          int packageIndex = htmlContent.indexOf(".", beginIndex+pattern.length());
+          endIndex = (spaceIndex < packageIndex)? spaceIndex:packageIndex;
+
+          htmlPane.getHighlighter().addHighlight(beginIndex, endIndex, 
+                        new DefaultHighlighter.DefaultHighlightPainter(Color.yellow));            
+
+          htmlPane.setCaretPosition(beginIndex);
+        }
+
+      } catch(BadLocationException  e) { 
+        e.printStackTrace();
+      }
     }
-    if (text != null) {
-      htmlPane.setContentType("text/html");
-      htmlPane.setText("<html><body bgcolor=\"#ffffff\">" +text+ "</body></html>");
-      htmlPane.setCaretPosition(0);
+  }
+
+    private void highlightTextBetweenMarkers(String beginPattern, String endPattern, int occurenceCount) {
       
-      if (beginPattern != null && !beginPattern.equals("")) {        
-        
+    if (beginPattern != null && !beginPattern.equals("")) {        
+
+      try {
+        int searchCount = 0;
+        // Handle case insensitive search by changing to all lower case for both pattern and content
+        String htmlContent = htmlPane.getDocument().getText(0, htmlPane.getDocument().getLength()).toLowerCase();
+
         int beginIndex, endIndex;
         beginIndex = endIndex = -1;
-        try {
-          int searchCount = 0;
-          // Handle case insensitive search by changing to all lower case for both pattern and content
-          String htmlContent = htmlPane.getDocument().getText(0, htmlPane.getDocument().getLength()).toLowerCase();
-          
-          // Find the matching pattern and keep going forward till we hit the occurenceCount or ran out of match
-          do {
-            beginIndex = htmlContent.indexOf(beginPattern.toLowerCase(), beginIndex+1);
-            
-          } while ((beginIndex >= 0) && (occurenceCount > ++searchCount));
-          
-          if (beginIndex >= 0) {
-            
-            if (endPattern != null) {
-              endIndex = htmlContent.indexOf(endPattern.toLowerCase(), beginIndex + 5);
-            } else {
-              int spaceIndex = htmlContent.indexOf(" ", beginIndex+1);
-              int packageIndex = htmlContent.indexOf(".", beginIndex+1);
-              endIndex = (spaceIndex < packageIndex)? spaceIndex:packageIndex;
-            }
-          
-            htmlPane.getHighlighter().addHighlight(beginIndex, endIndex, 
-                          new DefaultHighlighter.DefaultHighlightPainter(Color.yellow));
-            htmlPane.setCaretPosition(beginIndex + 30);
+
+        // Find the matching pattern and keep going forward till we hit the occurenceCount or ran out of match
+        do {
+          beginIndex = htmlContent.indexOf(beginPattern.toLowerCase(), beginIndex+1);
+
+        } while ((beginIndex >= 0) && (occurenceCount > ++searchCount));
+
+        if (beginIndex >= 0) {
+
+          if (endPattern != null) {
+            endIndex = htmlContent.indexOf(endPattern.toLowerCase(), beginIndex + 5);
+          } else {
+            int spaceIndex = htmlContent.indexOf(" ", beginIndex+1);
+            int packageIndex = htmlContent.indexOf(".", beginIndex+1);
+            endIndex = (spaceIndex < packageIndex)? spaceIndex:packageIndex;
           }
-        
-        } catch(BadLocationException  e) { 
-          e.printStackTrace();
+
+          htmlPane.getHighlighter().addHighlight(beginIndex, endIndex, 
+                        new DefaultHighlighter.DefaultHighlightPainter(Color.yellow));
+
+          if (beginIndex > 100)
+            htmlPane.setCaretPosition(beginIndex + 100);
         }
+
+      } catch(BadLocationException  e) { 
+        e.printStackTrace();
       }
-    } else {
-      htmlPane.setText("");
     }
   }
 

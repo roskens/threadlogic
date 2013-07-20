@@ -96,18 +96,19 @@ public class DumpParserFactory {
 
       // reset current dump parser
       DateMatcher dm = new DateMatcher();
+      DateMatcher lastSavedDm = dm;
       boolean foundDate = false;
       String dateEntry = "";
       while (bis.ready() && (currentDumpParser == null)) {
         bis.mark(readAheadLimit);
         String line = bis.readLine();
-        if (!foundDate) {
-          dm.checkForDateMatch(line);          
-          if (dm.isDefaultMatches()) {
-            dateEntry = line;
-            foundDate = true;
-            System.out.println("Timestamp:" + dateEntry);
-          } 
+        dm.checkForDateMatch(line);          
+        if (dm.isDefaultMatches()) {
+          dateEntry = line;
+          foundDate = true;
+          
+          // Save the very last date entry before we hit the Thread Dump Markers
+          lastSavedDm = dm;
         }
         
         if (line.trim().equals(""))
@@ -115,20 +116,20 @@ public class DumpParserFactory {
         
         if (WrappedSunJDKParser.checkForSupportedThreadDump(line)) {
           currentDumpParser = new WrappedSunJDKParser(bis, threadStore, lineCounter, withCurrentTimeStamp,
-              startCounter, dm);
+              startCounter, lastSavedDm);
         } else if (HotspotParser.checkForSupportedThreadDump(line)) {
-          currentDumpParser = new HotspotParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm);          
+          currentDumpParser = new HotspotParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, lastSavedDm);          
         } else if (JrockitParser.checkForSupportedThreadDump(line)) {
-          currentDumpParser = new JrockitParser(bis, threadStore, lineCounter, dm);
+          currentDumpParser = new JrockitParser(bis, threadStore, lineCounter, lastSavedDm);
         } else if (IBMJDKParser.checkForSupportedThreadDump(line)) {
-          currentDumpParser = new IBMJDKParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm);
+          currentDumpParser = new IBMJDKParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, lastSavedDm);
         } else {
           int supportedJvmType = FallbackParser.checkForSupportedThreadDump(line);
           if (supportedJvmType < 0)
             continue;
                 
           // Found some sort of match against the FallbackParser
-            currentDumpParser = new FallbackParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, dm, supportedJvmType);
+            currentDumpParser = new FallbackParser(bis, threadStore, lineCounter, withCurrentTimeStamp, startCounter, lastSavedDm, supportedJvmType);
 
         }
         lineCounter++;

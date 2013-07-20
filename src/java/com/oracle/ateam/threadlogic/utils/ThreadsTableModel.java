@@ -317,46 +317,52 @@ public class ThreadsTableModel extends AbstractTableModel {
   public int searchRowWithName(int startRow, String name) {
     if (name == null || name.equals(""))
       return -1;
-    
-    int i = (startRow >= 0 )? startRow : 0;
-    boolean found = false;
-    
+
     name = name.replaceAll("/", ".");    
     Pattern p = Pattern.compile(name, Pattern.DOTALL | Pattern.CASE_INSENSITIVE );
     
+    int count = 0;
+    int maxCount = getRowCount();
+    int index = (startRow >= 0 )? startRow : 0;
+    boolean found = false;
     Matcher m = null;
-    while (!found && (i < getRowCount())) {
-      ThreadInfo ti = ((ThreadData) getInfoObjectAtRow(i++)).getAssocThreadInfo();      
+    while (!found && (count < maxCount)) {
+     
+      ThreadInfo ti = ((ThreadData) getInfoObjectAtRow((index+count) % maxCount)).getAssocThreadInfo();      
       if (ti == null)
         continue;
       
       m = p.matcher(ti.getName());
-      found = m.find(); 
+      found = m.find();
+      count++;
     }
 
-    return (found ? i - 1 : -1);
+    return (found ? ((index+count) % maxCount) -1 : -1);
   }
 
   public int searchRowWithContent(int startRow, String searchContent) {
     if (searchContent == null || searchContent.equals(""))
       return -1;
     
-    int i = (startRow >= 0 )? startRow : 0;
-    boolean found = false;
-    
     searchContent = searchContent.replaceAll("/", ".");    
     Pattern p = Pattern.compile(searchContent, Pattern.DOTALL | Pattern.CASE_INSENSITIVE );
     
+    int count = 0;
+    int maxCount = getRowCount();
+    int index = (startRow >= 0 )? startRow : 0;
+    boolean found = false;
     Matcher m = null;
-    while (!found && (i < getRowCount())) {
-      ThreadInfo ti = ((ThreadData) getInfoObjectAtRow(i++)).getAssocThreadInfo();      
+    while (!found && (count < maxCount)) {
+     
+      ThreadInfo ti = ((ThreadData) getInfoObjectAtRow((index+count) % maxCount)).getAssocThreadInfo();      
       if (ti == null)
         continue;
       
       m = p.matcher(ti.getContent());
-      found = m.find();        
+      found = m.find();
+      count++;
     }
 
-    return (found ? i - 1 : -1);
+    return (found ? ((index+count) % maxCount) -1 : -1);
   }
 }

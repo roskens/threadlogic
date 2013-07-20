@@ -50,6 +50,7 @@ import javax.swing.tree.TreePath;
 public class SearchDialog extends JDialog implements ActionListener, ItemListener  {
 
   private static String SEARCH = "search";
+  private static String NEXT = "find next";
   private static String CANCEL = "cancel";
 
   private JTextField searchField;
@@ -99,6 +100,11 @@ public class SearchDialog extends JDialog implements ActionListener, ItemListene
 
     p.add(searchButton);
 
+    JButton nextButton = new JButton("Find Next");
+    nextButton.setActionCommand(NEXT);
+    nextButton.addActionListener(this);
+    p.add(nextButton);
+    
     return p;
   }
 
@@ -111,7 +117,7 @@ public class SearchDialog extends JDialog implements ActionListener, ItemListene
   public void actionPerformed(ActionEvent e) {
     String cmd = e.getActionCommand();
 
-    if (SEARCH.equals(cmd)) {
+    if (SEARCH.equals(cmd) || NEXT.contains((cmd))) {
       if (searchComp instanceof JTree) {
         TreePath searchPath = ((JTree) searchComp).getNextMatch(searchField.getText(), 0, Position.Bias.Forward);
 
@@ -130,10 +136,12 @@ public class SearchDialog extends JDialog implements ActionListener, ItemListene
         ThreadsTableModel ttm = (ThreadsTableModel) ((TableSorter) ((JTable) searchComp).getModel()).getTableModel();
         
         int row = -1;
+        int rowOffset = (NEXT.contains(cmd))?1:0;
+        
         if (!searchAgainstThreadContent)
-          row = ttm.searchRowWithName(((JTable) searchComp).getSelectedRow(), searchField.getText());
+          row = ttm.searchRowWithName(((JTable) searchComp).getSelectedRow() + rowOffset, searchField.getText());
         else
-          row = ttm.searchRowWithContent(((JTable) searchComp).getSelectedRow(), searchField.getText());
+          row = ttm.searchRowWithContent(((JTable) searchComp).getSelectedRow() + rowOffset, searchField.getText());
         
         ((JTable) searchComp).getSelectionModel().setSelectionInterval(row, row);
       }

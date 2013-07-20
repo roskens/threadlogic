@@ -300,6 +300,16 @@ xmlns="http://java.net/projects/threadlogic">
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
 			<Pattern>oracle.integration.platform.blocks.event.jms.JmsQueueBusinessEventBus</Pattern>
+      <Pattern>oracle.tip.adapter.jms.inbound.JmsConsumer</Pattern>
+		</PatternList>
+	</SimpleGroup>
+  <SimpleGroup>
+		<Name>Oracle B2B JMS Transport</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>oracle.tip.b2b.transport.basic.jms.JMSMonitor</Pattern>
 		</PatternList>
 	</SimpleGroup>
 	<SimpleGroup>

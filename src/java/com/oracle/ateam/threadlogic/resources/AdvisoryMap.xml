@@ -839,6 +839,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>B2B Thread Executor</Descrp>
 		<Advice>B2B Custom Thread Pool Executor thread</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>B2B Callout</Name>
+		<Health>NORMAL</Health>
+		<Keyword>callout.B2BCalloutHandler</Keyword>
+		<Descrp>B2B Callout</Descrp>
+		<Advice>Ensure its not adding overhead to normal processing</Advice>
+	</Advisory>
 	<Advisory>
 		<Name>AQ Dequeue Agent</Name>
 		<Health>NORMAL</Health>
@@ -926,6 +933,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>ReadLock.lock</Keyword>
 		<Descrp>Thread attempting to acquire java concurrent Read Lock</Descrp>
 		<Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks to print the details of who might be holding but not releasing the Read Lock; Enable jvm flag -XX:+UseMembar if threads are blocked for Reentrant locks with OSB</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>Trying to acquire Semaphore</Name>
+		<Health>WATCH</Health>
+		<Keyword>Semaphore.acquire</Keyword>
+		<Descrp>Thread attempting to acquire java semaphore</Descrp>
+		<Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Hot Spots</Name>

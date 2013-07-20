@@ -500,7 +500,8 @@ public class ThreadAdvisory implements Comparable, Serializable {
       keyword = keyword.replaceAll("_", ".");
       
       
-      if (keyword.contains(ThreadLogicConstants.REENTRANTLOCK_PATTERN) 
+      if ( (keyword.contains(ThreadLogicConstants.REENTRANTLOCK_PATTERN)
+            || keyword.contains(ThreadLogicConstants.SEMAPHORE_PATTERN))
               && (state == ThreadState.PARKING)) {
         threadInfo.setState(ThreadState.BLOCKED); 
         if (threadInfo.getHealth().ordinal() < HealthLevel.WATCH.ordinal())

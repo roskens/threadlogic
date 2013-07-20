@@ -114,6 +114,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   // Adding support for ECID & Thread Context data as part of generated thread dump
   protected String THREAD_TIMING_STATISTICS = " THREAD TIMING STATISTICS";
   protected String THREAD_CONTEXT_INFO = " THREAD CONTEXT INFORMATION";
+  public final static String DUMP_MARKER = "Dump ";
   
   protected static final int HOTSPOT_VM = 0;
   protected static final int JROCKIT_VM = 1;
@@ -362,7 +363,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             if (threadMap.containsKey(threadNameId)) {
               occurence++;
             } else {
-              System.out.println("Thread " + threadNameId + ", missing from Dump: " + i );
+              System.out.println("Thread " + threadNameId + ", missing from Dump: " + i + " !!");
             }
           }
 
@@ -370,8 +371,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             threadCount++;
 
             String timeTaken0 = (tdiArrList.get(0).getStartTime() != null)?tdiArrList.get(0).getStartTime():"N/A";
+            
+            // Add Dump as keyword to recognize the dump individually later
+            String dumpKey0 = keys.get(0).toString();
+            if (!dumpKey0.startsWith(DUMP_MARKER))
+              dumpKey0 = DUMP_MARKER + dumpKey0;
+            
             StringBuffer content = new StringBuffer("<b><font size=")
-                .append(ThreadLogic.getFontSizeModifier(-1)).append(">").append(keys.get(0)  + ", Timestamp: " +  timeTaken0)
+                .append(ThreadLogic.getFontSizeModifier(-1)).append(">").append(dumpKey0  + ", Timestamp: " +  timeTaken0)
                 .append("</b></font><hr><pre><font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">");
                     
                 // Embed health for the given thread from each of the dumps
@@ -405,11 +412,16 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 String timeTaken = (tdiArrList.get(i).getStartTime() != null)?tdiArrList.get(i).getStartTime():"N/A";
                 Map<String, ThreadInfo> cmpThreadMap = tdiArrList.get(i).getThreadMap();
                 ThreadInfo cmpThreadInfo = cmpThreadMap.get(threadNameId);
+                
+                // Add Dump as keyword to recognize the dump individually later
+                String dumpKey = keys.get(i).toString();
+                if (!dumpKey.startsWith(DUMP_MARKER))
+                  dumpKey = DUMP_MARKER + dumpKey;
 
                 content.append("\n\n</pre><b><font size=");
                 content.append(ThreadLogic.getFontSizeModifier(-1));
                 content.append(">");
-                content.append(keys.get(i) + ", Timestamp: " + timeTaken);
+                content.append(dumpKey + ", Timestamp: " + timeTaken);
                 content.append("</font></b><hr><pre><font size=");
                 content.append(ThreadLogic.getFontSizeModifier(-1));
                 content.append(">");
