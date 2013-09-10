@@ -93,6 +93,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>WLS Synchronous JMS Receiver</Descrp>
 		<Advice>Prefer Asynchronous JMS Receivers over Synchronous Receivers (register as MessageListener or use MDBs) as async model scales well</Advice>
 	</Advisory>
+  <Advisory>
+		<Name>JMS Producer Flow control</Name>
+		<Health>WARNING</Health>
+		<Keyword>weblogic.jms.client.JMSProducer.doFlowControl</Keyword>		         
+    <Descrp>Producer message flow is controlled (slowed down)</Descrp>
+    <Advice>Try to maintain equilibrium between producers and consumers by speeding up consumers or slowing down producers; Tune the flow control configuration parameters as needed </Advice>
+	</Advisory>
 	<Advisory>
 		<Name>WLS MDB</Name>
 		<Health>NORMAL</Health>
@@ -437,7 +444,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>ConnectionEnv.testInternal</Keyword>
 		<Descrp>Testing JDBC Connection from Pool</Descrp>
-		<Advice>Check the outcome of Connection testing in a subsequent thread dump or stack trace of the testInternal() call</Advice>
+		<Advice>Check the outcome of Connection testing in a subsequent thread dump or stack trace of the testInternal() call; Configure Seconds to Trust Idle Connection to 10 seconds to avoid repeat test of active connections</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>WLS Multicast Receive</Name>
@@ -488,6 +495,14 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>WLS JMS Session waiting for usage to end before getting cleaned up</Descrp>
     <Advice>Indicates the session is still in use and cannot be cleaned up; Can potentially lead to a circular deadlock condition if the user of the session is blocked for a resource;  which is held by the first thread waiting for session usage to end</Advice>
   </Advisory>
+  <Advisory>
+  		<Name>WLS JMS Cluster member status change</Name>
+  		<Health>WARNING</Health>
+  		<Keyword>weblogic.jms.dd.DDMemberStatusSharer.memberStatusChange</Keyword>
+  		<Descrp>WLS JMS Cluster has undergone some change - either change (add/drop) in cluster membership or change in consumers/producers. This can be seen during cluster start when members join the cluster. Can signify cluster instability or messaging. </Descrp>
+      <Advice>Ensure cluster members or clients are not getting added/dropped too frequently after cluster has been up. Turn ON Cluster and JMS related debugs if there are repeat drop in clients</Advice>
+  </Advisory>
+  
 	<Advisory>
 		<Name>SOAP outbound calls from SOA</Name>
 		<Health>NORMAL</Health>
@@ -556,7 +571,7 @@ xmlns="http://java.net/projects/threadlogic">
 		<Health>WATCH</Health>
 		<Keyword>ServerTransactionImpl.commit, SubCoordinatorImpl.startCommit</Keyword>
 		<Descrp>Transaction commiting</Descrp>
-		<Advice>Transactiong getting commited; If multiple threads show up in Transaction commit waiting state or remote response, apply Bug fix 9974377 and 10236820 (WLS 10.3) that uses separate WM for JTA commits</Advice>
+		<Advice>Transactiong getting commited; If multiple threads show up in Transaction commit waiting state or remote response, apply Bug fix 9974377 and 10236820 (WLS 10.3) that uses separate WM for JTA commits; If thread stays or hangs in same state and involves cross-domain transactions, ensure there is global trust set between the domains or other transaction interop. </Advice>
 	</Advisory>
   <Advisory>
 		<Name>Tx 2PC Prepare</Name>
@@ -852,6 +867,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>oracle.tip.adapter.aq.*AbstractDequeueAgent</Keyword>
 		<Descrp>AQ Message dequeuing</Descrp>
 		<Advice>Normal AQ message dequeue thread</Advice>
+	</Advisory> 
+	<Advisory>
+			<Name>AQ JMS Consumer</Name>
+			<Health>NORMAL</Health>
+			<Keyword>oracle.jms.AQjmsConsumer</Keyword>
+			<Descrp>AQ JMS consumer client dequeuing</Descrp>
+			<Advice>Normal AQ JMS consumer thread</Advice>
 	</Advisory>
   <Advisory>
 		<Name>Oracle SOA File Adapter</Name>
@@ -860,6 +882,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>Oracle SOA File Adapter running</Descrp>
 		<Advice>Normal</Advice>
 	</Advisory>
+<Advisory>
+		<Name>Oracle SOA JMS Adapter Consumer</Name>
+		<Health>NORMAL</Health>
+		<Keyword>oracle.tip.adapter.jms.inbound.JmsConsumer</Keyword>
+		<Descrp>Oracle SOA JMS Adapter running</Descrp>
+		<Advice>Normal</Advice>
+</Advisory>
   <Advisory>
 		<Name>Oracle Mediator waiting</Name>
 		<Health>NORMAL</Health>
@@ -867,6 +896,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Descrp>Oracle Mediator waiting for messages from DB</Descrp>
 		<Advice>Normal</Advice>
 	</Advisory>
+<Advisory>
+		<Name>Oracle Mediator Execution</Name>
+		<Health>NORMAL</Health>
+		<Keyword>oracle.tip.mediator.service</Keyword>
+		<Descrp>Oracle Mediator Service running</Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>	
   <Advisory>
 		<Name>WLS Persistent Store Thread</Name>
 		<Health>NORMAL</Health>
@@ -940,6 +976,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>Semaphore.acquire</Keyword>
 		<Descrp>Thread attempting to acquire java semaphore</Descrp>
 		<Advice>Treat it as blocked thread; Check if the thread continues in Parked state or acquired the lock; Use -XX:+PrintConcurrentLocks</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>OSB EJB Response Wait</Name>
+		<Health>WATCH</Health>
+		<Keyword>OSB_EJB_RESPONSE_WAIT</Keyword>
+		<Descrp>OSB Thread waiting for EJB Response</Descrp>
+		<Advice>Treat it as blocked thread; Ensure the backend ejb being invoked is not bottlenecked</Advice>
 	</Advisory>
 	<Advisory>
 		<Name>Hot Spots</Name>
@@ -1131,6 +1174,13 @@ xmlns="http://java.net/projects/threadlogic">
 		<Advice>OSB Route action will use blocking mode for HTTP service invocations when used in Exactly-Once QoS mode, tying up the request thread till response returns, if request path has a transaction (like JMS Proxy) when calling Route; If its Best-Effort, then it will use async threading model to decouple request from response handler thread to avoid blocking; Decide on the transaction requiments and use either Exactly-Once (rollback complete request Tx on failure with HTTP business service) or Best-Effort (outcome of business service invocation wont affect request transaction) for the Route action</Advice>
 	</Advisory>
   <Advisory>
+		<Name>OSB EJB Inbound</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.bea.wli.sb.transports.jejb.gen.inb.BaseInboundEJBHelper.callPipeline</Keyword>
+		<Descrp>OSB Inbound EJB Request </Descrp>
+		<Advice>Normal</Advice>
+	</Advisory>
+  <Advisory>
 		<Name>Oracle cloud control activity</Name>
 		<Health>NORMAL</Health>
 		<Keyword>com.oracle.sysman.services.cloudmgmt, Cloud.*DaoImpl</Keyword>
@@ -1272,6 +1322,41 @@ xmlns="http://java.net/projects/threadlogic">
 		<Keyword>UCPRACModuleImpl.getConnection</Keyword>		         
     <Descrp>Trying to get jdbc connection from UCP Gridlink pool for RAC</Descrp>
     <Advice>If multiple threads appear with this pattern, set to Seconds to Trust Idle connection to 10 or 15 seconds, enable Pinned-to-thread and apply Bug# 17038851</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>OJDL Logging</Name>
+		<Health>WATCH</Health>
+		<Keyword>oracle.core.ojdl.logging.ODLLogger</Keyword>		         
+    <Descrp>Verbose logging levels in OJDL can slow down threads</Descrp>
+    <Advice>If multiple threads appear in blocked state waiting for lock during OJDL logging, set the logging level to less verbose (ex: ERROR instead of INFO) </Advice>
+	</Advisory>
+  <Advisory>
+		<Name>BPEL wait for Response</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.collaxa.cube.engine.delivery.DeliveryService.getResult</Keyword>		         
+    <Descrp>Waiting for service response</Descrp>
+    <Advice>If its a long invocation, try to use async model</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>BPEL Execution</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.collaxa.cube.engine.ejb.impl.bpel.BPELDeliveryBean</Keyword>		         
+    <Descrp>BPELDelivery Bean execution</Descrp>
+    <Advice>Normal</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>BPEL Outbound WS Invoke</Name>
+		<Health>NORMAL</Health>
+		<Keyword>com.collaxa.cube.ws.WSInvocationManager.invoke</Keyword>		         
+    <Descrp>BPEL Layer invoking external Web Service</Descrp>
+    <Advice>Normal</Advice>
+	</Advisory>
+  <Advisory>
+		<Name>DMS</Name>
+		<Health>NORMAL</Health>
+		<Keyword>oracle.dms.aggregator.DmsThreadFactory</Keyword>		         
+    <Descrp>DMS Thread</Descrp>
+    <Advice>Normal</Advice>
 	</Advisory>
 </tlogic:AdvisoryMap>
 	

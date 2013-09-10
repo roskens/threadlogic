@@ -39,10 +39,23 @@ public class OSBThreadGroup extends CustomizedThreadGroup {
   public void runGroupAdvisory() {
     int serviceCalloutBlockedThreads = 0;    
     ThreadAdvisory osbServiceCalloutAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.OSB_WAIT_FOR_SERVICE_CALLOUT);
-    
-    for(ThreadInfo ti: threads) {      
-      if (ti.getAdvisories().contains(osbServiceCalloutAdvisory)) {
+    ThreadAdvisory semaphoreWaitAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.SEMAPHORE_ACQUIRE);
+    ThreadAdvisory osbEjbInboundAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.OSB_EJB_INBOUND);
+    ThreadAdvisory osbEjbResponseAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.OSB_WAIT_FOR_EJB_RESPONSE);
+            
+            
+    for(ThreadInfo ti: threads) { 
+      ArrayList<ThreadAdvisory> advisories = ti.getAdvisories();
+      if (advisories.contains(osbServiceCalloutAdvisory)) {
         serviceCalloutBlockedThreads++;
+      }
+      
+      // Change to OSB waiting for Ejb Response advisories if both semaphores and ejb inbound advisories are present
+      //Remove the inbound and semaphores blocked advisories
+      if (advisories.contains(semaphoreWaitAdvisory) && advisories.contains(osbEjbInboundAdvisory)) {
+        advisories.remove(semaphoreWaitAdvisory);
+        advisories.remove(osbEjbInboundAdvisory);
+        advisories.add(osbEjbResponseAdvisory);
       }
     }
     

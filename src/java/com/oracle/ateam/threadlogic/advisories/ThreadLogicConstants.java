@@ -69,9 +69,13 @@ public class ThreadLogicConstants {
   public static final String WLS_DEFAULT_THREAD_POOL = "weblogic.kernel.default";
   public static final String WLS_DEFAULT_THREAD_POOL_STARVATION = "ThreadStarvation";
   
+  public static final String SEMAPHORE_ACQUIRE = "Semaphore.acquire";
+  
   public static final String SOA_IDLE_THREADS = "SOAIdleThread";
   public static final String OSB_WAIT_FOR_SERVICE_CALLOUT = "PipelineContextImpl.SynchronousListener.waitForResponse";
-  
+  public static final String OSB_EJB_INBOUND = "com.bea.wli.sb.transports.jejb.gen.inb.BaseInboundEJBHelper.callPipeline";
+  public static final String OSB_WAIT_FOR_EJB_RESPONSE = "OSB_EJB_RESPONSE_WAIT";
+          
   public static final String AQ_ADAPTER_POLLER = "oracle.tip.adapter.db.inbound.InboundWorkWrapper";
   public static final String IWAY_SAP_POLLER = "com.ibi.sap30.inbound.SapInboundAdapter$MasterThread";
   public static final String GENERIC_POLLER = "poll";
