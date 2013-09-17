@@ -24,6 +24,9 @@ public class JRockitMonitorMap extends MonitorMap {
     if ((line.indexOf(":") > 0)) {
       int end = line.indexOf("[");
       String monitor = line.substring(line.indexOf(":") + 2, end != -1 ? end : line.length());
+      if (monitor == null)
+        return;
+      
       if (line.trim().startsWith("-- Blocked trying") || line.trim().startsWith("-- Parking to wait")) {        
         addWaitToMonitor(monitor, threadTitle, currentThread);
       } else if (line.trim().startsWith("-- Waiting for notification on")) {
