@@ -242,19 +242,7 @@ xmlns="http://java.net/projects/threadlogic">
 			<SimpleGroupId>Oracle Service Bus Tmp1</SimpleGroupId>
       <SimpleGroupId>Oracle Service Bus Tmp2</SimpleGroupId>
 		</Inclusions>
-	</ComplexGroup>
-	<SimpleGroup>
-			<Name>Oracle ONS Subscriber</Name>
-			<Visible>true</Visible>
-			<Inclusion>true</Inclusion>
-			<MatchLocation>stack</MatchLocation>
-			<PatternList>
-				<Pattern>ONSSubscriberBase.receive</Pattern>
-			</PatternList>
-      <ExcludedAdvisories>			
-			  <AdvisoryId>Socket Read</AdvisoryId>
-		</ExcludedAdvisories>        
-	</SimpleGroup>
+	</ComplexGroup>	
 	<SimpleGroup>
 		<Name>Oracle ADF</Name>
 		<Visible>true</Visible>

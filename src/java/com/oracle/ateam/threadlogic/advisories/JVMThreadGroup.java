@@ -39,14 +39,23 @@ public class JVMThreadGroup extends CustomizedThreadGroup {
     
     for (ThreadInfo thread : threads) {
       String threadName = thread.getName();
-      if (threadName.startsWith(ThreadLogicConstants.FINALIZER_THREAD) && thread.isBlockedForLock()) {
-        isFinalizerBlocked = true;
-        thread.addAdvisory(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.FINALIZER_THREAD_BLOCKED));
-        thread.setHealth(HealthLevel.FATAL);
-        this.setHealth(HealthLevel.FATAL);
-        advisories.addAll(thread.getAdvisories());
+      if (threadName.contains(ThreadLogicConstants.FINALIZER_THREAD)) {
+        
+        if (thread.isBlockedForLock() && (thread.getBlockedForLock() != null) ) {
+          isFinalizerBlocked = true;
+          thread.addAdvisory(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.FINALIZER_THREAD_BLOCKED));
+          Thread.dumpStack();
+          thread.setHealth(HealthLevel.FATAL);
+          this.setHealth(HealthLevel.FATAL);
+          advisories.addAll(thread.getAdvisories());
 
-        continue;
+          continue;
+          
+        } else {
+          isFinalizerBlocked = false;
+          thread.removeAdvisory(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.FINALIZER_THREAD_BLOCKED));
+          thread.setHealth(HealthLevel.NORMAL);
+        }
       }
 
       if (threadName.toUpperCase().contains("GC ")) {
@@ -96,7 +105,7 @@ public class JVMThreadGroup extends CustomizedThreadGroup {
     statData.append(this.soaJMSConsumerThreads);
      */
     
-    statData.append("</b></td></tr>\n\n");
+    statData.append("</b></td></tr>\n\n");    
     return statData.toString();
   }  
   

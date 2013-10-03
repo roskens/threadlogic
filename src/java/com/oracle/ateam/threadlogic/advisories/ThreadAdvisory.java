@@ -564,6 +564,15 @@ public class ThreadAdvisory implements Comparable, Serializable {
         && !threadStack.contains("FragmentSocketWrapper.receive")) {
       advisoryList.add(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.WLS_CLUSTER_MESSAGERECEIVER_RUNNING));
     }
+    
+    if (threadName.contains(ThreadLogicConstants.FINALIZER_THREAD) 
+            && !threadInfo.isBlockedForLock() 
+            && (threadInfo.getBlockedForLock() == null) ) {          
+          
+      // Remove the Advisory for the Finalizer thread as its not really blocked...
+      threadInfo.setHealth(HealthLevel.NORMAL);
+      advisoryList.remove(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.FINALIZER_THREAD_BLOCKED));
+    }
 
     threadInfo.addAdvisories(advisoryList);
     

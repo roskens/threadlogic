@@ -229,7 +229,8 @@ xmlns="http://java.net/projects/threadlogic">
 		<Inclusion>true</Inclusion>
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
-			<Pattern>oracle.ons</Pattern>
+      <Pattern>oracle.repackaged.ons</Pattern>
+      <Pattern>oracle.repackaged.ucp</Pattern>
 		</PatternList>
     <ExcludedAdvisories>			
 			  <AdvisoryId>Socket Read</AdvisoryId>
@@ -481,6 +482,15 @@ xmlns="http://java.net/projects/threadlogic">
 		<PatternList>
 			<Pattern>oracle.odi</Pattern>
       <Pattern>com.sunopsis</Pattern>
+		</PatternList>    
+	</SimpleGroup>
+  <SimpleGroup>
+		<Name>Stellent</Name>
+		<Visible>true</Visible>
+		<Inclusion>true</Inclusion>
+		<MatchLocation>stack</MatchLocation>
+		<PatternList>
+			<Pattern>com.stellent.cis</Pattern>
 		</PatternList>    
 	</SimpleGroup>
 </tlogic:GroupsDefn>
