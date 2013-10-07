@@ -438,13 +438,17 @@ public class HotspotParser extends AbstractDumpParser {
    */
   public String[] getThreadTokens(String name) {
     
+    // Try for pattern matching 
+    // Example: "pool-107-thread-25" prio=10 tid=0x000000004b7de800 nid=0x13b9 waiting on condition [0x0000000077305000]
+
     String patternMask = "^.*\"([^\\\"]+)\".*tid=([^ ]+|).*nid=([^ ]+) *([^\\[]*).*";
     name = name.replace("- Thread t@", "tid=");
     
     String[] tokens = new String[] {};
+    Pattern p = null;
    
     try {
-      Pattern p = Pattern.compile(patternMask);
+      p = Pattern.compile(patternMask);
       Matcher m = p.matcher(name);
 
       m.matches();
@@ -466,13 +470,29 @@ public class HotspotParser extends AbstractDumpParser {
         tokens[1] = "0x" + tokens[1];
       
     } catch(Exception e) { 
+
+      // Failure, try different pattern matching 
+      // Example: "pool-107-thread-25" nid=0x13b9 state=WAIITING
+
+      patternMask = "^.*\"([^\\\"]+)\".*nid=([^ ]+) *state=([^\\[]*).*";
       
+      try {
+        
+        p = Pattern.compile(patternMask);
+        Matcher m = p.matcher(name);
+
+        m.matches();
+        tokens = new String[7];
+        tokens[0] = m.group(1); // name
+        tokens[2] = m.group(2); // nid
+        tokens[3] = m.group(3); // State
+      } catch(Exception e2) {
       System.out.println("WARNING!! Unable to parse partial Thread Tokens with name:" + name);           
       //e.printStackTrace();
-      
       return doHardParsing(name);
+      }
     }
-    
+      
     return (tokens);
   }
   
@@ -495,24 +515,48 @@ public class HotspotParser extends AbstractDumpParser {
       
       String remainingLabel = nameEntry.substring(index + 1).trim();
       String[] remainingTokens = remainingLabel.replace("daemon ","").trim().split(" ");
-      for(int i = 1; i < remainingTokens.length; i++) {
-        if (i == 3)
-          break;
-        
-        String label = remainingTokens[i].replaceAll(".*=", "");
-        if (i == 1) // tid
-          tokens[1] = label;
-        else if (i == 2) // nid
-          tokens[2] = label;
-      } 
-      
-      
-      for(int i = 3; i < remainingTokens.length; i++) {
-        if (remainingTokens[i].startsWith("[0"))
-          break;
-        
-        tokens[3] = tokens[3] + " " + remainingTokens[i];        
-      }    
+
+      // If there are more fields in the thread name
+      // like: "pool-107-thread-25" prio=10 tid=0x000000004b7de800 nid=0x13b9 waiting on condition [0x0000000077305000]
+
+      if (remainingTokens.length >= 3) {
+        for(int i = 1; i < remainingTokens.length; i++) {
+          if (i == 3)
+            break;
+
+          String label = remainingTokens[i].replaceAll(".*=", "");
+          //if (i == 1) // tid
+          if (remainingTokens[i].startsWith("tid"))
+            tokens[1] = label;
+          //else if (i == 2) // nid
+          if (remainingTokens[i].startsWith("nid"))
+            tokens[2] = label;
+        } 
+
+
+        for(int i = 3; i < remainingTokens.length; i++) {
+          if (remainingTokens[i].startsWith("[0"))
+            break;
+
+          tokens[3] = tokens[3] + " " + remainingTokens[i];        
+        }    
+      } else {
+        // Hotspot thread dump dumped using JMX does not have priority or other data fields..
+        // Example: "SwingWorker-pool-3-thread-6" nid=52 state=WAITING
+        for(int i = 0; i < remainingTokens.length; i++) {
+
+          String label = remainingTokens[i].replaceAll(".*=", "");
+          //if (i == 1) // tid
+          if (remainingTokens[i].startsWith("tid"))
+            tokens[1] = label;
+          //else if (i == 2) // nid
+          else if (remainingTokens[i].startsWith("nid"))
+            tokens[2] = label;
+          else 
+            tokens[3] = tokens[3] + " " + remainingTokens[i];                    
+        } 
+
+      }
       
       // Always treat the tid as a hexa decimal
       if (tokens[1] != null && !tokens[1].startsWith("0x"))

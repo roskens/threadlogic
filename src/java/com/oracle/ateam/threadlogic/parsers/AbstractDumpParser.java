@@ -228,11 +228,15 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       if (!currentLogFilePath.equals(prevLogFilePath))
         diffAcrossLogs = true;
       
-      if (dumpName.indexOf(" at") > 0) {
+      // Dont strip date/time if its a dump created using JMX connection
+      if ((dumpName.indexOf(" at") > 0) 
+              && !(dumpName.startsWith("JMX Thread Dump") || dumpName.startsWith("Clipboard"))) {
         dumpName = dumpName.substring(0, dumpName.indexOf(" at")).trim();
       } else if (dumpName.indexOf(" around") > 0) {
         dumpName = dumpName.substring(0, dumpName.indexOf(" around")).trim();
       }
+      
+      //System.out.println("Trimmed DumpName: " + dumpName);
       
       Integer tdiID = null;
       if (dumpName.contains("Dump No.")) {
@@ -256,10 +260,17 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         } catch(Exception e) {
           tdiID = new Integer(i);
         }
+      } else if (dumpName.startsWith("JMX Thread Dump") || dumpName.startsWith("Clipboard")){
+      // Dump generated via jmx mbean server connection in JConsole Plugin function
+      // Format of generated dump: 
+      // JMX Thread Dump of com.jrockit.mc.rjmx.internal.MCMBeanServerConnection@341c80d4
+      // at 2013-10-06 16:17:50
+        tdiID = Integer.parseInt(dumpName.substring(dumpName.lastIndexOf(" ")+1).replaceAll(":", "").trim());
       }
        
       
-      // Its possible the thread dump got expanded and its internal threads/threadgroups also got selected
+      // Its possible the thread dump got expanded 
+      // and its internal threads/threadgroups also got selected
       // Ignore such selection
       if (tdiID == null) {
         //System.out.println("### Ignoring .. " + dumpName);
@@ -309,8 +320,21 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     String info = prefix + " between " + keys.get(0) + " and " + keys.get(keys.size() - 1);    
     if (diffAcrossLogs) {
       String startingLog = tdiMap.get(tdiKeys.get(0)).getLogFile().getName();
-      String endingLog = tdiMap.get(tdiKeys.get(tdiKeys.size() - 1)).getLogFile().getName();    
-      info = prefix + " between " + keys.get(0) + " of " + startingLog + " and " + keys.get(keys.size() - 1) + " of " + endingLog;
+      String endingLog = tdiMap.get(tdiKeys.get(tdiKeys.size() - 1)).getLogFile().getName();
+      
+      // If the dump files are from clipboard, then the keys and logname are same...
+      if (!keys.get(0).equals(startingLog)) {
+        info = prefix + " between " + keys.get(0) + " of " + startingLog;
+      } else {
+        info = prefix + " between " + keys.get(0);
+      }
+      
+      // If the dump files are from clipboard, then the keys and logname are same...
+      if (!keys.get(keys.size() - 1).equals(endingLog)) {
+        info = info + " and " + keys.get(keys.size() - 1) + " of " + endingLog;
+      }else {
+        info = info + " and " + keys.get(keys.size() - 1);
+      }
     }    
     
     ThreadDiffsTableCategory threadDiffsTableCategory = new ThreadDiffsTableCategory(info, IconFactory.DIFF_DUMPS);

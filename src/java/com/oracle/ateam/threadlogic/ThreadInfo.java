@@ -121,6 +121,7 @@ public class ThreadInfo extends ThreadLogicElement {
           || (threadState.contains("waiting") && content.contains(".park("))) {
         this.state = ThreadState.PARKING;
       } else if (threadState.contains(" waiting")|| threadState.contains("native_waiting") || threadState.equals("cw") 
+          || threadState.equals("WAITING")
           || content.contains("State: WAITING (on object monitor)")
           || content.contains("State: TIMED_WAITING (on object monitor)")
           || (threadState.contains("waiting") && content.contains("java.lang.Object.wait")))  {

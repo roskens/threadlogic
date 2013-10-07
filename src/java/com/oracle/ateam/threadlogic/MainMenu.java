@@ -437,10 +437,24 @@ public class MainMenu extends JMenuBar {
    */
   private void createToolBar() {
     toolBar = new JToolBar("ThreadLogic Toolbar");
-    toolBar.add(createToolBarButton("Open Logfile", "FileOpen.gif"));
-    closeToolBarButton = createToolBarButton("Close selected Logfile", "CloseFile.gif");
-    closeToolBarButton.setEnabled(false);
-    toolBar.add(closeToolBarButton);
+    if(listener.runningAsJConsolePlugin || listener.runningAsVisualVMPlugin) {
+      toolBar.add(createToolBarButton("Request a Thread Dump", "FileOpen.gif"));
+      toolBar.setFloatable(false);
+      
+      toolBar.add(createToolBarButton("Open Logfile", "LogfileContent.gif"));
+      closeToolBarButton = createToolBarButton("Close selected Logfile", "CloseFile.gif");
+      closeToolBarButton.setEnabled(false);
+      toolBar.add(closeToolBarButton);
+      
+      
+    } else {
+      toolBar.add(createToolBarButton("Open Logfile", "FileOpen.gif"));
+      closeToolBarButton = createToolBarButton("Close selected Logfile", "CloseFile.gif");
+      closeToolBarButton.setEnabled(false);
+      toolBar.add(closeToolBarButton);
+    }
+    toolBar.addSeparator();
+    toolBar.add(createToolBarButton("Get Logfile from clipboard", "Document.gif"));
     toolBar.addSeparator();
     toolBar.add(createToolBarButton("Preferences", "Preferences.gif"));
     toolBar.addSeparator();
