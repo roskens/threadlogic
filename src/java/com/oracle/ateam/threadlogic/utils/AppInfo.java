@@ -32,9 +32,13 @@
  */
 package com.oracle.ateam.threadlogic.utils;
 
-import java.io.InputStream;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.Properties;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 /**
  * provides static application information like name and version
@@ -53,21 +57,35 @@ public class AppInfo {
 
   static {
     try {
-        InputStream is = AppInfo.class.getResourceAsStream("/META-INF/MANIFEST.MF");
-        Properties props = new Properties();
-        props.load(is);
-        FULL_VERSION = props.getProperty("Implementation-Version");
-        BUILD_DATE = props.getProperty("Build-Date");        
-      } catch(Exception e) {
-      }
-    
-      if (FULL_VERSION == null)        
-        FULL_VERSION = VERSION;
-      
-      if (BUILD_DATE == null)
-        BUILD_DATE = new Date().toString();
-      
-      System.out.println(APP_FULL_NAME + "\n Version: " + FULL_VERSION + ", " + BUILD_DATE);
+      Enumeration<URL> resources = AppInfo.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+      while (resources.hasMoreElements()) {
+        try {
+          Manifest manifest = new Manifest(resources.nextElement().openStream());
+          
+          // Check for ThreadLogic's manifest and ignore rest
+          Attributes attr = manifest.getMainAttributes();
+          String mainClass = attr.getValue("Main-Class");
+
+          if (mainClass != null && mainClass.contains("ThreadLogic")) {
+            FULL_VERSION = manifest.getMainAttributes().getValue("Implementation-Version");
+            BUILD_DATE = manifest.getMainAttributes().getValue("Build-Date"); 
+            break;
+          }
+        } catch (IOException e) {            
+        }
+      }   
+               
+    } catch(Exception e) {
+      e.printStackTrace();
+    }
+
+    if (FULL_VERSION == null)        
+      FULL_VERSION = VERSION;
+
+    if (BUILD_DATE == null)
+      BUILD_DATE = new Date().toString();
+
+    System.out.println("\n" + APP_FULL_NAME + "\n Version: " + FULL_VERSION + ", " + BUILD_DATE + "\n");
   }
     
   /**

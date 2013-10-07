@@ -73,6 +73,7 @@ public class MainMenu extends JMenuBar {
   private JButton findLRThreadsButton;
   private JButton expandButton;
   private JButton collapseButton;
+  private JButton aboutButton;
 
   /**
    * Creates a new instance of the MainMenu
@@ -464,7 +465,12 @@ public class MainMenu extends JMenuBar {
     collapseButton = createToolBarButton("Collapse all nodes", "Collapsed.gif");
     collapseButton.setEnabled(false);
     toolBar.add(collapseButton);
-    toolBar.addSeparator();
+    
+    if(listener.runningAsJConsolePlugin || listener.runningAsVisualVMPlugin) {      
+      toolBar.addSeparator();
+      aboutButton = createToolBarButton("About ThreadLogic", "About.gif");
+      toolBar.add(aboutButton);
+    }
     
     /*
     findLRThreadsButton = createToolBarButton("Find long running threads", "FindLRThreads.gif");
@@ -518,3 +524,4 @@ public class MainMenu extends JMenuBar {
     return healthBox;
   }
 }
+

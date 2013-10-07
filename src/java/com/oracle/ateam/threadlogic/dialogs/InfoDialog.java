@@ -68,8 +68,8 @@ public class InfoDialog extends JDialog {
     BorderLayout upperLayout = new BorderLayout();
     upperLayout.setVgap(10);
     upperLayout.setHgap(10);
-    JPanel upperPane = new JPanel(upperLayout);
-    upperPane.add(new JLabel(ThreadLogic.createImageIcon("logo-threadlogic.png")), BorderLayout.CENTER);
+    JPanel upperPane = new JPanel(upperLayout);    
+    upperPane.add(new JLabel(ThreadLogic.createImageIcon("logo-threadlogic-banner.png")), BorderLayout.CENTER);
     upperPane.add(new JLabel(" "), BorderLayout.EAST);
     upperPane.add(new JLabel(" "), BorderLayout.WEST);
     upperPane.add(new JLabel(""), BorderLayout.NORTH);
@@ -79,8 +79,6 @@ public class InfoDialog extends JDialog {
     String info = "<html><body>" + "<p><i>Java Version: " + System.getProperty("java.version") + "<br><br>"
         + "Original (C) 2006-2010 by Ingo Rockel &lt;irockel@dev.java.net&gt;,<br>"
         + "with contributions from Robert Whitehurst &lt;maestoso@dev.java.net&gt;.<br><br>"
-        + "Icons used are based on Benno System Icons by Benno Meyer.<br>"
-        + "Welcome screen uses icons from NuoveXT2 icon set by Alexandre Moore.<br>"
         + "Contains classes from JEdit for logfile display.</i></p><br><br>" + "<p><i>"
         + AppInfo.getAppInfo() + "</i></p>"
         + " Version: " + AppInfo.getVersion() + ", " + AppInfo.getBuildDate()

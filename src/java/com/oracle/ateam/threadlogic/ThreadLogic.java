@@ -208,6 +208,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   
   private static final Vector<File> tempFileList = new Vector<File>();
   
+  // Placeholder to initialize ThreadLogic AppInfo ahead of everything else...
+  private static AppInfo appInfoInitializer = new AppInfo();
+  
   /**
    * singleton access method for ThreadLogic
    */
@@ -2146,6 +2149,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         addMXBeanDump();
       } else if ("Help".equals(source.getToolTipText())) {
         showHelp();
+      } else if ("About ThreadLogic".equals(source.getToolTipText())) {
+        showInfo();
       }
       source.setSelected(false);
     } else if (e.getSource() instanceof JComboBox) {
@@ -2396,10 +2401,15 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     java.net.URL imgURL = ThreadLogic.class.getResource("icons/" + path);
     if (imgURL != null) {
       return new ImageIcon(imgURL);
-    } else {
-      System.err.println("Couldn't find file: " + path);
-      return null;
     }
+    
+    imgURL = ThreadLogic.class.getResource("docs/" + path);
+    if (imgURL != null) {
+      return new ImageIcon(imgURL);
+    }
+    
+    System.err.println("Couldn't find file: " + path);
+    return null;
   }
 
   /**
