@@ -305,7 +305,12 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       
 
     } else if(asJConsolePlugin) {
-        htmlPane = new JEditorPane("text/html", "<html><body bgcolor=\"ffffff\"><i>Press Button above to request a thread dump.</i></body></html>");
+        htmlPane = new JEditorPane("text/html", "<html><body bgcolor=\"ffffff\"><br><br>"
+                + "ThreadLogic - We'll do the analysis for you!<br>"
+                + "version: " + AppInfo.getVersion() + " on " + AppInfo.getBuildDate() + "<br>"
+                + "<a href=http://java.net/projects/threadlogic>http://java.net/projects/threadlogic</a><br><br><br>"
+                + "<i>Press 'Request a Thread Dump' button above to request a thread dump.</i>"
+                + "</body></html>");
         toolTip = htmlPane.createToolTip();
     } else {
         htmlPane = new JEditorPane("text/html", "<html><body bgcolor=\"ffffff\"></body></html>");
