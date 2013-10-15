@@ -104,11 +104,11 @@ Or using | as delimiter to provide a choice of patterns:
 
 <tlogic:GroupsDefn xmlns:tlogic="http://java.net/projects/threadlogic" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
 xmlns="http://java.net/projects/threadlogic">
-	<Name>WLS Group</Name>
-	<SimpleGroup>
-		<Name>WebLogic Muxer</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
+  <Name>WLS Group</Name>
+  <SimpleGroup>
+    <Name>WebLogic Muxer</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
     <!--
 		<MatchLocation>stack</MatchLocation>
 		<PatternList>
@@ -116,319 +116,320 @@ xmlns="http://java.net/projects/threadlogic">
 		</PatternList>
     -->
     <MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>weblogic.socket.Muxer</Pattern>
+    <PatternList>
+      <Pattern>weblogic.socket.Muxer</Pattern>
     </PatternList>
-  <ExcludedAdvisories>
-    <AdvisoryId>Socket Read</AdvisoryId>
-  </ExcludedAdvisories>    
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>WebLogic Timer</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>weblogic.time</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>WebLogic Cluster</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>weblogic.cluster</Pattern>
-		</PatternList>
-	</SimpleGroup>
+    <ExcludedAdvisories>
+      <AdvisoryId>Socket Read</AdvisoryId>
+    </ExcludedAdvisories>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>WebLogic Persistent Store</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>weblogic.store.internal.PersistentStoreImpl</Pattern>
-		</PatternList>
-	</SimpleGroup>  
-	<SimpleGroup>
-		<Name>WebLogic Embedded LDAP</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.octetstring.vde</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Coherence</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.tangosol.coherence.component.util.Daemon.run</Pattern>
-		</PatternList>
+    <Name>WebLogic Timer</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>weblogic.time</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>WebLogic Cluster</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>weblogic.cluster</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>WebLogic Persistent Store</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>weblogic.store.internal.PersistentStoreImpl</Pattern>
+    </PatternList>
+  </SimpleGroup>  
+  <SimpleGroup>
+    <Name>WebLogic Embedded LDAP</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.octetstring.vde</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Coherence</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.tangosol.coherence.component.util.Daemon.run</Pattern>
+    </PatternList>
     <ExcludedAdvisories>
       <AdvisoryId>Socket Read</AdvisoryId>
     </ExcludedAdvisories>  
-	</SimpleGroup>
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>ATG</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>atg.servlet</Pattern>
+    <Name>ATG</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>atg.servlet</Pattern>
+      <Pattern>atg.server</Pattern>
       <Pattern>atg.userprofil</Pattern>
       <Pattern>atg.filter</Pattern>
       <Pattern>atg.service</Pattern>
       <Pattern>atg.adapter</Pattern>
       <Pattern>atg.nucleus</Pattern>
       <Pattern>atg.dms</Pattern>
-		</PatternList>
+    </PatternList>
     <ExcludedAdvisories>
       <AdvisoryId>Socket Read</AdvisoryId>
     </ExcludedAdvisories>  
-	</SimpleGroup>
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>OSM Tmp1</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.mslv.oms</Pattern>
+    <Name>OSM Tmp1</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.mslv.oms</Pattern>
       <Pattern>oracle.communications.ordermanagement</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>OSM Tmp2</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>\'oms</Pattern>
-		</PatternList>
-	</SimpleGroup>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>OSM Tmp2</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>\'oms</Pattern>
+    </PatternList>
+  </SimpleGroup>
   <ComplexGroup>
-		<Name>Order Service Mgmt (OSM)</Name>
-		<Visible>true</Visible>
-		<Inclusions>
-			<SimpleGroupId>OSM Tmp1</SimpleGroupId>
+    <Name>Order Service Mgmt (OSM)</Name>
+    <Visible>true</Visible>
+    <Inclusions>
+      <SimpleGroupId>OSM Tmp1</SimpleGroupId>
       <SimpleGroupId>OSM Tmp2</SimpleGroupId>
-		</Inclusions>
-	</ComplexGroup>  
-	<SimpleGroup>
-		<Name>Oracle Service Bus Tmp1</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.bea.wli.sb.transports</Pattern>
-			<Pattern>com.bea.wli.sb.pipeline</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Oracle Service Bus Tmp2</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>Oracle Service Bus</Pattern>
-		</PatternList>
-	</SimpleGroup>  
-	<ComplexGroup>
-		<Name>Oracle Service Bus (OSB)</Name>
-		<Visible>true</Visible>
-		<Inclusions>
-			<SimpleGroupId>Oracle Service Bus Tmp1</SimpleGroupId>
+    </Inclusions>
+  </ComplexGroup>  
+  <SimpleGroup>
+    <Name>Oracle Service Bus Tmp1</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.bea.wli.sb.transports</Pattern>
+      <Pattern>com.bea.wli.sb.pipeline</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Oracle Service Bus Tmp2</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>Oracle Service Bus</Pattern>
+    </PatternList>
+  </SimpleGroup>  
+  <ComplexGroup>
+    <Name>Oracle Service Bus (OSB)</Name>
+    <Visible>true</Visible>
+    <Inclusions>
+      <SimpleGroupId>Oracle Service Bus Tmp1</SimpleGroupId>
       <SimpleGroupId>Oracle Service Bus Tmp2</SimpleGroupId>
-		</Inclusions>
-	</ComplexGroup>	
-	<SimpleGroup>
-		<Name>Oracle ADF</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>oracle.adf.model</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Oracle SOATemp</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>orabpel.engine.pool</Pattern>
-			<Pattern>oracle.j2ee.ws</Pattern>
-			<Pattern>oracle.wsm</Pattern>
-			<Pattern>orabpel.sweeper</Pattern>
-			<Pattern>com.collaxa.cube</Pattern>
-			<Pattern>oracle.tip</Pattern>
-			<Pattern>oracle.mds</Pattern>
-		      <Pattern>com.evermind.util.ReleasableResourcePooledExecutor</Pattern>
-		      <Pattern> HTTPClient.</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Oracle SOA DFW</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>orabpel.engine.pool</Pattern>
-			<Pattern>orabpel.invoke.pool</Pattern>
+    </Inclusions>
+  </ComplexGroup>	
+  <SimpleGroup>
+    <Name>Oracle ADF</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>oracle.adf.model</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Oracle SOATemp</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>orabpel.engine.pool</Pattern>
+      <Pattern>oracle.j2ee.ws</Pattern>
+      <Pattern>oracle.wsm</Pattern>
+      <Pattern>orabpel.sweeper</Pattern>
+      <Pattern>com.collaxa.cube</Pattern>
+      <Pattern>oracle.tip</Pattern>
+      <Pattern>oracle.mds</Pattern>
+      <Pattern>com.evermind.util.ReleasableResourcePooledExecutor</Pattern>
+      <Pattern> HTTPClient.</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Oracle SOA DFW</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>orabpel.engine.pool</Pattern>
+      <Pattern>orabpel.invoke.pool</Pattern>
       <Pattern>ActionMDB</Pattern>
       <Pattern>BPEL</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Oracle JMS AdapterTemp</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>oracle.integration.platform.blocks.event.jms.JmsQueueBusinessEventBus</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Oracle JMS AdapterTemp</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>oracle.integration.platform.blocks.event.jms.JmsQueueBusinessEventBus</Pattern>
       <Pattern>oracle.tip.adapter.jms.inbound.JmsConsumer</Pattern>
-		</PatternList>
-	</SimpleGroup>
+    </PatternList>
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Oracle B2B JMS Transport</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>oracle.tip.b2b.transport.basic.jms.JMSMonitor</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Oracle AQ AdapterTemp</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>oracle.integration.platform.blocks.event.saq</Pattern>
-		</PatternList>
-	</SimpleGroup>
+    <Name>Oracle B2B JMS Transport</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>oracle.tip.b2b.transport.basic.jms.JMSMonitor</Pattern>
+    </PatternList>
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Oracle AQ Dequeue PollerTemp</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>oracle.tip.adapter.aq.v2.database.AbstractDequeueAgent.run</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Oracle FrameworkTemp1</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>oracle.dfw</Pattern>
+    <Name>Oracle AQ AdapterTemp</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>oracle.integration.platform.blocks.event.saq</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Oracle AQ Dequeue PollerTemp</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>oracle.tip.adapter.aq.v2.database.AbstractDequeueAgent.run</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Oracle FrameworkTemp1</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>oracle.dfw</Pattern>
       <Pattern>oracle.sysman</Pattern>
       <Pattern>oracle.core.ojdl</Pattern>
-			<Pattern>oracle.ias.cache</Pattern>
+      <Pattern>oracle.ias.cache</Pattern>
       <Pattern>oracle.j2ee.connector.work</Pattern>
-			<Pattern>oracle.as</Pattern>
-			<Pattern>oracle.core</Pattern>
+      <Pattern>oracle.as</Pattern>
+      <Pattern>oracle.core</Pattern>
       <Pattern>oracle.tip.adapter.fw</Pattern>
       <!--
 			<Pattern>oracle.dms</Pattern>
       <Pattern>oracle.security.jps</Pattern>
       -->
-			<Pattern>OracleTimeoutPollingThread</Pattern>
-			<Pattern>oracle.integration.platform</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Oracle FrameworkTemp2</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>Fabric</Pattern>
-			<Pattern>JPS</Pattern>      
-			<Pattern>DmsThread</Pattern>            
-			<Pattern>oracle.dfw</Pattern>
+      <Pattern>OracleTimeoutPollingThread</Pattern>
+      <Pattern>oracle.integration.platform</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Oracle FrameworkTemp2</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>Fabric</Pattern>
+      <Pattern>JPS</Pattern>      
+      <Pattern>DmsThread</Pattern>            
+      <Pattern>oracle.dfw</Pattern>
       <Pattern>oracle.dms</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<ComplexGroup>
-		<Name>Oracle AQ Adapter</Name>
-		<Visible>true</Visible>
-		<Inclusions>
-			<SimpleGroupId>Oracle AQ AdapterTemp</SimpleGroupId>
-		</Inclusions>
-		<Exclusions>
-			<SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
-		</Exclusions>
-    <ExcludedAdvisories>
-			<AdvisoryId>Database Query Execution</AdvisoryId>
-			<AdvisoryId>Socket Read</AdvisoryId>
-      <AdvisoryId>Stuck Thread</AdvisoryId>
-		</ExcludedAdvisories>        
-	</ComplexGroup>
+    </PatternList>
+  </SimpleGroup>
   <ComplexGroup>
-		<Name>Oracle AQ Dequeue Agent</Name>
-		<Visible>true</Visible>
-		<Inclusions>
-			<SimpleGroupId>Oracle AQ Dequeue PollerTemp</SimpleGroupId>
-		</Inclusions>
-		<Exclusions>
-			<SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
-		</Exclusions>
+    <Name>Oracle AQ Adapter</Name>
+    <Visible>true</Visible>
+    <Inclusions>
+      <SimpleGroupId>Oracle AQ AdapterTemp</SimpleGroupId>
+    </Inclusions>
+    <Exclusions>
+      <SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
+    </Exclusions>
     <ExcludedAdvisories>
-			<AdvisoryId>Database Query Execution</AdvisoryId>
-			<AdvisoryId>Socket Read</AdvisoryId>
+      <AdvisoryId>Database Query Execution</AdvisoryId>
+      <AdvisoryId>Socket Read</AdvisoryId>
       <AdvisoryId>Stuck Thread</AdvisoryId>
-		</ExcludedAdvisories>        
-	</ComplexGroup>
-	<ComplexGroup>
-		<Name>Oracle JMS Adapter</Name>
-		<Visible>true</Visible>
-		<Inclusions>
-			<SimpleGroupId>Oracle JMS AdapterTemp</SimpleGroupId>
-		</Inclusions>
+    </ExcludedAdvisories>        
+  </ComplexGroup>
+  <ComplexGroup>
+    <Name>Oracle AQ Dequeue Agent</Name>
+    <Visible>true</Visible>
+    <Inclusions>
+      <SimpleGroupId>Oracle AQ Dequeue PollerTemp</SimpleGroupId>
+    </Inclusions>
+    <Exclusions>
+      <SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
+    </Exclusions>
+    <ExcludedAdvisories>
+      <AdvisoryId>Database Query Execution</AdvisoryId>
+      <AdvisoryId>Socket Read</AdvisoryId>
+      <AdvisoryId>Stuck Thread</AdvisoryId>
+    </ExcludedAdvisories>        
+  </ComplexGroup>
+  <ComplexGroup>
+    <Name>Oracle JMS Adapter</Name>
+    <Visible>true</Visible>
+    <Inclusions>
+      <SimpleGroupId>Oracle JMS AdapterTemp</SimpleGroupId>
+    </Inclusions>
     <!--
 		<Exclusions>
 			<SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
       <SimpleGroupId>Oracle FrameworkTemp2</SimpleGroupId>
 		</Exclusions>
     -->
-	</ComplexGroup>
-	<ComplexGroup>
-		<Name>Oracle SOA</Name>
-		<Visible>true</Visible>
-		<Inclusions>
-			<SimpleGroupId>Oracle SOATemp</SimpleGroupId>
-			<SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
-		</Inclusions>
-		<Exclusions>
-			<SimpleGroupId>Oracle ADF</SimpleGroupId>
-		</Exclusions>
-	</ComplexGroup>
-	<ComplexGroup>
-		<Name>Oracle Framework</Name>
-		<Visible>true</Visible>
-		<Inclusions>
-			<SimpleGroupId>Oracle FrameworkTemp1</SimpleGroupId>
-			<SimpleGroupId>Oracle FrameworkTemp2</SimpleGroupId>
-		</Inclusions>
-		<Exclusions>
-			<SimpleGroupId>Oracle SOATemp</SimpleGroupId>
-			<SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
-			<SimpleGroupId>Oracle ADF</SimpleGroupId>
+  </ComplexGroup>
+  <ComplexGroup>
+    <Name>Oracle SOA</Name>
+    <Visible>true</Visible>
+    <Inclusions>
+      <SimpleGroupId>Oracle SOATemp</SimpleGroupId>
+      <SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
+    </Inclusions>
+    <Exclusions>
+      <SimpleGroupId>Oracle ADF</SimpleGroupId>
+    </Exclusions>
+  </ComplexGroup>
+  <ComplexGroup>
+    <Name>Oracle Framework</Name>
+    <Visible>true</Visible>
+    <Inclusions>
+      <SimpleGroupId>Oracle FrameworkTemp1</SimpleGroupId>
+      <SimpleGroupId>Oracle FrameworkTemp2</SimpleGroupId>
+    </Inclusions>
+    <Exclusions>
+      <SimpleGroupId>Oracle SOATemp</SimpleGroupId>
+      <SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
+      <SimpleGroupId>Oracle ADF</SimpleGroupId>
       <SimpleGroupId>Oracle AQ AdapterTemp</SimpleGroupId>
       <SimpleGroupId>Oracle JMS AdapterTemp</SimpleGroupId>
-		</Exclusions>
-	</ComplexGroup>
+    </Exclusions>
+  </ComplexGroup>
   <SimpleGroup>
-		<Name>BTM</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.amberpoint</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    <Name>BTM</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.amberpoint</Pattern>
+    </PatternList>    
+  </SimpleGroup>
 </tlogic:GroupsDefn>

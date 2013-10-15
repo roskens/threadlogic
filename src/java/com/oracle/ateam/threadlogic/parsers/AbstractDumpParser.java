@@ -91,11 +91,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   private int maxCheckLines = 10;
   private boolean millisTimeStamp = false;
   private transient DateMatcher dm = null;
-  
   /**
    * this counter counts backwards for adding class histograms to the thread
    * dumps beginning with the last dump.
-   */  
+   */
   private int dumpHistogramCounter = -1;
   protected transient LineChecker lineChecker;
   protected MonitorMap mmap;
@@ -103,30 +102,25 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   protected Map threadStore = null;
   protected int counter = 1;
   protected int lineCounter = 0;
-  protected boolean foundLockChains = false;  
+  protected boolean foundLockChains = false;
   protected boolean foundClassHistograms = false;
   protected boolean withCurrentTimeStamp = false;
-
   protected String LOCKED;
   protected String BLOCKED_FOR_LOCK;
   protected String GENERAL_WAITING;
-  
   // Adding support for ECID & Thread Context data as part of generated thread dump
   protected String THREAD_TIMING_STATISTICS = " THREAD TIMING STATISTICS";
   protected String THREAD_CONTEXT_INFO = " THREAD CONTEXT INFORMATION";
   public final static String DUMP_MARKER = "Dump ";
-  
   protected static final int HOTSPOT_VM = 0;
   protected static final int JROCKIT_VM = 1;
   protected static final int IBM_VM = 2;
   protected static final int UNKNOWN_VM = 3;
-  
-  protected static final int[] VM_ID_LIST = { HOTSPOT_VM, JROCKIT_VM, IBM_VM, UNKNOWN_VM };
-  protected static final String[] JVM_VENDOR_LIST = { "Sun Hotspot", "Oracle JRockit", "IBM", "Unknown" };
-  
-  protected String jvmVendor = JVM_VENDOR_LIST[JVM_VENDOR_LIST.length - 1];  
+  protected static final int[] VM_ID_LIST = {HOTSPOT_VM, JROCKIT_VM, IBM_VM, UNKNOWN_VM};
+  protected static final String[] JVM_VENDOR_LIST = {"Sun Hotspot", "Oracle JRockit", "IBM", "Unknown"};
+  protected String jvmVendor = JVM_VENDOR_LIST[JVM_VENDOR_LIST.length - 1];
   protected String jvmVersion;
-  
+
   // Used for deserialization
   public AbstractDumpParser() {
     lineChecker = new LineChecker();
@@ -162,8 +156,8 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       String pathStr = path.toString();
       return (pathStr.substring(1, pathStr.lastIndexOf(']')).trim());
     }
-  }  
-  
+  }
+
   /**
    * find long running threads.
    * 
@@ -179,7 +173,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    *          regex to be applied to the thread titles.
    */
   public void findLongRunningThreads(DefaultMutableTreeNode root, Map dumpStore, TreePath[] paths, int minOccurence,
-      String regex) {
+          String regex) {
     diffDumps("Long running thread detection", root, dumpStore, paths, minOccurence, regex);
   }
 
@@ -202,14 +196,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   }
 
   protected void diffDumps(String prefix, DefaultMutableTreeNode root, Map dumpStore, TreePath[] dumps,
-      int minOccurence, String regex) {
-    
+          int minOccurence, String regex) {
+
     boolean diffAcrossLogs = false;
     Vector keys = new Vector(dumps.length);
     Hashtable<String, String> tdKeyMapper = new Hashtable<String, String>();
-    
+
     Vector<String> tdiKeys = new Vector<String>(dumps.length);
-    Map<String, ThreadDumpInfo> tdiMap = new HashMap<String, ThreadDumpInfo>();    
+    Map<String, ThreadDumpInfo> tdiMap = new HashMap<String, ThreadDumpInfo>();
 
     String prevLogFilePath = null;
     for (int i = 0; i < dumps.length; i++) {
@@ -217,58 +211,62 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       String parentDump = getDumpStringFromTreePath(dumps[i].getParentPath());
       //System.out.println("Dumps path: " + dumps[i] + ", parentPath: " + dumps[i].getParentPath() );
       //System.out.println("2Dumps path: " + dumpName + ", parentPath: " + parentDump);
-      
-      String currentLogFilePath = (dumpName.startsWith("Dump No"))? parentDump:dumpName;
-      if (prevLogFilePath == null)
+
+      String currentLogFilePath = (dumpName.startsWith("Dump No")) ? parentDump : dumpName;
+      if (prevLogFilePath == null) {
         prevLogFilePath = currentLogFilePath;
-      
+      }
+
       //System.out.println("LogFile: " + currentLogFilePath);
-      
+
       // Check if we are comparing against different log files
-      if (!currentLogFilePath.equals(prevLogFilePath))
+      if (!currentLogFilePath.equals(prevLogFilePath)) {
         diffAcrossLogs = true;
-      
+      }
+
       // Dont strip date/time if its a dump created using JMX connection
-      if ((dumpName.indexOf(" at") > 0) 
+      if ((dumpName.indexOf(" at") > 0)
               && !(dumpName.startsWith("JMX Thread Dump") || dumpName.startsWith("Clipboard"))) {
         dumpName = dumpName.substring(0, dumpName.indexOf(" at")).trim();
       } else if (dumpName.indexOf(" around") > 0) {
         dumpName = dumpName.substring(0, dumpName.indexOf(" around")).trim();
       }
-      
+
       //System.out.println("Trimmed DumpName: " + dumpName);
-      
+
       Integer tdiID = null;
       if (dumpName.contains("Dump No.")) {
         tdiID = Integer.parseInt(dumpName.replaceAll("Dump No.", "").trim());
-        
-      } else if (dumpName.contains(File.separator)) {                
-        
+
+      } else if (dumpName.contains(File.separator)) {
+
         // This is a comparison across multiple thread dump files that have no individual Dumps selected
         // Search for pattern like: javacore.20120130.103911.2883810.0001.txt
         int index = dumpName.lastIndexOf('.');
         String strippedName = dumpName;
-        if (index > 0)
+        if (index > 0) {
           strippedName = dumpName.substring(0, index);
-        
+        }
+
         index = strippedName.lastIndexOf('.');
-        if (index > 0)
+        if (index > 0) {
           strippedName = strippedName.substring(index + 1);
-        
+        }
+
         try {
-        tdiID = Integer.parseInt(strippedName);
-        } catch(Exception e) {
+          tdiID = Integer.parseInt(strippedName);
+        } catch (Exception e) {
           tdiID = new Integer(i);
         }
-      } else if (dumpName.startsWith("JMX Thread Dump") || dumpName.startsWith("Clipboard")){
-      // Dump generated via jmx mbean server connection in JConsole Plugin function
-      // Format of generated dump: 
-      // JMX Thread Dump of com.jrockit.mc.rjmx.internal.MCMBeanServerConnection@341c80d4
-      // at 2013-10-06 16:17:50
-        tdiID = Integer.parseInt(dumpName.substring(dumpName.lastIndexOf(" ")+1).replaceAll(":", "").trim());
+      } else if (dumpName.startsWith("JMX Thread Dump") || dumpName.startsWith("Clipboard")) {
+        // Dump generated via jmx mbean server connection in JConsole Plugin function
+        // Format of generated dump: 
+        // JMX Thread Dump of com.jrockit.mc.rjmx.internal.MCMBeanServerConnection@341c80d4
+        // at 2013-10-06 16:17:50
+        tdiID = Integer.parseInt(dumpName.substring(dumpName.lastIndexOf(" ") + 1).replaceAll(":", "").trim());
       }
-       
-      
+
+
       // Its possible the thread dump got expanded 
       // and its internal threads/threadgroups also got selected
       // Ignore such selection
@@ -283,11 +281,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       if (userObj instanceof ThreadDumpInfo) {
         tdi = (ThreadDumpInfo) userObj;
       } else if (userObj instanceof Logfile) {
-        Logfile logFile = (Logfile)userObj;
+        Logfile logFile = (Logfile) userObj;
         tdi = logFile.getThreadDumps().get(0);
       }
       //System.out.println("Saving in tdiMap: " + currentLogFilePath + tdiID + " = TdI: " + tdi);
-      tdiMap.put(currentLogFilePath + tdiID, tdi);      
+      tdiMap.put(currentLogFilePath + tdiID, tdi);
     }
 
     // Sort the ordering by the thread dump ids along with log file names...
@@ -296,67 +294,68 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     } else {
       // Thread dumps all belong to the same log file
       // Strip off the log file name and sort by dump instances...
-      
+
       Vector<Integer> tdiIntKeys = new Vector<Integer>();
-      for(String olderTdiKey: tdiKeys) {
+      for (String olderTdiKey : tdiKeys) {
         Integer tdiId = Integer.parseInt(olderTdiKey.substring(prevLogFilePath.length()));
         tdiIntKeys.add(tdiId);
       }
       Collections.sort(tdiIntKeys);
       tdiKeys.clear();
-      for(Integer sortedTdiId: tdiIntKeys)
+      for (Integer sortedTdiId : tdiIntKeys) {
         tdiKeys.add(prevLogFilePath + sortedTdiId);
-    }   
+      }
+    }
 
     ArrayList<ThreadDumpInfo> tdiArrList = new ArrayList<ThreadDumpInfo>();
     for (String tdiKey : tdiKeys) {
       String dumpName = tdKeyMapper.get(tdiKey);
-      keys.add(dumpName);      
+      keys.add(dumpName);
       tdiArrList.add(tdiMap.get(tdiKey));
-    }            
-    
-    int noOfValidDumps = tdiArrList.size();    
-    
-    String info = prefix + " between " + keys.get(0) + " and " + keys.get(keys.size() - 1);    
+    }
+
+    int noOfValidDumps = tdiArrList.size();
+
+    String info = prefix + " between " + keys.get(0) + " and " + keys.get(keys.size() - 1);
     if (diffAcrossLogs) {
       String startingLog = tdiMap.get(tdiKeys.get(0)).getLogFile().getName();
       String endingLog = tdiMap.get(tdiKeys.get(tdiKeys.size() - 1)).getLogFile().getName();
-      
+
       // If the dump files are from clipboard, then the keys and logname are same...
       if (!keys.get(0).equals(startingLog)) {
         info = prefix + " between " + keys.get(0) + " of " + startingLog;
       } else {
         info = prefix + " between " + keys.get(0);
       }
-      
+
       // If the dump files are from clipboard, then the keys and logname are same...
       if (!keys.get(keys.size() - 1).equals(endingLog)) {
         info = info + " and " + keys.get(keys.size() - 1) + " of " + endingLog;
-      }else {
+      } else {
         info = info + " and " + keys.get(keys.size() - 1);
       }
-    }    
-    
+    }
+
     ThreadDiffsTableCategory threadDiffsTableCategory = new ThreadDiffsTableCategory(info, IconFactory.DIFF_DUMPS);
     threadDiffsTableCategory.setThreadDumps(tdiArrList);
 
     DefaultMutableTreeNode catMerge = new DefaultMutableTreeNode(threadDiffsTableCategory);
-    
+
     // If we are doing merge across different Log files, then add it as a new top node
     if (diffAcrossLogs) {
-      ThreadLogic.getTopNodes().add(catMerge);       
+      ThreadLogic.getTopNodes().add(catMerge);
     } else {
       // diff of dumps within same log file, add it as child node
-      root.add(catMerge);    
+      root.add(catMerge);
     }
-    
+
     int threadCount = 0;
 
     if (tdiArrList.get(0) != null) {
 
       Map<String, ThreadInfo> threadMap0 = tdiArrList.get(0).getThreadMap();
-      
-      ThreadInfo[] sortedThreads0 = threadMap0.values().toArray(new ThreadInfo[] {});
+
+      ThreadInfo[] sortedThreads0 = threadMap0.values().toArray(new ThreadInfo[]{});
       Collection<ThreadInfo> sortedThreadCol0 = ThreadInfo.sortByHealth(sortedThreads0);
 
       Iterator dumpIter = sortedThreadCol0.iterator();
@@ -378,9 +377,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         ThreadInfo ti0 = (ThreadInfo) dumpIter.next();
         String threadNameId = ti0.getNameId();
         String originalThreadKey = ti0.getName();
-        
+
         int occurence = 0;
-        
+
         if (regex == null || regex.equals("") || threadNameId.matches(regex)) {
           for (int i = 1; i < tdiArrList.size(); i++) {
             Map<String, ThreadInfo> threadMap = tdiArrList.get(i).getThreadMap();
@@ -394,53 +393,54 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           if (occurence >= (noOfValidDumps - 1)) {
             threadCount++;
 
-            String timeTaken0 = (tdiArrList.get(0).getStartTime() != null)?tdiArrList.get(0).getStartTime():"N/A";
-            
+            String timeTaken0 = (tdiArrList.get(0).getStartTime() != null) ? tdiArrList.get(0).getStartTime() : "N/A";
+
             // Add Dump as keyword to recognize the dump individually later
             String dumpKey0 = keys.get(0).toString();
-            if (!dumpKey0.startsWith(DUMP_MARKER))
+            if (!dumpKey0.startsWith(DUMP_MARKER)) {
               dumpKey0 = DUMP_MARKER + dumpKey0;
-            
-            StringBuffer content = new StringBuffer("<b><font size=")
-                .append(ThreadLogic.getFontSizeModifier(-1)).append(">").append(dumpKey0  + ", Timestamp: " +  timeTaken0)
-                .append("</b></font><hr><pre><font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">");
-                    
-                // Embed health for the given thread from each of the dumps
-                content.append("<font size=4>Health: ");
-                ThreadLogic.appendHealth(content, ti0);
-                content.append("</font><br>");
-                
-                if (ti0.getAdvisories().size() > 0) {
-                  content.append("<font size=4>Advisories: ");
-                  for (Iterator<ThreadAdvisory> iter = ti0.getAdvisories().iterator(); iter.hasNext();) {
-                    ThreadAdvisory adv = iter.next();
-                    ThreadLogic.appendAdvisoryLink(content, adv);
-                  }
-                  content.append("</font><br><br>");
-                }
-                
-                if (ti0.getCtxData() != null) {
-                  content.append("<font size=4>Context Data: </font><font size=3>");        
-                  String[] ctxDataSet = ti0.getCtxData().split(ThreadInfo.CONTEXT_DATA_SEPARATOR);
-                  for(String contextData : ctxDataSet)
-                    content.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;" + contextData);
-                  content.append("</font><br>");
-                }
-                content.append(fixMonitorLinks(ti0.getContent(), (String) keys.get(0)));
+            }
+
+            StringBuffer content = new StringBuffer("<b><font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">").append(dumpKey0 + ", Timestamp: " + timeTaken0).append("</b></font><hr><pre><font size=").append(ThreadLogic.getFontSizeModifier(-1)).append(">");
+
+            // Embed health for the given thread from each of the dumps
+            content.append("<font size=4>Health: ");
+            ThreadLogic.appendHealth(content, ti0);
+            content.append("</font><br>");
+
+            if (ti0.getAdvisories().size() > 0) {
+              content.append("<font size=4>Advisories: ");
+              for (Iterator<ThreadAdvisory> iter = ti0.getAdvisories().iterator(); iter.hasNext();) {
+                ThreadAdvisory adv = iter.next();
+                ThreadLogic.appendAdvisoryLink(content, adv);
+              }
+              content.append("</font><br><br>");
+            }
+
+            if (ti0.getCtxData() != null) {
+              content.append("<font size=4>Context Data: </font><font size=3>");
+              String[] ctxDataSet = ti0.getCtxData().split(ThreadInfo.CONTEXT_DATA_SEPARATOR);
+              for (String contextData : ctxDataSet) {
+                content.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;" + contextData);
+              }
+              content.append("</font><br>");
+            }
+            content.append(fixMonitorLinks(ti0.getContent(), (String) keys.get(0)));
 
             int maxLines = 0;
             ThreadInfo lastThreadInMerge = ti0;
 
             for (int i = 1; i < tdiArrList.size(); i++) {
               if (tdiArrList.get(i).getThreadMap().containsKey(threadNameId)) {
-                String timeTaken = (tdiArrList.get(i).getStartTime() != null)?tdiArrList.get(i).getStartTime():"N/A";
+                String timeTaken = (tdiArrList.get(i).getStartTime() != null) ? tdiArrList.get(i).getStartTime() : "N/A";
                 Map<String, ThreadInfo> cmpThreadMap = tdiArrList.get(i).getThreadMap();
                 ThreadInfo cmpThreadInfo = cmpThreadMap.get(threadNameId);
-                
+
                 // Add Dump as keyword to recognize the dump individually later
                 String dumpKey = keys.get(i).toString();
-                if (!dumpKey.startsWith(DUMP_MARKER))
+                if (!dumpKey.startsWith(DUMP_MARKER)) {
                   dumpKey = DUMP_MARKER + dumpKey;
+                }
 
                 content.append("\n\n</pre><b><font size=");
                 content.append(ThreadLogic.getFontSizeModifier(-1));
@@ -449,12 +449,12 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 content.append("</font></b><hr><pre><font size=");
                 content.append(ThreadLogic.getFontSizeModifier(-1));
                 content.append(">");
-                
+
                 // Embed health for the given thread from each of the dumps
                 content.append("<font size=4>Health: ");
                 ThreadLogic.appendHealth(content, cmpThreadInfo);
                 content.append("</font><br>");
-                
+
                 // Embed advisories for the given thread from each of the dumps
                 if (cmpThreadInfo.getAdvisories().size() > 0) {
                   content.append("<font size=4>Advisories: ");
@@ -464,15 +464,16 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   }
                   content.append("</font><br><br>");
                 }
-                
+
                 if (cmpThreadInfo.getCtxData() != null) {
-                  content.append("<font size=4>Context Data: </font><font size=3>");        
+                  content.append("<font size=4>Context Data: </font><font size=3>");
                   String[] ctxDataSet = cmpThreadInfo.getCtxData().split(ThreadInfo.CONTEXT_DATA_SEPARATOR);
-                  for(String contextData : ctxDataSet)
+                  for (String contextData : ctxDataSet) {
                     content.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;" + contextData);
+                  }
                   content.append("</font><br>");
                 }
-                
+
                 content.append(fixMonitorLinks(cmpThreadInfo.getContent(), (String) keys.get(i)));
                 int countLines = countLines(cmpThreadInfo.getContent());
                 maxLines = maxLines > countLines ? maxLines : countLines;
@@ -482,7 +483,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 System.out.println("Unable to find Thread with name:id as : " + threadNameId);
               }
             }
-            
+
             ThreadInfo threadInfo = new ThreadInfo(originalThreadKey, null, content.toString(), maxLines, getThreadTokens(originalThreadKey));
             threadInfo.setHealth(lastThreadInMerge.getHealth());
             threadInfo.setState(lastThreadInMerge.getState());
@@ -490,11 +491,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           }
         }
       }
-    } 
-    
+    }
+
     StringBuffer diffInfo = new StringBuffer(getStatInfo(keys, prefix, noOfValidDumps, threadCount));
     diffInfo.append(ThreadDumpInfo.getThreadDumpsOverview(tdiArrList));
-    
+
     ((Category) catMerge.getUserObject()).setInfo(diffInfo.toString());
   }
 
@@ -541,26 +542,26 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       }
     }
     statData.append("</i></p><br>" + "<table border=0><tr bgcolor=\"#dddddd\"><td><font face=System "
-        + ">Overall Thread Count</td><td width=\"150\"></td><td><b><font face=System>");
+            + ">Overall Thread Count</td><td width=\"150\"></td><td><b><font face=System>");
     statData.append(threadCount);
     statData.append("</b></td></tr>");
     statData.append("<tr bgcolor=\"#eeeeee\"><td><font face=System "
-        + ">Minimum Occurence of threads</td><td width=\"150\"></td><td><b><font face=System>");
+            + ">Minimum Occurence of threads</td><td width=\"150\"></td><td><b><font face=System>");
     statData.append(minOccurence);
     statData.append("</b></td></tr>");
 
     if (threadCount != 0) {
-      
+
       statData.append("<tr bgcolor=\"#dddddd\"><td><font face=System "
-          + ">Advisories and Health reported are based on the last captured thread dump</td><td width=\"150\"></td><td><b><font face=System>");
-      statData.append( keys.get(keys.size() - 1));
+              + ">Advisories and Health reported are based on the last captured thread dump</td><td width=\"150\"></td><td><b><font face=System>");
+      statData.append(keys.get(keys.size() - 1));
       statData.append("</b></td></tr>");
-    
+
     } else {
       statData.append("<tr bgcolor=\"#ffffff\"<td></td></tr>");
       statData.append("<tr bgcolor=\"#cccccc\"><td colspan=2><font face=System "
-          + "><p>No threads were found which occured at least " + minOccurence + " times.<br>"
-          + "You should check your dumps for long running threads " + "or adjust the minimum occurence.</p>");
+              + "><p>No threads were found which occured at least " + minOccurence + " times.<br>"
+              + "You should check your dumps for long running threads " + "or adjust the minimum occurence.</p>");
     }
 
     statData.append("</table>");
@@ -602,10 +603,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     DefaultMutableTreeNode threadInfo = null;
     String[] tokens = getThreadTokens(title);
     if (tokens == null || tokens.length == 0) {
-     return;
+      return;
     }
-    
-    threadInfo = new DefaultMutableTreeNode(new ThreadInfo(title, info, content, lineCount, tokens) );
+
+    threadInfo = new DefaultMutableTreeNode(new ThreadInfo(title, info, content, lineCount, tokens));
     top.add(threadInfo);
   }
 
@@ -628,13 +629,13 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    * @see ThreadInfo
    */
   protected void addToCategory(DefaultMutableTreeNode category, String title, StringBuffer info, String content,
-      int lineCount, boolean parseTokens) {
+          int lineCount, boolean parseTokens) {
     DefaultMutableTreeNode threadInfo = null;
     threadInfo = new DefaultMutableTreeNode(new ThreadInfo(title, info != null ? info.toString() : null, content,
-        lineCount, parseTokens ? getThreadTokens(title) : null));
+            lineCount, parseTokens ? getThreadTokens(title) : null));
     ((Category) category.getUserObject()).addToCatNodes(threadInfo);
   }
-  
+
   protected void addToCategory(DefaultMutableTreeNode category, ThreadInfo info) {
     DefaultMutableTreeNode threadInfo = new DefaultMutableTreeNode(info);
     ((Category) category.getUserObject()).addToCatNodes(threadInfo);
@@ -661,15 +662,15 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    * @see ThreadInfo
    */
   protected void addToCategory(DefaultMutableTreeNode category, ThreadDumpInfo tdi, String title, StringBuffer info,
-      String content, int lineCount, boolean parseTokens) {
+          String content, int lineCount, boolean parseTokens) {
     DefaultMutableTreeNode threadInfo = null;
     String[] tokens = parseTokens ? getThreadTokens(title) : null;
-    if (parseTokens && ((tokens == null) || (tokens.length == 0)) ) {      
+    if (parseTokens && ((tokens == null) || (tokens.length == 0))) {
       return;
     }
-    
+
     ThreadInfo newThread = new ThreadInfo(title, info != null ? info.toString() : null, content, lineCount,
-        tokens);
+            tokens);
     newThread.setParentThreadDump(tdi);
 
     threadInfo = new DefaultMutableTreeNode(newThread);
@@ -802,13 +803,13 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    * @return
    */
   protected int[] dumpMonitors(DefaultMutableTreeNode catMonitors, DefaultMutableTreeNode catMonitorsLocks,
-      MonitorMap mmap) {
+          MonitorMap mmap) {
     Iterator iter = mmap.iterOfKeys();
     int monitorsWithoutLocksCount = 0;
     int overallThreadsWaiting = 0;
     while (iter.hasNext()) {
       String monitor = (String) iter.next();
-      Map[] threads = mmap.getFromMonitorMap(monitor);      
+      Map[] threads = mmap.getFromMonitorMap(monitor);
       ThreadInfo mi = new ThreadInfo(monitor, null, "", 0, null);
       DefaultMutableTreeNode monitorNode = new DefaultMutableTreeNode(mi);
 
@@ -820,13 +821,13 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       while (iterLocks.hasNext()) {
         String thread = (String) iterLocks.next();
         String stackTrace = (String) threads[MonitorMap.LOCK_THREAD_POS].get(thread);
-        if (threads[MonitorMap.SLEEP_THREAD_POS].containsKey(thread)) {          
+        if (threads[MonitorMap.SLEEP_THREAD_POS].containsKey(thread)) {
           createNode(monitorNode, "locks and sleeps on monitor: " + thread, null, stackTrace, 0);
           sleeps++;
         } else if (threads[MonitorMap.WAIT_THREAD_POS].containsKey(thread)) {
           createNode(monitorNode, "locks and waits on monitor: " + thread, null, stackTrace, 0);
           sleeps++;
-        } else {          
+        } else {
           createNode(monitorNode, "locked by " + thread, null, stackTrace, 0);
         }
         locks++;
@@ -837,24 +838,24 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         String thread = (String) iterWaits.next();
         if (thread != null && !threads[MonitorMap.LOCK_THREAD_POS].containsKey(thread)) {
           createNode(monitorNode, "waits on monitor: " + thread, null,
-              (String) threads[MonitorMap.WAIT_THREAD_POS].get(thread), 0);
+                  (String) threads[MonitorMap.WAIT_THREAD_POS].get(thread), 0);
           waits++;
         }
       }
-      
+
       Iterator iterSleeps = threads[MonitorMap.SLEEP_THREAD_POS].keySet().iterator();
       while (iterSleeps.hasNext()) {
         String thread = (String) iterSleeps.next();
         if (thread != null && !threads[MonitorMap.LOCK_THREAD_POS].containsKey(thread)) {
           createNode(monitorNode, "sleeps on monitor: " + thread, null,
-              (String) threads[MonitorMap.SLEEP_THREAD_POS].get(thread), 0);
+                  (String) threads[MonitorMap.SLEEP_THREAD_POS].get(thread), 0);
           sleeps++;
         }
       }
 
       mi.setContent(ThreadDumpInfo.getMonitorInfo(locks, waits, sleeps));
       mi.setName(mi.getName() + ":    " + (sleeps) + " Thread(s) sleeping, " + (waits) + " Thread(s) waiting, "
-          + (locks) + " Thread(s) locking");
+              + (locks) + " Thread(s) locking");
       if (ThreadDumpInfo.areALotOfWaiting(waits)) {
         mi.setALotOfWaiting(true);
       }
@@ -867,7 +868,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         ((Category) catMonitorsLocks.getUserObject()).addToCatNodes(monitorNode);
       }
     }
-    return new int[] { monitorsWithoutLocksCount, overallThreadsWaiting };
+    return new int[]{monitorsWithoutLocksCount, overallThreadsWaiting};
   }
 
   protected int[] dumpBlockingMonitors(DefaultMutableTreeNode catLockingTree, MonitorMap mmap) {
@@ -896,7 +897,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     }
 
     directChildMap.clear();
-    return new int[] { contendedLocks, blockedThreads };
+    return new int[]{contendedLocks, blockedThreads};
   }
 
   /**
@@ -935,36 +936,26 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   protected void addCategories(DefaultMutableTreeNode threadDump) {
     ThreadDumpInfo tdi = (ThreadDumpInfo) threadDump.getUserObject();
     Category threads = tdi.getThreads();
-    if (threads.getNodeCount() == 0)
+    if (threads.getNodeCount() == 0) {
       return;
+    }
 
     Category advisoryMapCategory = new TableCategory("Advisory Map",
-        IconFactory.CUSTOM_CATEGORY, false);
-    
+            IconFactory.CUSTOM_CATEGORY, false);
+
     StringBuffer advisoryMapBuf = new StringBuffer();
-    advisoryMapBuf.append("<font face=System ")
-            .append("><table border=0><tr bgcolor=\"#dddddd\" ><td><font face=System ")
-            .append("><b>Advisory Map</b></td></tr><tr></tr><tr><td><font face=System>");
-    
-    advisoryMapBuf.append("All known advisories loaded inside ThreadLogic are listed in the map.<br>")
-            .append("These are based on Advisory.xml packaged within ThreadLogic and also from any user specified advisories.<br>")
-            .append("Known advisories will be matched against threads and reported.<br><br>");
-    
-    advisoryMapBuf.append("CAUTION!! This map shows only list of possible advisories to match against")
-            .append(" and does not imply all of them were found in the thread dump.<br>")
-            .append("Check the logged messages at ThreadLogic startup on how-to add custom advisories or thread groups.<br><br>");
-    
-    advisoryMapBuf.append("Select <a href=\"threadgroups://\"><b>Thread Groups Summary</b></a> node")
-            .append(" to view the overall thread group categories and details along with matched top-level advisories.<br>")
-            .append("Expand the Thread Groups Summary ")
-            .append("node to view the categorization of threads into WebLogic and Non-WebLogic groups.<br>");
-    
+    advisoryMapBuf.append("<font face=System ").append("><table border=0><tr bgcolor=\"#dddddd\" ><td><font face=System ").append("><b>Advisory Map</b></td></tr><tr></tr><tr><td><font face=System>");
+
+    advisoryMapBuf.append("All known advisories loaded inside ThreadLogic are listed in the map.<br>").append("These are based on Advisory.xml packaged within ThreadLogic and also from any user specified advisories.<br>").append("Known advisories will be matched against threads and reported.<br><br>");
+
+    advisoryMapBuf.append("CAUTION!! This map shows only list of possible advisories to match against").append(" and does not imply all of them were found in the thread dump.<br>").append("Check the logged messages at ThreadLogic startup on how-to add custom advisories or thread groups.<br><br>");
+
+    advisoryMapBuf.append("Select <a href=\"threadgroups://\"><b>Thread Groups Summary</b></a> node").append(" to view the overall thread group categories and details along with matched top-level advisories.<br>").append("Expand the Thread Groups Summary ").append("node to view the categorization of threads into WebLogic and Non-WebLogic groups.<br>");
+
     advisoryMapBuf.append("There will be nested thread groups within each of the WLS & Non-WLS groups.<br><br>");
-    
-    advisoryMapBuf.append("Advisories would be reported at both individual thread level and Thread Group level.<br>")
-            .append("Select individual thread entries within the Thread Groups for detailed analysis of each thread.")
-            .append("</td></tr></table>");
-    
+
+    advisoryMapBuf.append("Advisories would be reported at both individual thread level and Thread Group level.<br>").append("Select individual thread entries within the Thread Groups for detailed analysis of each thread.").append("</td></tr></table>");
+
     advisoryMapCategory.setInfo(advisoryMapBuf.toString());
     DefaultMutableTreeNode advisoryNode = new DefaultMutableTreeNode(advisoryMapCategory);
 
@@ -998,18 +989,18 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     Category threadGrpCategory = new TableCategory("Thread Groups Summary", IconFactory.THREADS, true);
     threadGrpCategory.setInfo(tdi.getTGSummaryOverview());
     threadGroupNode.setUserObject(threadGrpCategory);
-    
+
     for (ThreadGroup tg : threadGroupsCat.getThreadGroups()) {
       DefaultMutableTreeNode tgInfo = new DefaultMutableTreeNode(tg);
       ((Category) threadGroupNode.getUserObject()).addToCatNodes(tgInfo);
-    }   
-    
+    }
+
   }
 
   private DefaultMutableTreeNode createCustomTree(DefaultMutableTreeNode rootNode, NestedCategory category,
-      Category threads) {
+          Category threads) {
     DefaultMutableTreeNode leafNode = new DefaultMutableTreeNode(new TreeCategory(category.getName(),
-        category.getIconID(), true));
+            category.getIconID(), true));
 
     Category parentCategory = null;
     NestedCategory parent = category.getParent();
@@ -1033,8 +1024,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       if (cat.getNodeCount() > 0) {
         NestedCategory nestedCat = category.getSubCategory(filter.getName());
         if (nestedCat != null) {
-          for (Iterator<NestedCategory> subCatIter = category.getSubCategory(filter.getName())
-              .getSubCategoriesIterator(); subCatIter != null && subCatIter.hasNext();) {
+          for (Iterator<NestedCategory> subCatIter = category.getSubCategory(filter.getName()).getSubCategoriesIterator(); subCatIter != null && subCatIter.hasNext();) {
             NestedCategory nestedCat1 = (NestedCategory) subCatIter.next();
             createCustomTree(newNode, nestedCat1, cat);
           }
@@ -1045,13 +1035,13 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   }
 
   private DefaultMutableTreeNode applyFilter(Category cat, Filter filter, Category threads,
-      DefaultMutableTreeNode leafNode) {
+          DefaultMutableTreeNode leafNode) {
     DefaultMutableTreeNode newNode = null;
     for (int i = 0; i < threads.getNodeCount(); i++) {
       boolean matches = true;
       ThreadInfo ti = (ThreadInfo) ((DefaultMutableTreeNode) threads.getNodeAt(i)).getUserObject();
       matches = filter.matches(ti, true);
-      
+
       if (matches) {
         cat.addToCatNodes(new DefaultMutableTreeNode(ti));
       }
@@ -1095,8 +1085,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     String nameLower = cat.getName();
     Pattern problematicFilterPattern = Pattern.compile("(blocked)|(warning)|(stuck)|(hogging)");
     Matcher m = problematicFilterPattern.matcher(nameLower);
-    if (m.find())
+    if (m.find()) {
       cat.setAsBlockedIcon();
+    }
   }
 
   private DefaultMutableTreeNode createLockedThreadsNode(Category threads) {
@@ -1109,14 +1100,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     int blockedThread = 0;
     for (Iterator monitorMapiIter = mmap.iterOfKeys(); monitorMapiIter.hasNext();) {
       String monitor = (String) monitorMapiIter.next();
-      Map[] monitorThreads = mmap.getFromMonitorMap(monitor);      
-        
+      Map[] monitorThreads = mmap.getFromMonitorMap(monitor);
+
       String lockedThread = getLockingThread(monitorThreads);
       for (int i = 0; i < threads.getNodeCount(); i++) {
         ThreadInfo ti = (ThreadInfo) ((DefaultMutableTreeNode) threads.getNodeAt(i)).getUserObject();
         if (ti.getName().equals(lockedThread) && monitorThreads[MonitorMap.WAIT_THREAD_POS].size() > 0) {
           count++;
-          
+
           if (lockedThreadNode == null) {
             lockedCategory = new TreeCategory("Holding Locks", IconFactory.CUSTOM_CATEGORY, false);
             lockedThreadNode = new DefaultMutableTreeNode(lockedCategory);
@@ -1136,20 +1127,21 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
             if (thread != null && !monitorThreads[MonitorMap.LOCK_THREAD_POS].containsKey(thread)) {
               blockedThread++;
               createNode(monitorNode, "Thread - " + thread, null,
-                  (String) monitorThreads[MonitorMap.WAIT_THREAD_POS].get(thread), 0);
+                      (String) monitorThreads[MonitorMap.WAIT_THREAD_POS].get(thread), 0);
             }
           }
 
           String blockingStackFrame = (String) monitorThreads[MonitorMap.LOCK_THREAD_POS].get(lockedThread);
           tmi.setContent(blockingStackFrame);
           mmi.setContent("This monitor (" + linkifyMonitor(monitor) + ") is held in the following stack frame:\n\n"
-              + blockingStackFrame);
+                  + blockingStackFrame);
           ((Category) lockedThreadNode.getUserObject()).addToCatNodes(threadNode);
         }
       }
     }
-    if (lockedCategory != null)
+    if (lockedCategory != null) {
       lockedCategory.setName("Holding Locks " + "(" + blockedThread + " threads blocked by " + count + " monitors)");
+    }
     return lockedThreadNode;
   }
 
@@ -1185,7 +1177,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   }
 
   private int fillBlockingThreadMaps(MonitorMap mmap, Map directChildMap) {
-    int blockedThread = 0;    
+    int blockedThread = 0;
     for (Iterator iter = mmap.iterOfKeys(); iter.hasNext();) {
       String monitor = (String) iter.next();
       Map[] threads = mmap.getFromMonitorMap(monitor);
@@ -1198,7 +1190,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       ThreadInfo mmi = new ThreadInfo("Monitor - " + monitor, null, "", 0, null);
       DefaultMutableTreeNode monitorNode = new DefaultMutableTreeNode(mmi);
       threadNode.add(monitorNode);
-      
+
       // Look over all threads blocked on this monitor
       for (Iterator iterWaits = threads[MonitorMap.WAIT_THREAD_POS].keySet().iterator(); iterWaits.hasNext();) {
         String thread = (String) iterWaits.next();
@@ -1206,7 +1198,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         if (thread != null && !threads[MonitorMap.LOCK_THREAD_POS].containsKey(thread)) {
           blockedThread++;
           createNode(monitorNode, "Thread - " + thread, null, (String) threads[MonitorMap.WAIT_THREAD_POS].get(thread),
-              0);                    
+                  0);
         }
       }
 
@@ -1214,11 +1206,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       if (blockingStackFrame != null) {
         tmi.setContent(blockingStackFrame);
         mmi.setContent("This monitor (" + linkifyMonitor(monitor) + ") is held in the following stack frame:\n\n"
-            + blockingStackFrame);
+                + blockingStackFrame);
       } else {
         mmi.setContent("Owner of this monitor (" + linkifyMonitor(monitor) + ") could not be located");
       }
-      
+
       // If no-one is blocked on or waiting for this monitor, don't show it
       if (monitorNode.getChildCount() > 0) {
         directChildMap.put(monitor, threadNode);
@@ -1240,24 +1232,24 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     }
 
     ThreadInfo mi = (ThreadInfo) threadOrMonitorNode.getUserObject();
-    
+
     // Don't mark the thread category as having Lot of Waiters 
     // if the threads are waiting for java.util.concurrent.locks.AbstractQueuedSynchronizer 
     /*
      * 
      * "pool-3-thread-8" id=91 idx=0x168 tid=22940 prio=5 alive, parked, native_blocked
-	     -- Parking to wait for: java/util/concurrent/locks/AbstractQueuedSynchronizer$ConditionObject@0x140211ee0
-      at jrockit/vm/Locks.park0(J)V(Native Method)
-      at jrockit/vm/Locks.park(Locks.java:2230)
-      at sun/misc/Unsafe.park(ZJ)V(Native Method)
-      at java/util/concurrent/locks/LockSupport.park(LockSupport.java:156)
-      at java/util/concurrent/locks/AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1987)
-      at java/util/concurrent/LinkedBlockingQueue.take(LinkedBlockingQueue.java:399)
-      at java/util/concurrent/ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:947)
-      at java/util/concurrent/ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:907)
+    -- Parking to wait for: java/util/concurrent/locks/AbstractQueuedSynchronizer$ConditionObject@0x140211ee0
+    at jrockit/vm/Locks.park0(J)V(Native Method)
+    at jrockit/vm/Locks.park(Locks.java:2230)
+    at sun/misc/Unsafe.park(ZJ)V(Native Method)
+    at java/util/concurrent/locks/LockSupport.park(LockSupport.java:156)
+    at java/util/concurrent/locks/AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1987)
+    at java/util/concurrent/LinkedBlockingQueue.take(LinkedBlockingQueue.java:399)
+    at java/util/concurrent/ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:947)
+    at java/util/concurrent/ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:907)
      * 
      */
-    if ( !mi.getName().contains("java/util/concurrent/locks/AbstractQueuedSynchronizer") && ThreadDumpInfo.areALotOfWaiting(count)) {
+    if (!mi.getName().contains("java/util/concurrent/locks/AbstractQueuedSynchronizer") && ThreadDumpInfo.areALotOfWaiting(count)) {
       mi.setALotOfWaiting(true);
     }
     if (isThreadNode) {
@@ -1279,9 +1271,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
   private void renormalizeBlockingThreadTree(MonitorMap mmap, Map directChildMap) {
     Map allBlockingThreadsMap = new HashMap(directChildMap); // All threads that
-                                                             // are blocking at
-                                                             // least one other
-                                                             // thread
+    // are blocking at
+    // least one other
+    // thread
 
     // First, renormalize based on monitors to get our unique tree
     // Tree will be unique as long as there are no deadlocks aka monitor loops
@@ -1309,13 +1301,13 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
         Map[] threads2 = mmap.getFromMonitorMap(monitor2);
         if (threads2[MonitorMap.WAIT_THREAD_POS].containsKey(threadLine1)) {
-          
+
           // Get the node of the thread that is holding this lock
           DefaultMutableTreeNode thread2Node = (DefaultMutableTreeNode) allBlockingThreadsMap.get(monitor2);
           // Get the node of the monitor itself
           DefaultMutableTreeNode monitor2Node = (DefaultMutableTreeNode) thread2Node.getFirstChild();
-          
-          
+
+
           // If a redundant node for thread2 exists with no children, remove it
           // To compare, we have to remove "Thread - " from the front of display
           // strings
@@ -1448,20 +1440,20 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           overallTDI.setStartTime((new Date(System.currentTimeMillis())).toString());
         }
         overallTDI.setJvmVersion(this.getJvmVersion());
-        
+
         threadDump = new DefaultMutableTreeNode(overallTDI);
 
         catThreads = new DefaultMutableTreeNode(new TableCategory("Threads", IconFactory.THREADS));
         threadDump.add(catThreads);
 
         catWaiting = new DefaultMutableTreeNode(new TableCategory("Threads waiting for Monitors",
-            IconFactory.THREADS_WAITING));
+                IconFactory.THREADS_WAITING));
 
         catSleeping = new DefaultMutableTreeNode(new TableCategory("Threads sleeping on Monitors",
-            IconFactory.THREADS_SLEEPING));
+                IconFactory.THREADS_SLEEPING));
 
         catLocking = new DefaultMutableTreeNode(new TableCategory("Threads locking Monitors",
-            IconFactory.THREADS_LOCKING));
+                IconFactory.THREADS_LOCKING));
 
         // create category for monitors with disabled filtering.
         // NOTE: These strings are "magic" in that the methods
@@ -1469,9 +1461,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         // checks these literal strings and the behavior differs.
         catMonitors = new DefaultMutableTreeNode(new TreeCategory("Monitors", IconFactory.MONITORS, false));
         catMonitorsLocks = new DefaultMutableTreeNode(new TreeCategory("Monitors without locking thread",
-            IconFactory.MONITORS_NOLOCKS, false));
+                IconFactory.MONITORS_NOLOCKS, false));
         catBlockingMonitors = new DefaultMutableTreeNode(new TreeCategory("Threads blocked by Monitors",
-            IconFactory.THREADS_LOCKING, false));
+                IconFactory.THREADS_LOCKING, false));
 
         String title = null;
         String dumpKey = null;
@@ -1491,17 +1483,18 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         boolean concurrentSyncsFlag = false;
         Matcher matched = getDm().getLastMatch();
         String parsedStartTime = null;
-        
+
         while (getBis().ready() && !finished) {
           line = getNextLine();
           lineCounter++;
           singleLineCounter++;
-          
-          if ((line != null) && (line.trim().length() == 0))
+
+          if ((line != null) && (line.trim().length() == 0)) {
             continue;
-          
-          if (locked) {            
-            
+          }
+
+          if (locked) {
+
             if (lineChecker.getFullDump(line) != null) {
               locked = false;
               if (!withCurrentTimeStamp) {
@@ -1510,9 +1503,9 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 if (startTime != 0) {
                   startTime = 0;
                 } else if (matched != null && matched.matches()) {
-                  
+
                   parsedStartTime = matched.group(0);
-                  
+
                   if (!getDm().isDefaultMatches() && isMillisTimeStamp()) {
                     try {
                       // the factor is a hack for a bug in
@@ -1520,7 +1513,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                       // timeStamp=2342342340)
                       if (parsedStartTime.length() < 13) {
                         startTime = Long.parseLong(parsedStartTime)
-                            * (long) Math.pow(10, 13 - parsedStartTime.length());
+                                * (long) Math.pow(10, 13 - parsedStartTime.length());
                       } else {
                         startTime = Long.parseLong(parsedStartTime);
                       }
@@ -1537,14 +1530,14 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   parsedStartTime = null;
                   matched = null;
                   getDm().resetLastMatch();
-                } else if (matched == null ) {
+                } else if (matched == null) {
                   matched = getDm().checkForDateMatch(line);
-                  if (matched != null) {                
-                     parsedStartTime = ((matched.groupCount() == 1)? matched.group(1): matched.group(0));
-                     overallTDI.setStartTime(parsedStartTime);                                 
-                     parsedStartTime = null;
-                     matched = null;
-                     getDm().resetLastMatch();
+                  if (matched != null) {
+                    parsedStartTime = ((matched.groupCount() == 1) ? matched.group(1) : matched.group(0));
+                    overallTDI.setStartTime(parsedStartTime);
+                    parsedStartTime = null;
+                    matched = null;
+                    getDm().resetLastMatch();
                   }
                 }
               }
@@ -1555,20 +1548,20 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                 matched = m;
               }
             }
-          } else {            
+          } else {
             // Problem with JRockit is the Timestamp occurs after the FULL THREAD DUMP tag
             // So the above logic fails as we wont get to parse for the date as its reverse for Hotspot (time occurs before Full Thread Dump marker)
             // So parse the timestamp here for jrockit....
-            if ((this instanceof JrockitParser) && (parsedStartTime == null)  
+            if ((this instanceof JrockitParser) && (parsedStartTime == null)
                     && !getDm().isPatternError() && (getDm().getRegexPattern() != null)) {
               Matcher m = getDm().checkForDateMatch(line);
-              if (m != null) {                
-                 parsedStartTime = m.group(0);
-                overallTDI.setStartTime(parsedStartTime);                
+              if (m != null) {
+                parsedStartTime = m.group(0);
+                overallTDI.setStartTime(parsedStartTime);
               }
             }
-            
-            
+
+
             if ((tempLine = lineChecker.getStackStart(line)) != null) {
 
               // SABHA - Commenting off the GC thread portion, we want to know
@@ -1584,24 +1577,26 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                * "Workmanager: , Version: 0, Scheduled=false, Started=false, Wait time: 0 ms
                * " id=1509 idx=0x84 tid=10346 prio=10 alive, sleeping, native_waiting, daemon
                */
-              
               // Check if the thread contains "Workmanager:" and ending with " ms" 
               // In that case, rerun the pattern to get correct thread label
               String additionalLines = readAheadForWMThreadLabels(line);
-              if (additionalLines.length() > line.length())
-                tempLine = additionalLines;              
-              
+              if (additionalLines.length() > line.length()) {
+                tempLine = additionalLines;
+              }
+
               // We are starting a group of lines for a different
               // thread
               // First, flush state for the previous thread (if
               // any)              
-              
+
               concurrentSyncsFlag = false;
-              if (content != null) content.append("</font></pre><br>");
+              if (content != null) {
+                content.append("</font></pre><br>");
+              }
               String stringContent = content != null ? content.toString() : null;
               if (title != null) {
                 threads.put(title, content.toString());
-                
+
                 addToCategory(catThreads, overallTDI, title, null, stringContent, singleLineCounter, true);
                 threadCount++;
               }
@@ -1628,7 +1623,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               // Second, initialize state for this new thread
               title = tempLine;
               content = new StringBuffer("<pre><font size=" + ThreadLogic.getFontSizeModifier(-1)
-                  + ">");
+                      + ">");
               content.append(tempLine);
               content.append("\n");
             } else if ((tempLine = lineChecker.getThreadState(line)) != null) {
@@ -1644,10 +1639,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
                   title += " nid=none " + state;
                 }
               }
-            //} else if (content != null && (tempLine = lineChecker.getLockedOwnable(line)) != null) {
-            //  concurrentSyncsFlag = true;
-            //  content.append(tempLine);
-            //  content.append("\n");
+              //} else if (content != null && (tempLine = lineChecker.getLockedOwnable(line)) != null) {
+              //  concurrentSyncsFlag = true;
+              //  content.append(tempLine);
+              //  content.append("\n");
             } else if (content != null && (tempLine = lineChecker.getWaitingOn(line)) != null) {
               content.append(linkifyMonitor(tempLine));
               monitorStack.push(tempLine);
@@ -1683,51 +1678,53 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               //getBis().mark(getMarkSize());
               /*
               if ((checkForDeadlocks(threadDump)) == 0) {
-                // no deadlocks found, set back original
-                // position.
-                getBis().reset();
+              // no deadlocks found, set back original
+              // position.
+              getBis().reset();
               }
                * 
                */
 
               //getBis().mark(getMarkSize());
-              
+
               if (!checkThreadDumpStatData(overallTDI)) {
                 // no statistical data found, set back original
                 // position.
                 getBis().reset();
               }
 
-              
+
               if (!(foundClassHistograms = checkForClassHistogram(threadDump))) {
-                getBis().reset();                
+                getBis().reset();
               }
-              
+
               // Support for parsing Lock Chains in JRockit
               if (!(foundLockChains = checkForLockChains(catThreads))) {
-                getBis().reset();                
+                getBis().reset();
               }
-              
+
               // Check for ECID & Thread Context Data
-              if (!checkThreadDumpContextData(overallTDI)) { 
+              if (!checkThreadDumpContextData(overallTDI)) {
                 // If no thread context data found, set back original position.
                 try {
                   getBis().reset();
-                } catch(IOException ioe) { 
+                } catch (IOException ioe) {
                   // Dont let it block further processing
-                  ioe.printStackTrace(); 
+                  ioe.printStackTrace();
                 }
               }
-              
-            } else {              
-              
+
+            } else {
+
               // Mark the point as we have successfuly parsed the thread
               getBis().mark(getMarkSize());
             }
           }
-        }        
-        
-        if (content != null) content.append("</font></pre><br>");
+        }
+
+        if (content != null) {
+          content.append("</font></pre><br>");
+        }
         String stringContent = content != null ? content.toString() : null;
         if (title != null) {
           threads.put(title, content.toString());
@@ -1759,12 +1756,12 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         int monitorsWithoutLocksCount = 0;
         int contendedMonitors = 0;
         int blockedThreads = 0;
-        
+
         Iterator iter = mmap.iterOfKeys();
         while (iter.hasNext()) {
           String monitor = (String) iter.next();
           Map[] threadsInMap = mmap.getFromMonitorMap(monitor);
-          
+
           // first the locks
           // We need to reset the stack trace for those threads that are holders of locks
           // previously we set the stack trace to be empty as the ownership info was present in a different thread 
@@ -1778,12 +1775,13 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
               // System.out.println("ThreadOwner :" + threadOwner + ", owner stack is null");
               // Search for the owner of the lock
               ThreadInfo ownerThread = overallTDI.getThreadByName(threadOwner);
-              if (ownerThread != null)
-                threadsInMap[MonitorMap.LOCK_THREAD_POS].put(threadOwner, ownerThread.getContent());              
-            }            
+              if (ownerThread != null) {
+                threadsInMap[MonitorMap.LOCK_THREAD_POS].put(threadOwner, ownerThread.getContent());
+              }
+            }
           }
         }
-        
+
         // dump monitors
         if (mmap.size() > 0) {
           int[] result = dumpMonitors(catMonitors, catMonitorsLocks, mmap);
@@ -1827,7 +1825,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         }
 
         overallTDI.setJvmType(this.getJvmVendor());
-        
+
         Category unsortedThreadCategory = (Category) catThreads.getUserObject();
         Category sortedThreads = sortThreadsByHealth(unsortedThreadCategory);
         overallTDI.setThreads(sortedThreads);
@@ -1842,19 +1840,19 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         overallTDI.runThreadsAdvisory();
 
         ((Category) catThreads.getUserObject()).setName(((Category) catThreads.getUserObject()) + " (" + threadCount
-            + " Threads overall)");
+                + " Threads overall)");
         ((Category) catWaiting.getUserObject()).setName(((Category) catWaiting.getUserObject()) + " (" + waiting
-            + " Threads waiting)");
+                + " Threads waiting)");
         ((Category) catSleeping.getUserObject()).setName(((Category) catSleeping.getUserObject()) + " (" + sleeping
-            + " Threads sleeping)");
+                + " Threads sleeping)");
         ((Category) catLocking.getUserObject()).setName(((Category) catLocking.getUserObject()) + " (" + locking
-            + " Threads locking)");
+                + " Threads locking)");
         ((Category) catMonitors.getUserObject()).setName(((Category) catMonitors.getUserObject()) + " (" + monitorCount
-            + " Monitors)");
+                + " Monitors)");
         ((Category) catBlockingMonitors.getUserObject()).setName(((Category) catBlockingMonitors.getUserObject())
-            + " (" + blockedThreads + " Threads blocked by " + contendedMonitors + " Monitors)");
+                + " (" + blockedThreads + " Threads blocked by " + contendedMonitors + " Monitors)");
         ((Category) catMonitorsLocks.getUserObject()).setName(((Category) catMonitorsLocks.getUserObject()) + " ("
-            + monitorsWithoutLocksCount + " Monitors)");
+                + monitorsWithoutLocksCount + " Monitors)");
         // add thread dump to passed dump store.
         if ((threadCount > 0) && (dumpKey != null)) {
           threadStore.put(dumpKey.trim(), threads);
@@ -1870,10 +1868,10 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       } catch (StringIndexOutOfBoundsException e) {
         e.printStackTrace();
         JOptionPane.showMessageDialog(null, "Error during parsing of a found thread dump, skipping to next one!\n"
-            + "Check for possible broken dumps, sometimes, stream flushing mixes the logged data.\n"
-            + "Error Message is \"" + e.getLocalizedMessage() + "\". \n"
-            + (line != null ? "Last line read was \"" + line + "\". \n" : ""), "Error during Parsing Thread Dump",
-            JOptionPane.ERROR_MESSAGE);
+                + "Check for possible broken dumps, sometimes, stream flushing mixes the logged data.\n"
+                + "Error Message is \"" + e.getLocalizedMessage() + "\". \n"
+                + (line != null ? "Last line read was \"" + line + "\". \n" : ""), "Error during Parsing Thread Dump",
+                JOptionPane.ERROR_MESSAGE);
         retry = true;
       } catch (IOException e) {
         e.printStackTrace();
@@ -1882,7 +1880,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
     return (null);
   }
-  
+
   /**
    * Check for Badly formatted threads starting with "Workmanager and ending with ms
    * "Workmanager: , Version: 0, Scheduled=false, Started=false, Wait time: 0 ms
@@ -1897,22 +1895,22 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     if (!(currentLine.contains("\"Workmanager:") && currentLine.endsWith(" ms"))) {
       return line;
     }
-    
+
     // Read further the next line and add it to the current thread title line                
-    String newLine = null;    
-    do {                  
+    String newLine = null;
+    do {
       lineCounter++;
       newLine = getNextLine();
-    } while (newLine.trim().equals("")); 
+    } while (newLine.trim().equals(""));
 
-    currentLine = line + newLine;     
+    currentLine = line + newLine;
     //System.out.println("Returning Modified line: " + currentLine);
-    
+
     return currentLine;
   }
 
   abstract boolean checkForClassHistogram(DefaultMutableTreeNode threadDump) throws IOException;
-  
+
   abstract boolean checkForLockChains(DefaultMutableTreeNode threadDump) throws IOException;
 
   /**
@@ -1959,7 +1957,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       tdi.setHeapInfo(new HeapInfo(hContent.toString()));
       //System.out.println("Found heap info:" + hContent.toString());
     }
-        
+
     return (found);
   }
 
@@ -1984,66 +1982,65 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
    * @return
    * @throws java.io.IOException
    */
-  
   protected boolean checkThreadDumpContextData(ThreadDumpInfo tdi) throws IOException {
     boolean finished = false;
     boolean reachedExactEndOfDump = false;
     boolean foundTimingStatistics = false;
     boolean foundContextData = false;
-    
+
     int lines = 0;
     String threadId = null;
-    StringBuffer contextValBuf = null;    
-  
-    
+    StringBuffer contextValBuf = null;
+
+
     // The Thread Context Info line might have got eaten earlier...
     // so check for next occuring lines like:
     // ===== THREAD CONTEXT INFORMATION =====
     //
     //id         ECID                                               RID   Context Values
     Matcher threadContextInfoMatcher = null;
-    Pattern threadContextInfoPattern = Pattern.compile(".*(" + THREAD_CONTEXT_INFO 
-                                                      + "|id\\s*ECID\\s*RID\\s*Context).*");
+    Pattern threadContextInfoPattern = Pattern.compile(".*(" + THREAD_CONTEXT_INFO
+            + "|id\\s*ECID\\s*RID\\s*Context).*");
 
     while (getBis().ready() && !finished) {
       String line = getNextLine();
-      
+
       if (line == null) {
         return false;
       }
-      
+
       line = line.trim();
       //System.out.println("Current Line in ContextDataCheck: " + line);
-      
+
       // We have reached start of a new thread dump, so stop      
       if (this.lineChecker.getFullDump(line) != null) {
         //System.out.println("Breaking now as we hit Full Dump for Current Line: " + line);
         return false;
       }
-    
+
       // The Thread Context Data section occurs after thread dump
       // In JRockit, the lock chain info would have been parsed already which ends with ExactEndOfDump marker (END OF THREAD DUMP)
       // So no need to check if we have reached End of Dump
       /*
       if (!reachedExactEndOfDump) {
-        if ( this.lineChecker.getExactEndOfDump(line) == null) {
-          continue;
-        } else {
-          reachedExactEndOfDump = true;
-          getBis().mark(getMarkSize());
-        } 
+      if ( this.lineChecker.getExactEndOfDump(line) == null) {
+      continue;
+      } else {
+      reachedExactEndOfDump = true;
+      getBis().mark(getMarkSize());
+      } 
       }
-      */
-      
+       */
+
       // Start count of lines that came after actual End of the thread Dump
-      lines++;      
-      if (!foundTimingStatistics ) {
+      lines++;
+      if (!foundTimingStatistics) {
         // Sometimes the Timing Statistics Section might not be present ahead of the Thread Context Section
         // So check for both
         threadContextInfoMatcher = threadContextInfoPattern.matcher(line);
-        
-        if (line.indexOf(THREAD_TIMING_STATISTICS) > 0)  {
-          foundTimingStatistics = true;          
+
+        if (line.indexOf(THREAD_TIMING_STATISTICS) > 0) {
+          foundTimingStatistics = true;
         } else if (threadContextInfoMatcher.matches()) {
           foundContextData = foundTimingStatistics = true;
         } else if (lines >= getMaxCheckLines()) {
@@ -2051,80 +2048,83 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         }
       } else {
         // Found Timing Statistics section that occurs before Thread Context Info section
-        if (line.trim().equals("") || line.startsWith("----"))
+        if (line.trim().equals("") || line.startsWith("----")) {
           continue;
-        
+        }
+
         // There will be one statistic line per thread
         // Keep going till we reach Thread Context Info banner
         // then start parsing ECID and other Context data per thread        
-        if (!foundContextData) {          
-            // Found begining marker of Thread Context Info 
-            foundContextData = (line.indexOf(THREAD_CONTEXT_INFO) > 0);
-            
-            //skip just found Thread Context Info banner and proceed to actual data...
-            if (foundContextData)
-              continue;
-            
-        } else if (line.indexOf(THREAD_CONTEXT_INFO) > 0){
+        if (!foundContextData) {
+          // Found begining marker of Thread Context Info 
+          foundContextData = (line.indexOf(THREAD_CONTEXT_INFO) > 0);
+
+          //skip just found Thread Context Info banner and proceed to actual data...
+          if (foundContextData) {
+            continue;
+          }
+
+        } else if (line.indexOf(THREAD_CONTEXT_INFO) > 0) {
           // We have reached Thread Context Info marker again
           // Treat that as end of processing and return
           finished = true;
         }
-        
+
         // We are in Thread Context Info Section
         // start processing line entries
         if (foundContextData && !finished) {
-            
-            // Parse the line entry
-          
-            // If its start of a new thread context info
-            if (line.startsWith("id=")) {
-              
-              // Save previous thread context
-              if (threadId != null) {
-                
-                //System.out.println("ThreadId: " + threadId);
-                //System.out.println("ThreadContextData: " + contextValBuf.toString());
-                tdi.addThreadContextData(threadId, contextValBuf.toString());
-                threadId = null;
-              }
-              
-              
-              // Parse new thread context info
-              String[] entries = line.trim().split("\\s+");
+
+          // Parse the line entry
+
+          // If its start of a new thread context info
+          if (line.startsWith("id=")) {
+
+            // Save previous thread context
+            if (threadId != null) {
+
+              //System.out.println("ThreadId: " + threadId);
+              //System.out.println("ThreadContextData: " + contextValBuf.toString());
+              tdi.addThreadContextData(threadId, contextValBuf.toString());
+              threadId = null;
+            }
+
+
+            // Parse new thread context info
+            String[] entries = line.trim().split("\\s+");
+            contextValBuf = new StringBuffer();
+
+            switch (entries.length) {
+              case (4):
+                // The 4th column contains the context data
+                contextValBuf.append(entries[3] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+              case (3):
+                // The 3rd column contains the RID
+                contextValBuf.append("RID=" + entries[2] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+              case (2):
+                // The 2nd column contains the ECID
+                contextValBuf.append("mECID=" + entries[1] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
+              default:
+                // The 1st column contains the Thread Id
+                threadId = entries[0].substring(3);
+            }
+
+          } else {
+            // This line entry only contains context data and is part of current thread context
+            if (contextValBuf == null) {
               contextValBuf = new StringBuffer();
-              
-              switch(entries.length) {                
-                case (4):
-                  // The 4th column contains the context data
-                  contextValBuf.append(entries[3] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
-                case (3):
-                  // The 3rd column contains the RID
-                  contextValBuf.append("RID=" + entries[2] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
-                case (2):
-                  // The 2nd column contains the ECID
-                  contextValBuf.append("mECID=" + entries[1] + ThreadInfo.CONTEXT_DATA_SEPARATOR);
-                default:
-                  // The 1st column contains the Thread Id
-                  threadId = entries[0].substring(3);                  
-              }
-                
-            } else {              
-              // This line entry only contains context data and is part of current thread context
-              if (contextValBuf == null)
-                contextValBuf = new StringBuffer();
-              
-              contextValBuf.append(line + ThreadInfo.CONTEXT_DATA_SEPARATOR);
-            }            
+            }
+
+            contextValBuf.append(line + ThreadInfo.CONTEXT_DATA_SEPARATOR);
           }
-        } 
+        }
       }
+    }
 
     // Save the last entry
     if (threadId != null && contextValBuf != null) {
       tdi.addThreadContextData(threadId, contextValBuf.toString());
     }
-    
+
     // We have hit the end marker for the Thread Context Info 
     // finish parsing
     finished = true;
@@ -2185,7 +2185,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
           dContent.append("</b><hr></font><pre>");
           first = true;
         } else if ((line.indexOf("- waiting on") >= 0) || (line.indexOf("- waiting to") >= 0)
-            || (line.indexOf("- locked") >= 0) || (line.indexOf("- parking to wait") >= 0)) {
+                || (line.indexOf("- locked") >= 0) || (line.indexOf("- parking to wait") >= 0)) {
 
           dContent.append(linkifyMonitor(line));
           dContent.append("\n");
@@ -2256,7 +2256,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
   public void setJvmVendor(String jvmVendor) {
     this.jvmVendor = jvmVendor;
   }
-  
+
   public class LineChecker implements DumpParser.lineChecker {
 
     Pattern fullDumpPattern;
@@ -2272,7 +2272,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     Pattern exactEndOfDumpPattern;
     Pattern lockReleasedPattern;
     Pattern gcThreadPattern = createPattern(".*(\".*G[Cc].*hread.*\").*");
-    Pattern endOfTitlePattern;    
+    Pattern endOfTitlePattern;
 
     @Override
     public String getFullDump(String line) {
@@ -2311,7 +2311,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
         Matcher matcher = atPattern.matcher(line);
         if (matcher.matches()) {
           //return format(matcher.group(1));
-          return format(matcher.groupCount() == 1? matcher.group(1): matcher.group(0));
+          return format(matcher.groupCount() == 1 ? matcher.group(1) : matcher.group(0));
         }
       }
       return null;
@@ -2393,7 +2393,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       }
       return null;
     }
-    
+
     @Override
     public String getExactEndOfDump(String line) {
       if (endOfDumpPattern != null) {
@@ -2464,7 +2464,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
     public void setEndOfDumpPattern(String pattern) {
       endOfDumpPattern = createPattern(pattern);
     }
-    
+
     @Override
     public void setExactEndOfDumpPattern(String pattern) {
       exactEndOfDumpPattern = createPattern(pattern);
@@ -2486,7 +2486,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       }
       return null;
     }
-    
+
     @Override
     public String getEndOfTitlePattern(String line) {
       if (endOfTitlePattern != null) {
@@ -2512,15 +2512,16 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
 
     String blockedLockId = null;
     String stack = thread.getContent();
-    if (stack == null)
+    if (stack == null) {
       return;
+    }
 
     ArrayList<String> ownedLockIds = getTrailingEntryAfterPattern(stack, LOCKED);
-    
+
     ArrayList<String> blockedLockIds = getTrailingEntryAfterPattern(stack, BLOCKED_FOR_LOCK);
     if (blockedLockIds.size() > 0) {
       blockedLockId = blockedLockIds.get(0);
-      
+
       // Make sure its not blocked on its own lock, saw a edge case of thread waiting to lock something it owned
       /*
        * "ExecuteThread: '2' for queue: 'weblogic.socket.Muxer'"  ... waiting for monitor entry [0xfffffffe37f3f000]
@@ -2533,7 +2534,7 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
        * at weblogic.kernel.ExecuteThread.run(ExecuteThread.java:117)
        */
       // Verify we are not marking a lock owned by the same thread as the blocking lock
-      if (!ownedLockIds.contains(blockedLockId)) { 
+      if (!ownedLockIds.contains(blockedLockId)) {
         thread.setBlockedForLock(blockedLockId);
         // System.out.println("ADP: Thread: " + thread.getFilteredName() +
         // ", blocked for lock: " + blockedLockId);
@@ -2622,22 +2623,23 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       int offset = m.end();
       int maxLength = data.length();
       int endOffset = (offset + 400);
-      if (endOffset > maxLength)
+      if (endOffset > maxLength) {
         endOffset = maxLength;
+      }
 
       String entry = data.substring(offset, endOffset);
       entry = entry.trim().replaceAll("\\n.*", "").trim();
-      
+
       // Trim off the trailing "owned by " Thread info appened by VisualVM
       /* Sample created by VisualVM
-       "ExecuteThread: '3' for queue: 'weblogic.socket.Muxer'" - Thread t@243
-         java.lang.Thread.State: BLOCKED
-            at weblogic.socket.DevPollSocketMuxer.processSockets(DevPollSocketMuxer.java:92)
-            - waiting to lock <4de8b404> (a java.lang.String) owned by "ExecuteThread: '2' for queue: 'weblogic.socket.Muxer'" t@242
+      "ExecuteThread: '3' for queue: 'weblogic.socket.Muxer'" - Thread t@243
+      java.lang.Thread.State: BLOCKED
+      at weblogic.socket.DevPollSocketMuxer.processSockets(DevPollSocketMuxer.java:92)
+      - waiting to lock <4de8b404> (a java.lang.String) owned by "ExecuteThread: '2' for queue: 'weblogic.socket.Muxer'" t@242
        * 
        */
       entry = entry.replaceAll(" owned by .*", "").trim();
-      
+
 
       // JRockit has an extra entry at end showing type of lock - locked or
       // unlocked or fat lock...
@@ -2645,12 +2647,11 @@ public abstract class AbstractDumpParser implements DumpParser, Serializable {
       entry = entry.replaceAll("\\[.*\\]", "").trim();
       trailingEntries.add(entry);
 
-      if (endOffset == maxLength)
+      if (endOffset == maxLength) {
         break;
+      }
     }
 
     return trailingEntries;
   }
-
 }
-

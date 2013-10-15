@@ -155,20 +155,16 @@ import javax.swing.tree.TreePath;
  * @author irockel
  */
 public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSelectionListener, ActionListener, MenuListener {
+
   private static JFileChooser fc;
   private static JFileChooser sessionFc;
   private static int DIVIDER_SIZE = 10;
   public static JFrame frame;
-
   private static String dumpFile;
   private static String defaultTDumpDir;
-
   private static String loggcFile;
-
   private static int fontSizeModifier = 0;
-
   private static ThreadLogic myThreadLogic = null;
-
   private JEditorPane htmlPane;
   private PopupFactory popupFactory = PopupFactory.getSharedInstance();
   private Popup popup;
@@ -197,20 +193,15 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   private DropTarget dt = null;
   private DropTarget hdt = null;
   private int dumpCounter;
-  
   boolean runningAsJConsolePlugin;
   boolean runningAsVisualVMPlugin;
   private MBeanDumper mBeanDumper;
-
   private StatusBar statusBar;
-
   private SearchDialog searchDialog;
-  
   private static final Vector<File> tempFileList = new Vector<File>();
-  
   // Placeholder to initialize ThreadLogic AppInfo ahead of everything else...
   private static AppInfo appInfoInitializer = new AppInfo();
-  
+
   /**
    * singleton access method for ThreadLogic
    */
@@ -228,7 +219,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     }
     return (myThreadLogic);
   }
-  
+
   /**
    * constructor (needs to be public for plugin)
    */
@@ -238,18 +229,19 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     if (System.getProperty("threadlogic.advisories") == null) {
       System.out.println("Customized Advisories!!\nUse -Dthreadlogic.advisories=directory... command line argument to pick your own set of custom \nadvisories from a specific directory to be used in ADDITION TO the ones packaged within Threadlogic jar file.\nExtract the AdvisoryMap.xml from com/oracle/ateam/threadlogic/resources package in the jar \nand use that as a template to create custom advisories. Use unique keywords and names to avoid conflicts.\n\tExample:  -Dthreadlogic.advisories=/user/tlogic/advisories\n\n");
     }
-    
+
     if (System.getProperty("threadlogic.groups") == null) {
-    System.out.println("Customized Grouping!!\nUse -Dthreadlogic.groups=directory... command line argument to pick your customized set of group \ndefinitions from a specific directory INSTEAD OF ones packaged within Threadlogic jar file. \nExtract the NonWLSGroups.xml & WLSGroups.xml from com/oracle/ateam/threadlogic/resources package \nin the jar and use that as a template to customize or create custom Groups. \nEnsure the names for the files are retained as its needed for forming WLS & NonWLS parent groups.\n\tExample:  -Dthreadlogic.groups=/user/tlogic/groups\n\n");
+      System.out.println("Customized Grouping!!\nUse -Dthreadlogic.groups=directory... command line argument to pick your customized set of group \ndefinitions from a specific directory INSTEAD OF ones packaged within Threadlogic jar file. \nExtract the NonWLSGroups.xml & WLSGroups.xml from com/oracle/ateam/threadlogic/resources package \nin the jar and use that as a template to customize or create custom Groups. \nEnsure the names for the files are retained as its needed for forming WLS & NonWLS parent groups.\n\tExample:  -Dthreadlogic.groups=/user/tlogic/groups\n\n");
     }
 
     if (setLF) {
       // init L&F
       setupLookAndFeel();
     }
-    
-    if (myThreadLogic == null)      
+
+    if (myThreadLogic == null) {
       myThreadLogic = this;
+    }
   }
 
   /**
@@ -261,7 +253,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   }
 
   public ThreadLogic(boolean setLF, String dumpFile) {
-    this(setLF);    
+    this(setLF);
     ThreadLogic.dumpFile = dumpFile;
   }
 
@@ -271,7 +263,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   public void init() {
     init(false, false);
   }
-  
+
   /**
    * initializes ThreadLogic panel
    * 
@@ -279,56 +271,57 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    *          specifies if ThreadLogic is running as plugin
    */
   public void init(boolean asJConsolePlugin, boolean asVisualVMPlugin) {
-  
+
     // init everything
     System.setProperty("awt.useSystemAAFontSettings", "on");
 
     // Adding back support for JConsolePlugin to run inside JMC
     runningAsJConsolePlugin = asJConsolePlugin;
     runningAsVisualVMPlugin = asVisualVMPlugin;
-        
+
     tree = new JTree();
     addTreeListener(tree);
 
     // Create the HTML viewing pane.
     InputStream is = ThreadLogic.class.getResourceAsStream("doc/welcome.html");
 
-    if(!this.runningAsVisualVMPlugin && !this.runningAsJConsolePlugin) {
+    if (!this.runningAsVisualVMPlugin && !this.runningAsJConsolePlugin) {
 
       htmlPane = new JEditorPane();
       String welcomeText = parseWelcomeURL(is);
       htmlPane.setContentType("text/html");
       htmlPane.setText(welcomeText);
       toolTip = htmlPane.createToolTip();
-      
-      // Enable use of custom set fonts
-      
 
-    } else if(asJConsolePlugin) {
-        htmlPane = new JEditorPane("text/html", "<html><body bgcolor=\"ffffff\"><br><br>"
-                + "ThreadLogic - We'll do the analysis for you!<br>"
-                + "version: " + AppInfo.getVersion() + " on " + AppInfo.getBuildDate() + "<br>"
-                + "<a href=http://java.net/projects/threadlogic>http://java.net/projects/threadlogic</a><br><br><br>"
-                + "<i>Press 'Request a Thread Dump' button above to request a thread dump.</i>"
-                + "</body></html>");
-        toolTip = htmlPane.createToolTip();
+      // Enable use of custom set fonts
+
+
+    } else if (asJConsolePlugin) {
+      htmlPane = new JEditorPane("text/html", "<html><body bgcolor=\"ffffff\"><br><br>"
+              + "<img border=0 src=\"" + ThreadLogic.class.getResource("icons/logo-threadlogic-banner.png") + "\"><br><br>" 
+              + "Version: " + AppInfo.getVersion() + " on " + AppInfo.getBuildDate() + "<br>"
+              + "<a href=http://java.net/projects/threadlogic>http://java.net/projects/threadlogic</a><br><br><br>"
+              + "<i>Press 'Request a Thread Dump' button above to request a thread dump.</i>"
+              + "</body></html>");
+      toolTip = htmlPane.createToolTip();
     } else {
-        htmlPane = new JEditorPane("text/html", "<html><body bgcolor=\"ffffff\"></body></html>");
-        toolTip = htmlPane.createToolTip();
+      htmlPane = new JEditorPane("text/html", "<html><body bgcolor=\"ffffff\"></body></html>");
+      toolTip = htmlPane.createToolTip();
     }
-    
+
     htmlPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
     htmlPane.setFont(new Font("Arial", Font.BOLD, 13));
     htmlPane.setEditable(false);
-        
-    if(!asJConsolePlugin && !asVisualVMPlugin) {
-        hdt = new DropTarget(htmlPane, new FileDropTargetListener());
+
+    if (!asJConsolePlugin && !asVisualVMPlugin) {
+      hdt = new DropTarget(htmlPane, new FileDropTargetListener());
     }
-    
+
     JEditorPane emptyPane = new JEditorPane("text/html", "");
     emptyPane.setEditable(false);
 
     htmlPane.addHyperlinkListener(new HyperlinkListener() {
+
       public void hyperlinkUpdate(final HyperlinkEvent evt) {
         // if a link was clicked
         if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
@@ -345,7 +338,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
           } else if (evt.getDescription().startsWith("threadgroups")) {
             navigateToChild("Thread Groups Summary");
           } else if (evt.getDescription().startsWith("openlogfile") && !evt.getDescription().endsWith("//")) {
-            File[] files = { new File(evt.getDescription().substring(14)) };
+            File[] files = {new File(evt.getDescription().substring(14))};
             openFiles(files, false);
           } else if (evt.getDescription().startsWith("openlogfile")) {
             chooseFile();
@@ -387,12 +380,12 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
           }
         } else if (evt.getEventType() == HyperlinkEvent.EventType.EXITED) {
           if (evt.getDescription().startsWith("advisory")) {
-            if (popup != null)
+            if (popup != null) {
               popup.hide();
+            }
           }
         }
       }
-
     });
 
     htmlView = new ViewScrollPane(htmlPane, runningAsVisualVMPlugin);
@@ -412,9 +405,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     splitPane.setDividerSize(DIVIDER_SIZE);
     splitPane.setContinuousLayout(true);
 
-    if(this.runningAsVisualVMPlugin) {
+    if (this.runningAsVisualVMPlugin) {
       setOpaque(true);
-      setBackground(Color.WHITE);            
+      setBackground(Color.WHITE);
       setBorder(BorderFactory.createEmptyBorder(6, 0, 3, 0));
       topSplitPane.setBorder(BorderFactory.createEmptyBorder());
       topSplitPane.setOpaque(false);
@@ -426,7 +419,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       splitPane.setOpaque(false);
       splitPane.setBackground(Color.WHITE);
     }
-    
+
     Dimension minimumSize = new Dimension(200, 50);
     htmlView.setMinimumSize(minimumSize);
     emptyView.setMinimumSize(minimumSize);
@@ -439,12 +432,12 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
     firstFile = true;
     setFileOpen(false);
-    
-    if(!runningAsVisualVMPlugin) {
-      setShowToolbar(PrefManager.get().getShowToolbar());        
+
+    if (!runningAsVisualVMPlugin) {
+      setShowToolbar(PrefManager.get().getShowToolbar());
     }
-    
-    if(firstFile) {
+
+    if (firstFile) {
       // init filechooser
       fc = new JFileChooser();
       fc.setMultiSelectionEnabled(true);
@@ -487,11 +480,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         setRootNodeLevel(1);
         SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
         String dumpDate = sdfDate.format(new Date());
-      
+
         addDumpStreamForClipboard(text, "Clipboard at " + dumpDate);
         /*
         addDumpStream(new ByteArrayInputStream(text.getBytes()),
-            "Clipboard at " + new Date(System.currentTimeMillis()), false);
+        "Clipboard at " + new Date(System.currentTimeMillis()), false);
         addToLogfile(text);
          * 
          */
@@ -521,18 +514,16 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         result.append("\n");
       }
       resultString = result.toString();
-      resultString = resultString
-          .replaceFirst("./important.png", ThreadLogic.class.getResource("doc/important.png").toString());
-      resultString = resultString.replaceFirst("./logo-threadlogic.png", ThreadLogic.class.getResource("doc/logo-threadlogic-banner.png")
-          .toString());
+      resultString = resultString.replaceFirst("./important.png", ThreadLogic.class.getResource("doc/important.png").toString());
+      resultString = resultString.replaceFirst("./logo-threadlogic.png", ThreadLogic.class.getResource("doc/logo-threadlogic-banner.png").toString());
       resultString = resultString.replaceFirst("./fileopen.png", ThreadLogic.class.getResource("doc/fileopen.png").toString());
       resultString = resultString.replaceFirst("./settings.png", ThreadLogic.class.getResource("doc/settings.png").toString());
       resultString = resultString.replaceFirst("./help.png", ThreadLogic.class.getResource("doc/help.png").toString());
       resultString = resultString.replaceFirst("<!-- ##tipofday## -->", TipOfDay.getTipOfDay());
       resultString = resultString.replaceFirst("<!-- ##recentlogfiles## -->",
-          getAsTable("openlogfile://", PrefManager.get().getRecentFiles()));
+              getAsTable("openlogfile://", PrefManager.get().getRecentFiles()));
       resultString = resultString.replaceFirst("<!-- ##recentsessions## -->",
-          getAsTable("opensession://", PrefManager.get().getRecentSessions()));
+              getAsTable("opensession://", PrefManager.get().getRecentSessions()));
     } catch (IllegalArgumentException ex) {
       // hack to prevent crashing of the app because off unparsed replacer.
       ex.printStackTrace();
@@ -605,18 +596,18 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    * request jmx dump
    */
   public LogFileContent addMXBeanDump() {
-    
+
     String dump = mBeanDumper.threadDump();
     String locks = mBeanDumper.findDeadlock();
     String serverInfo = mBeanDumper.getMBeanServerInfo();
     String dumpDate = mBeanDumper.getDumpDate();
-    
+
     // if deadlocks were found, append them to dump output.
-    if(locks != null && !"".equals(locks)) {
+    if (locks != null && !"".equals(locks)) {
       dump += "\n" + locks;
     }
-    
-    if(topNodes == null) {
+
+    if (topNodes == null) {
       initDumpDisplay(null);
       firstFile = false;
     } else {
@@ -624,34 +615,34 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       setRootNodeLevel(1);
     }
 
-    addDumpStreamForClipboard(dump, "JMX Thread Dump of " + serverInfo + " at "+ dumpDate);
+    addDumpStreamForClipboard(dump, "JMX Thread Dump of " + serverInfo + " at " + dumpDate);
 
     dumpCounter++;
     LogFileContent lfc = addToLogfile(dump);
 
-    if(this.getRootPane() != null) {
-        this.getRootPane().revalidate();
+    if (this.getRootPane() != null) {
+      this.getRootPane().revalidate();
     }
     tree.setShowsRootHandles(false);
     displayContent(null);
 
-    if(!this.runningAsVisualVMPlugin) {
-        getMainMenu().getExpandButton().setEnabled(true);
-        getMainMenu().getCollapseButton().setEnabled(true);
+    if (!this.runningAsVisualVMPlugin) {
+      getMainMenu().getExpandButton().setEnabled(true);
+      getMainMenu().getCollapseButton().setEnabled(true);
     }
-    return(lfc);
+    return (lfc);
   }
-
 
   private LogFileContent addToLogfile(String dump) {
     try {
       InputStream bis = createTempFileFromClipboard(dump.getBytes());
-    } catch(Exception e) { System.out.println("Error in creating temporary file with clipboard content:" + e.getMessage()); }
-    
+    } catch (Exception e) {
+      System.out.println("Error in creating temporary file with clipboard content:" + e.getMessage());
+    }
+
     ((LogFileContent) logFile.getUserObject()).appendToContentBuffer(dump);
     return (((LogFileContent) logFile.getUserObject()));
   }
-
 
   /**
    * create file filter for session files.
@@ -668,7 +659,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       public String getDescription() {
         return ("ThreadLogic Session Files");
       }
-
     };
     return (filter);
   }
@@ -780,10 +770,10 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       }
       int selectValue = 0;
       if (file.exists()) {
-        Object[] options = { "Overwrite", "Cancel" };
+        Object[] options = {"Overwrite", "Cancel"};
         selectValue = JOptionPane.showOptionDialog(null,
-            "<html><body>File exists<br><b>" + file + "</b></body></html>", "Confirm overwrite",
-            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                "<html><body>File exists<br><b>" + file + "</b></body></html>", "Confirm overwrite",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
       }
       if (selectValue == 0) {
         ObjectOutputStream oos = null;
@@ -833,16 +823,16 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       loadSession(file, isRecent);
     } catch (FileNotFoundException ex) {
       JOptionPane.showMessageDialog(this.getRootPane(), "Error opening " + ex.getMessage() + ".",
-          "Error opening session", JOptionPane.ERROR_MESSAGE);
+              "Error opening session", JOptionPane.ERROR_MESSAGE);
     } catch (IOException ex) {
       JOptionPane.showMessageDialog(this.getRootPane(), "Error opening " + ex.getMessage() + ".",
-          "Error opening session", JOptionPane.ERROR_MESSAGE);
+              "Error opening session", JOptionPane.ERROR_MESSAGE);
     }
   }
 
   private void loadSession(File file, boolean isRecent) throws IOException {
     final ObjectInputStream ois = new ObjectInputStream(new ProgressMonitorInputStream(this, "Opening session " + file,
-        new GZIPInputStream(new FileInputStream(file))));
+            new GZIPInputStream(new FileInputStream(file))));
 
     resetMainPanel();
     setFileOpen(true);
@@ -903,11 +893,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
       // retrieve plaf param.
       String plaf = "Nimbus,Mac,Windows,Metal";
-      
+
       if (PrefManager.get().isUseGTKLF()) {
         plaf = "Nimbus,GTK,Mac,Windows,Metal";
       }
-       
+
       // this line needs to be implemented in order to make L&F work properly
       UIManager.getLookAndFeelDefaults().put("ClassLoader", getClass().getClassLoader());
 
@@ -917,7 +907,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       if ((plaf != null) && (!"".equals(plaf))) {
 
         String[] instPlafs = plaf.split(",");
-        search: for (int i = 0; i < instPlafs.length; i++) {
+        search:
+        for (int i = 0; i < instPlafs.length; i++) {
           for (int j = 0; j < plafs.length; j++) {
             currentLAFI = plafs[j];
             if (currentLAFI.getName().startsWith(instPlafs[i])) {
@@ -933,7 +924,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       if (plaf.startsWith("GTK")) {
         setFontSizeModifier(2);
       }
-      
+
     } catch (Exception except) {
       // setup font
       setUIFont(new FontUIResource("SansSerif", Font.PLAIN, 11));
@@ -950,10 +941,10 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     info.append("Version: <b>");
     info.append(AppInfo.getVersion());
     info.append("</b><p>");
-    
-    if(runningAsJConsolePlugin || runningAsVisualVMPlugin) {
-            info.append("<a href=\"threaddump://\">Request Thread Dump...</a>");
-        } else {
+
+    if (runningAsJConsolePlugin || runningAsVisualVMPlugin) {
+      info.append("<a href=\"threaddump://\">Request Thread Dump...</a>");
+    } else {
       info.append("Select File/Open to open your log file with thread dumps to start analyzing these thread dumps.<p>See Help/Overview for information on how to obtain a thread dump from your VM.</p></font></body></html>");
     }
     return (info.toString());
@@ -971,8 +962,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     dumpStore = new DumpStore();
 
     topNodes = new Vector();
-    
-    if(!runningAsJConsolePlugin && !runningAsVisualVMPlugin) {
+
+    if (!runningAsJConsolePlugin && !runningAsVisualVMPlugin) {
       //getMainMenu().getLongMenuItem().setEnabled(true);
       getMainMenu().getSaveSessionMenuItem().setEnabled(true);
       getMainMenu().getExpandButton().setEnabled(true);
@@ -982,22 +973,22 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       getMainMenu().getExpandAllMenuItem().setEnabled(true);
       getMainMenu().getCollapseAllMenuItem().setEnabled(true);
     }
-    
-      if (!runningAsJConsolePlugin && (dumpFile != null)) {
-        addDumpFile();
-      } else if (content != null) {
-        SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
-        String dumpDate = sdfDate.format(new Date());
-        addDumpStreamForClipboard(content, "Clipboard at " + dumpDate);
-        /*
-        addDumpStream(new ByteArrayInputStream(content.getBytes()),
-            "Clipboard at " + new Date(System.currentTimeMillis()), false);
-        addToLogfile(content);
-         * 
-         */
-      }
 
-    if(runningAsJConsolePlugin || runningAsVisualVMPlugin || isFileOpen()) {
+    if (!runningAsJConsolePlugin && (dumpFile != null)) {
+      addDumpFile();
+    } else if (content != null) {
+      SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+      String dumpDate = sdfDate.format(new Date());
+      addDumpStreamForClipboard(content, "Clipboard at " + dumpDate);
+      /*
+      addDumpStream(new ByteArrayInputStream(content.getBytes()),
+      "Clipboard at " + new Date(System.currentTimeMillis()), false);
+      addToLogfile(content);
+       * 
+       */
+    }
+
+    if (runningAsJConsolePlugin || runningAsVisualVMPlugin || isFileOpen()) {
       if (topSplitPane.getDividerLocation() <= 0) {
         topSplitPane.setDividerLocation(200);
       }
@@ -1036,10 +1027,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
   private boolean isLogfileSizeOk(String fileName) {
     File file = new File(fileName);
-    return (file.isFile() && ((PrefManager.get().getMaxLogfileSize() == 0) || (file.length() <= (PrefManager.get()
-        .getMaxLogfileSize() * 1024))));
+    return (file.isFile() && ((PrefManager.get().getMaxLogfileSize() == 0) || (file.length() <= (PrefManager.get().getMaxLogfileSize() * 1024))));
   }
-
   /**
    * sync object is needed to synchronize opening of multiple files.
    */
@@ -1050,57 +1039,57 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    */
   private void addDumpFiles(String[] files) {
     for (int i = 0; i < files.length; i++) {
-      
+
       dumpCounter = 1;
       try {
         addDumpStream(new BufferedInputStream(new FileInputStream(files[i])), files[i], true);
-      } catch(IOException ex) {
+      } catch (IOException ex) {
 
         JOptionPane.showMessageDialog(this.getRootPane(), "Error opening " + ex.getMessage() + ".",
-            "Error opening file", JOptionPane.ERROR_MESSAGE);
+                "Error opening file", JOptionPane.ERROR_MESSAGE);
       }
     }
   }
 
   private void addDumpStreamForClipboard(String content, String msg) {
-    
+
     try {
       InputStream bis = createTempFileFromClipboard(content.getBytes());
-    
-      addDumpStream(bis, msg, false);
-    } catch(IOException ex) {
 
-        JOptionPane.showMessageDialog(this.getRootPane(), "Error reading from Clipboard content: " + ex.getMessage() + ".",
-            "Error reading clipboard content", JOptionPane.ERROR_MESSAGE);
+      addDumpStream(bis, msg, false);
+    } catch (IOException ex) {
+
+      JOptionPane.showMessageDialog(this.getRootPane(), "Error reading from Clipboard content: " + ex.getMessage() + ".",
+              "Error reading clipboard content", JOptionPane.ERROR_MESSAGE);
     }
   }
-    
 
   private void addDumpStream(InputStream inputStream, String file, boolean withLogfile) {
     final InputStream parseFileStream = new ProgressMonitorInputStream(this, "Parsing " + file, inputStream);
 
     Logfile logFileInstance = new Logfile(file);
     // Save the reference to the newly created dump file for clipboard content within logFileInstance
-    if (!withLogfile)
+    if (!withLogfile) {
       logFileInstance.setTempFileLocation(dumpFile);
-    
+    }
+
     //Create the nodes.
     // if(!runningAsJConsolePlugin || topNodes.size() == 0) {
-    topNodes.add(new DefaultMutableTreeNode(logFileInstance));  
-    
+    topNodes.add(new DefaultMutableTreeNode(logFileInstance));
+
     final DefaultMutableTreeNode top = (DefaultMutableTreeNode) topNodes.get(topNodes.size() - 1);
-    logFile = new DefaultMutableTreeNode(new LogFileContent(file));    
-    setFileOpen(true);    
-    
+    logFile = new DefaultMutableTreeNode(new LogFileContent(file));
+    setFileOpen(true);
+
     /*
     if ((!withLogfile && logFile == null) || isLogfileSizeOk(file)) {
-      logFile = new DefaultMutableTreeNode(new LogFileContent(file));
+    logFile = new DefaultMutableTreeNode(new LogFileContent(file));
     }
-     setFileOpen(true); 
+    setFileOpen(true); 
      * 
      */
-    
-    
+
+
     final SwingWorker worker = new SwingWorker() {
 
       public Object construct() {
@@ -1125,12 +1114,16 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       tree = new JTree(treeModel);
       tree.setRootVisible(!runningAsVisualVMPlugin);
       addTreeListener(tree);
-      if(runningAsJConsolePlugin) {
+      // Don't change the title, let it stay the same...ThreadLogic byline
+      /*
+      if (runningAsJConsolePlugin) {
         // When running as plugin, we cannot expect JFrame, just Awt frame
         getAwtFrame().setTitle("ThreadLogic - Thread Dumps of " + dumpFile);
-      } else if (!runningAsVisualVMPlugin){
+      } else if (!runningAsVisualVMPlugin) {
         getFrame().setTitle("ThreadLogic - Thread Dumps of " + dumpFile);
       }
+       * 
+       */
     } else {
       DefaultMutableTreeNode root = new DefaultMutableTreeNode("Thread Dump Nodes");
       treeModel = new DefaultTreeModel(root);
@@ -1140,11 +1133,14 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       tree = new JTree(root);
       tree.setRootVisible(false);
       addTreeListener(tree);
-      if(!runningAsVisualVMPlugin && !runningAsJConsolePlugin) {
+      /*
+      if (!runningAsVisualVMPlugin && !runningAsJConsolePlugin) {
         if (!frame.getTitle().endsWith("...")) {
           frame.setTitle(frame.getTitle() + " ...");
         }
       }
+       * 
+       */
     }
 
     tree.setShowsRootHandles(true);
@@ -1163,7 +1159,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     // Listen for when the selection changes.
     tree.addTreeSelectionListener(this);
 
-    if(!runningAsVisualVMPlugin) {
+    if (!runningAsVisualVMPlugin) {
       dt = new DropTarget(tree, new FileDropTargetListener());
     }
 
@@ -1178,6 +1174,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    */
   private void addTreeListener(JTree tree) {
     tree.addTreeSelectionListener(new TreeSelectionListener() {
+
       ViewScrollPane emptyView = null;
 
       public void valueChanged(TreeSelectionEvent e) {
@@ -1195,7 +1192,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         }
 
         if (e.getPath() == null
-            || !(((DefaultMutableTreeNode) e.getPath().getLastPathComponent()).getUserObject() instanceof Category)) {
+                || !(((DefaultMutableTreeNode) e.getPath().getLastPathComponent()).getUserObject() instanceof Category)) {
           resetPane();
         }
       }
@@ -1205,10 +1202,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         topSplitPane.setRightComponent(emptyView);
         topSplitPane.setDividerLocation(dividerLocation);
       }
-
     });
   }
-
   private boolean threadDisplay = false;
 
   private void setThreadDisplay(boolean value) {
@@ -1245,7 +1240,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     } else if (nodeInfo instanceof LogFileContent) {
       displayLogFileContent(nodeInfo);
     } else if (nodeInfo instanceof Logfile) {
-      if (((String) ((Logfile) nodeInfo).getContent()).startsWith("Thread Dumps")) {          
+      if (((String) ((Logfile) nodeInfo).getContent()).startsWith("Thread Dumps")) {
         displayLogFile();
         setThreadDisplay(false);
       } else {
@@ -1272,13 +1267,14 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     ThreadsTableSelectionModel ttsm = (ThreadsTableSelectionModel) e.getSource();
     JTable table = ttsm.getTable();
     TableSorter ts = (TableSorter) table.getModel();
-    
+
     int advisoryColmn = 0;
-    for(advisoryColmn = 0 ; advisoryColmn < table.getColumnCount();advisoryColmn++) {
+    for (advisoryColmn = 0; advisoryColmn < table.getColumnCount(); advisoryColmn++) {
       String colName = table.getColumnName(advisoryColmn);
-      if (colName.equals("Advisories"))
+      if (colName.equals("Advisories")) {
         break;
-    }    
+      }
+    }
 
     int[] rows = table.getSelectedRows();
     int[] cols = table.getSelectedColumns();
@@ -1288,29 +1284,29 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       int index = ts.modelIndex(rows[i]);
       appendThreadInfo(sb, threadsModel.getInfoObjectAtRow(index));
     }
-    
+
     String htmlContent = sb.toString();
     displayContent(htmlContent);
-    
+
     // If the ThreadModel is for the Merge/ThreadDiffs and user has selected thread progress columns, 
     // then try to highlight the thread stack content belonging to the selected dump    
     if ((threadsModel instanceof ThreadDiffsTableModel) && (cols[cols.length - 1] > advisoryColmn)) {
-      
+
       // There can be cases when we are doing diff between log files 
       // and every dump is tagged as "Dump No. 1"
       int diffColumnOffset = cols[0] - advisoryColmn;
-      
+
       // Highlight the content that occurs between two "Dump " with occurence 
       // indicated by diffColumnOffset 
-      
-      highlightTextBetweenMarkers(AbstractDumpParser.DUMP_MARKER, 
-                                  AbstractDumpParser.DUMP_MARKER, diffColumnOffset);
-      
+
+      highlightTextBetweenMarkers(AbstractDumpParser.DUMP_MARKER,
+              AbstractDumpParser.DUMP_MARKER, diffColumnOffset);
+
     } else if (searchDialog != null && searchDialog.getSearchText() != null) {
       // Highlight in case of search also
       this.highlightSearchData(searchDialog.getSearchText());
     }
-    
+
     setThreadDisplay(true);
   }
 
@@ -1322,24 +1318,24 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
   public static void appendHealth(StringBuffer sb, ThreadInfo ti) {
     String color = ti.getHealth().getBackgroundRGBCode();
-    sb.append( "<font color=" + color + "\"><b>" + ti.getHealth() + "</b></font>&nbsp;&nbsp;");
+    sb.append("<font color=" + color + "\"><b>" + ti.getHealth() + "</b></font>&nbsp;&nbsp;");
   }
-    
+
   public static void appendAdvisoryLink(StringBuffer sb, ThreadAdvisory advisory) {
     String color = advisory.getHealth().getBackgroundRGBCode();
     // sb.append("<p style=\"background-color:" + color +
     // ";\"><font face=System size=-1>");
     sb.append("<a style=\"color:" + color + "\" href=\"advisory://" + advisory.getKeyword() + "\">"
-        + advisory.getPattern() + "</a>&nbsp;&nbsp;");
+            + advisory.getPattern() + "</a>&nbsp;&nbsp;");
   }
-  
+
   private void appendThreadInfo(StringBuffer sb, Object data) {
     // Modified to handle ThreadAdvisory in addition to ThreadInfo
     Object nodeInfo = data;
     if (data instanceof ThreadData) {
-      nodeInfo = ((ThreadData)data).getAssocThreadInfo();
+      nodeInfo = ((ThreadData) data).getAssocThreadInfo();
     }
-     
+
     if (nodeInfo instanceof ThreadInfo) {
       ThreadInfo ti = (ThreadInfo) nodeInfo;
       if (ti.getAdvisories() != null && ti.getAdvisories().size() > 0) {
@@ -1350,17 +1346,18 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         }
         sb.append("</font><br><br>");
       }
-      
+
       //Display Thread Context Data if available
       if (ti.getCtxData() != null) {
         sb.append("<font size=4>Context Data: </font><font size=3>");
-        
+
         String[] ctxDataSet = ti.getCtxData().split(ThreadInfo.CONTEXT_DATA_SEPARATOR);
-        for(String contextData : ctxDataSet)
+        for (String contextData : ctxDataSet) {
           sb.append("<br>&nbsp;&nbsp;&nbsp;&nbsp;" + contextData);
+        }
         sb.append("</font><br><br>");
       }
-      
+
       if (ti.getInfo() != null) {
         sb.append(ti.getInfo());
         sb.append(ti.getContent());
@@ -1428,23 +1425,22 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   private void displayLogFileOverview(Object nodeInfo) {
     Logfile logFile = (Logfile) nodeInfo;
     ArrayList<ThreadDumpInfo> tdumpsList = logFile.getThreadDumps();
-    
+
     StringBuffer statData = new StringBuffer("<font face=System "
-        + "><table border=0 width='50%'><tr bgcolor=\"#dddddd\" ><td><font face=System "
-        + ">Log File</td><td></td><td colspan=3><b><font face=System>");
-    statData.append(logFile.getName());    
-    statData.append("</b></td></tr>\n");        
+            + "><table border=0 width='50%'><tr bgcolor=\"#dddddd\" ><td><font face=System "
+            + ">Log File</td><td></td><td colspan=3><b><font face=System>");
+    statData.append(logFile.getName());
+    statData.append("</b></td></tr>\n");
     statData.append("<tr bgcolor=\"#eeeeee\"><td><font face=System "
-        + ">Number of dumps found</td><td></td><td colspan=3><b><font face=System>");
-    statData.append(tdumpsList.size());    
-    
+            + ">Number of dumps found</td><td></td><td colspan=3><b><font face=System>");
+    statData.append(tdumpsList.size());
+
     statData.append("</b></td></tr>\n\n<tr bgcolor=\"#ffffff\"><td></td></tr></table>");
-    
+
     statData.append(ThreadDumpInfo.getThreadDumpsOverview(tdumpsList));
     displayContent(statData.toString());
   }
-  
-  
+
   /**
    * initialize the base components needed for the jedit view of the log file
    */
@@ -1455,9 +1451,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     jeditPane.setCaretBlinkEnabled(false);
     jeditPane.setRightClickPopup(new PopupMenu(jeditPane, this, runningAsVisualVMPlugin));
     jeditPane.getInputHandler().addKeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0),
-        (ActionListener) jeditPane.getRightClickPopup());
+            (ActionListener) jeditPane.getRightClickPopup());
     jeditPane.getInputHandler().addKeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_C, KeyEvent.CTRL_MASK),
-        (ActionListener) jeditPane.getRightClickPopup());
+            (ActionListener) jeditPane.getRightClickPopup());
   }
 
   /**
@@ -1478,7 +1474,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     if (cat.getLastView() == null) {
       JComponent catComp = cat.getCatComponent(this);
       if (cat.getName().startsWith("Monitors") || cat.getName().startsWith("Threads blocked by Monitors")
-          || cat.getName().startsWith("Holding Locks")) {
+              || cat.getName().startsWith("Holding Locks")) {
         catComp.addMouseListener(getMonitorsPopupMenu());
       } else {
         catComp.addMouseListener(getCatPopupMenu());
@@ -1499,7 +1495,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
     // For Category with multiple nodes (like Thread groups), continue to display the summary info instead of selected object at displayCategory level
     // unless the user clicks on specific child entity again which will be let the selected entry's info get displayed anyway
-    if ( (cat.getNodeCount() <= 1) && cat.getCurrentlySelectedUserObject() != null) {
+    if ((cat.getNodeCount() <= 1) && cat.getCurrentlySelectedUserObject() != null) {
       displayThreadInfo(cat.getCurrentlySelectedUserObject());
     } else {
       displayContent(cat.getInfo());
@@ -1509,7 +1505,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     }
     if (cat.howManyFiltered() > 0) {
       statusBar.setInfoText("Filtered " + cat.howManyFiltered() + " elements in this category. Showing remaining "
-          + cat.showing() + " elements.");
+              + cat.showing() + " elements.");
     } else {
       statusBar.setInfoText(AppInfo.getStatusBarInfo());
     }
@@ -1522,16 +1518,16 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     }
     if (text != null) {
       htmlPane.setContentType("text/html");
-      htmlPane.setText("<html><body bgcolor=\"#ffffff\">" +text+ "</body></html>");
+      htmlPane.setText("<html><body bgcolor=\"#ffffff\">" + text + "</body></html>");
       htmlPane.setCaretPosition(0);
     } else {
       htmlPane.setText("");
     }
   }
-  
+
   private void highlightSearchData(String pattern) {
-    
-    if (pattern != null && !pattern.equals("")) {        
+
+    if (pattern != null && !pattern.equals("")) {
 
       try {
         // Handle case insensitive search by changing to all lower case for both pattern and content
@@ -1541,29 +1537,29 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         beginIndex = endIndex = 0;
 
         // Find the matching pattern and keep going forward till we hit the occurenceCount or ran out of match
-        beginIndex = htmlContent.indexOf(pattern.toLowerCase(), beginIndex+1);
+        beginIndex = htmlContent.indexOf(pattern.toLowerCase(), beginIndex + 1);
 
         if (beginIndex >= 0) {
 
-          int spaceIndex = htmlContent.indexOf(" ", beginIndex+pattern.length());
-          int packageIndex = htmlContent.indexOf(".", beginIndex+pattern.length());
-          endIndex = (spaceIndex < packageIndex)? spaceIndex:packageIndex;
+          int spaceIndex = htmlContent.indexOf(" ", beginIndex + pattern.length());
+          int packageIndex = htmlContent.indexOf(".", beginIndex + pattern.length());
+          endIndex = (spaceIndex < packageIndex) ? spaceIndex : packageIndex;
 
-          htmlPane.getHighlighter().addHighlight(beginIndex, endIndex, 
-                        new DefaultHighlighter.DefaultHighlightPainter(Color.yellow));            
+          htmlPane.getHighlighter().addHighlight(beginIndex, endIndex,
+                  new DefaultHighlighter.DefaultHighlightPainter(Color.yellow));
 
           htmlPane.setCaretPosition(beginIndex);
         }
 
-      } catch(BadLocationException  e) { 
+      } catch (BadLocationException e) {
         e.printStackTrace();
       }
     }
   }
 
-    private void highlightTextBetweenMarkers(String beginPattern, String endPattern, int occurenceCount) {
-      
-    if (beginPattern != null && !beginPattern.equals("")) {        
+  private void highlightTextBetweenMarkers(String beginPattern, String endPattern, int occurenceCount) {
+
+    if (beginPattern != null && !beginPattern.equals("")) {
 
       try {
         int searchCount = 0;
@@ -1575,7 +1571,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
         // Find the matching pattern and keep going forward till we hit the occurenceCount or ran out of match
         do {
-          beginIndex = htmlContent.indexOf(beginPattern.toLowerCase(), beginIndex+1);
+          beginIndex = htmlContent.indexOf(beginPattern.toLowerCase(), beginIndex + 1);
 
         } while ((beginIndex >= 0) && (occurenceCount > ++searchCount));
 
@@ -1584,19 +1580,20 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
           if (endPattern != null) {
             endIndex = htmlContent.indexOf(endPattern.toLowerCase(), beginIndex + 5);
           } else {
-            int spaceIndex = htmlContent.indexOf(" ", beginIndex+1);
-            int packageIndex = htmlContent.indexOf(".", beginIndex+1);
-            endIndex = (spaceIndex < packageIndex)? spaceIndex:packageIndex;
+            int spaceIndex = htmlContent.indexOf(" ", beginIndex + 1);
+            int packageIndex = htmlContent.indexOf(".", beginIndex + 1);
+            endIndex = (spaceIndex < packageIndex) ? spaceIndex : packageIndex;
           }
 
-          htmlPane.getHighlighter().addHighlight(beginIndex, endIndex, 
-                        new DefaultHighlighter.DefaultHighlightPainter(Color.yellow));
+          htmlPane.getHighlighter().addHighlight(beginIndex, endIndex,
+                  new DefaultHighlighter.DefaultHighlightPainter(Color.yellow));
 
-          if (beginIndex > 100)
+          if (beginIndex > 100) {
             htmlPane.setCaretPosition(beginIndex + 100);
+          }
         }
 
-      } catch(BadLocationException  e) { 
+      } catch (BadLocationException e) {
         e.printStackTrace();
       }
     }
@@ -1662,6 +1659,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   }
 
   private class FilterListener implements CaretListener {
+
     HistogramTableModel htm;
     String currentText = "";
 
@@ -1678,6 +1676,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   }
 
   private class CheckCaseListener implements ChangeListener {
+
     HistogramTableModel htm;
 
     CheckCaseListener(HistogramTableModel htm) {
@@ -1695,8 +1694,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     try {
       String fileName = top.getUserObject().toString();
       Map dumpMap = null;
-      
-      if(runningAsVisualVMPlugin) {
+
+      if (runningAsVisualVMPlugin) {
         dumpMap = dumpStore.getFromDumpFiles(fileName);
       }
 
@@ -1704,30 +1703,30 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         dumpMap = new HashMap();
         dumpStore.addFileToDumpFiles(fileName, dumpMap);
       }
-      dp = DumpParserFactory.get().getDumpParserForLogfile(dumpFileStream, dumpMap, 
-                                            runningAsJConsolePlugin, dumpCounter);
+      dp = DumpParserFactory.get().getDumpParserForLogfile(dumpFileStream, dumpMap,
+              runningAsJConsolePlugin, dumpCounter);
       Logfile logFile = (Logfile) top.getUserObject();
       logFile.setUsedParser(dp);
 
-      while ((dp != null) && dp.hasMoreDumps()) {        
-        
+      while ((dp != null) && dp.hasMoreDumps()) {
+
         MutableTreeNode node = dp.parseNext();
         top.add(node);
-        
-        ThreadDumpInfo tdi = (ThreadDumpInfo)((DefaultMutableTreeNode)node).getUserObject();
+
+        ThreadDumpInfo tdi = (ThreadDumpInfo) ((DefaultMutableTreeNode) node).getUserObject();
         logFile.addThreadDump(tdi);
-        tdi.setLogFile(logFile);        
-        
+        tdi.setLogFile(logFile);
+
         if (!isFoundClassHistogram) {
           isFoundClassHistogram = dp.isFoundClassHistograms();
         }
-        
+
         // Try to switch parsers if we have determined the native jvm vendor
-        if (dp instanceof FallbackParser && ((FallbackParser)dp).determinedJvmVendor()) {
-            dp = ((FallbackParser)dp).recreateParserBasedOnVendor();
-            logFile.setUsedParser(dp);
+        if (dp instanceof FallbackParser && ((FallbackParser) dp).determinedJvmVendor()) {
+          dp = ((FallbackParser) dp).recreateParserBasedOnVendor();
+          logFile.setUsedParser(dp);
         }
-        
+
       }
     } finally {
       if (dp != null) {
@@ -1756,39 +1755,40 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       lastSavedPath = selPath = tree.getSelectionPath();
       
       while (selPath != null
-          && !checkNameFromNode((DefaultMutableTreeNode) selPath.getLastPathComponent(), File.separator)) {
-        lastSavedPath = selPath;
-        selPath = selPath.getParentPath();
+      && !checkNameFromNode((DefaultMutableTreeNode) selPath.getLastPathComponent(), File.separator)) {
+      lastSavedPath = selPath;
+      selPath = selPath.getParentPath();
       }
       if (selPath == null)
-        selPath = lastSavedPath;
+      selPath = lastSavedPath;
       
       tree.setSelectionPath(selPath);
       tree.scrollPathToVisible(selPath);
-
+      
       Enumeration childs = ((DefaultMutableTreeNode) selPath.getLastPathComponent()).children();
       boolean found = false;
       DefaultMutableTreeNode logfileContent = null;
       while (!found && childs.hasMoreElements()) {
-        logfileContent = (DefaultMutableTreeNode) childs.nextElement();
-        found = logfileContent.getUserObject() instanceof LogFileContent;
-      }
-
-      if (found) {
-        TreePath monitorPath = new TreePath(logfileContent.getPath());
-        tree.setSelectionPath(monitorPath);
-        tree.scrollPathToVisible(monitorPath);
-        displayLogFileContent(logfileContent.getUserObject());
-        jeditPane.setFirstLine(lineNumber - 1);
+      logfileContent = (DefaultMutableTreeNode) childs.nextElement();
+      found = logfileContent.getUserObject() instanceof LogFileContent;
       }
       
-     */
+      if (found) {
+      TreePath monitorPath = new TreePath(logfileContent.getPath());
+      tree.setSelectionPath(monitorPath);
+      tree.scrollPathToVisible(monitorPath);
+      displayLogFileContent(logfileContent.getUserObject());
+      jeditPane.setFirstLine(lineNumber - 1);
+      }
+      
+       */
 
       //Logfile could be either referencing a real file or a clipboard content
       //For cases of clipboard, then get reference to the temporary file that carries those content
-      String fileLocation = (logFile.getTempFileLocation() == null)? logFile.getName():logFile.getTempFileLocation(); 
+      String fileLocation = (logFile.getTempFileLocation() == null) ? logFile.getName() : logFile.getTempFileLocation();
       displayLogFileContent(new LogFileContent(fileLocation));
-      jeditPane.setFirstLine(lineNumber - 1);      
+      jeditPane.setFirstLine(lineNumber - 1);     
+      
     }
   }
 
@@ -1805,8 +1805,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     DefaultMutableTreeNode dumpNode = null;
     if (monitorLink.indexOf("Dump No.") > 0) {
       dumpNode = getDumpRootNode(
-          monitorLink.substring(monitorLink.indexOf('/') + 2, monitorLink.indexOf('/', monitorLink.indexOf('/') + 2)),
-          (DefaultMutableTreeNode) tree.getLastSelectedPathComponent());
+              monitorLink.substring(monitorLink.indexOf('/') + 2, monitorLink.indexOf('/', monitorLink.indexOf('/') + 2)),
+              (DefaultMutableTreeNode) tree.getLastSelectedPathComponent());
       monitor = monitor.substring(monitor.indexOf('/') + 1);
     } else {
       dumpNode = getDumpRootNode((DefaultMutableTreeNode) tree.getLastSelectedPathComponent());
@@ -1841,8 +1841,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
       displayCategory(monitorNode.getUserObject());
 
-      TreePath threadInMonitor = searchPath.pathByAddingChild(((DefaultMutableTreeNode) searchPath
-          .getLastPathComponent()).getLastChild());
+      TreePath threadInMonitor = searchPath.pathByAddingChild(((DefaultMutableTreeNode) searchPath.getLastPathComponent()).getLastChild());
       searchTree.setSelectionPath(threadInMonitor);
       searchTree.scrollPathToVisible(searchPath);
       searchTree.setSelectionPath(searchPath);
@@ -1908,7 +1907,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     menuItem = new JMenuItem("Diff Selection");
     menuItem.addActionListener(this);
     popup.add(menuItem);
-    
+
     /*
     menuItem = new JMenuItem("Find long running threads...");
     menuItem.addActionListener(this);
@@ -1919,17 +1918,17 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     showDumpMenuItem = new JMenuItem("Show selected Dump in logfile");
     showDumpMenuItem.addActionListener(this);
     showDumpMenuItem.setEnabled(false);
-    
+
     /*
     popup.addSeparator();
     menuItem = new JMenuItem("Parse loggc-logfile...");
     menuItem.addActionListener(this);
     if (!PrefManager.get().getForceLoggcLoading()) {
-      menuItem.setEnabled(!isFoundClassHistogram);
+    menuItem.setEnabled(!isFoundClassHistogram);
     }
     popup.add(menuItem);
-    */
-    
+     */
+
     menuItem = new JMenuItem("Close logfile...");
     menuItem.addActionListener(this);
     popup.add(menuItem);
@@ -1944,7 +1943,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     MouseListener popupListener = new PopupListener(popup);
     tree.addMouseListener(popupListener);
   }
-
   private PopupListener catPopupListener = null;
 
   /**
@@ -1967,7 +1965,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
     return (catPopupListener);
   }
-
   private PopupListener monitorsPopupListener = null;
 
   /**
@@ -2003,6 +2000,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   }
 
   class PopupListener extends MouseAdapter {
+
     JPopupMenu popup;
 
     PopupListener(JPopupMenu popupMenu) {
@@ -2020,8 +2018,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     private void maybeShowPopup(MouseEvent e) {
       if (e.isPopupTrigger()) {
         popup.show(e.getComponent(), e.getX(), e.getY());
-        showDumpMenuItem
-            .setEnabled((tree.getSelectionPath() != null)
+        showDumpMenuItem.setEnabled((tree.getSelectionPath() != null)
                 && ((DefaultMutableTreeNode) tree.getSelectionPath().getLastPathComponent()).getUserObject() instanceof ThreadDumpInfo);
       }
     }
@@ -2042,7 +2039,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
           }
         } else {
           dumpFile = source.getText();
-          openFiles(new File[] { new File(dumpFile) }, true);
+          System.out.println("DumpFileName2: " + dumpFile);
+          openFiles(new File[]{new File(dumpFile)}, true);
         }
       } else if ("Open...".equals(source.getText())) {
         chooseFile();
@@ -2077,8 +2075,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         try {
           Browser.open("http://java.net/projects/threadlogic/forums/ThreadLogic");
         } catch (Exception ex) {
-          JOptionPane
-              .showMessageDialog(
+          JOptionPane.showMessageDialog(
                   this.getRootPane(),
                   "Error opening ThreadLogic Online Forum\nPlease open http://java.net/projects/threadlogic/forums/ThreadLogic in your browser!",
                   "Error", JOptionPane.ERROR_MESSAGE);
@@ -2097,21 +2094,22 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         TreePath[] paths = tree.getSelectionPaths();
         if ((paths != null) && (paths.length < 2)) {
           JOptionPane.showMessageDialog(this.getRootPane(), "You must select at least two dumps for getting a diff!\n",
-              "Error", JOptionPane.ERROR_MESSAGE);
+                  "Error", JOptionPane.ERROR_MESSAGE);
 
         } else {
           DefaultMutableTreeNode mergeRoot = fetchTop(tree.getSelectionPath());
           Map dumpMap = dumpStore.getFromDumpFiles(mergeRoot.getUserObject().toString());
           Object logFile = mergeRoot.getUserObject();
-          if (logFile instanceof ThreadDumpInfo)
-            logFile = ((ThreadDumpInfo)logFile).getLogFile();
-          
-          ((Logfile)logFile).getUsedParser().mergeDumps(mergeRoot, dumpMap, paths, paths.length,
-              null);
+          if (logFile instanceof ThreadDumpInfo) {
+            logFile = ((ThreadDumpInfo) logFile).getLogFile();
+          }
+
+          ((Logfile) logFile).getUsedParser().mergeDumps(mergeRoot, dumpMap, paths, paths.length,
+                  null);
           createTree();
           try {
-            this.getRootPane().revalidate();   
-          } catch(Exception ne) {
+            this.getRootPane().revalidate();
+          } catch (Exception ne) {
             // Error when running in plugin mode
           }
         }
@@ -2150,7 +2148,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         showFilterDialog();
       } else if ("Custom Categories".equals(source.getToolTipText())) {
         showCategoriesDialog();
-      } else if("Request a Thread Dump".equals(source.getToolTipText())) {
+      } else if ("Request a Thread Dump".equals(source.getToolTipText())) {
         addMXBeanDump();
       } else if ("Help".equals(source.getToolTipText())) {
         showHelp();
@@ -2160,9 +2158,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       source.setSelected(false);
     } else if (e.getSource() instanceof JComboBox) {
       ItemSelectable item = (ItemSelectable) e.getSource();
-      String health = (String)item.getSelectedObjects()[0];
+      String health = (String) item.getSelectedObjects()[0];
       HealthLevelFilter healthFilter = (HealthLevelFilter) FilterChecker.getFilterChecker().getFromFilters(
-          "Minimum Health Level Filter");
+              "Minimum Health Level Filter");
       healthFilter.setHealth(HealthLevel.valueOf(health));
       PrefManager.get().setFilterLastChanged();
       PrefManager.get().setHealthLevel(health);
@@ -2199,8 +2197,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     while (keys.hasMoreElements()) {
       Object key = keys.nextElement();
       Object value = UIManager.get(key);
-      if (value instanceof javax.swing.plaf.FontUIResource)
+      if (value instanceof javax.swing.plaf.FontUIResource) {
         UIManager.put(key, f);
+      }
     }
   }
 
@@ -2213,8 +2212,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    *          the file to display.
    */
   private void showInfoFile(String title, String file, String icon) {
-    HelpOverviewDialog infoDialog = new HelpOverviewDialog(getFrame(), title, file, ThreadLogic.createImageIcon(icon)
-        .getImage());
+    HelpOverviewDialog infoDialog = new HelpOverviewDialog(getFrame(), title, file, ThreadLogic.createImageIcon(icon).getImage());
     infoDialog.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
 
     // Display the window.
@@ -2225,18 +2223,18 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
   private Frame getAwtFrame() {
     Container owner = this.getParent();
-    while (owner != null && !(owner instanceof java.awt.Frame)) {      
+    while (owner != null && !(owner instanceof java.awt.Frame)) {
       owner = owner.getParent();
     }
 
     return (owner != null ? (Frame) owner : null);
   }
-  
+
   private JFrame getFrame() {
     Container owner = this.getParent();
-    while (owner != null && !(owner instanceof JFrame) ) {
+    while (owner != null && !(owner instanceof JFrame)) {
       owner = owner.getParent();
-    }    
+    }
 
     return (owner != null ? (JFrame) owner : null);
   }
@@ -2289,7 +2287,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     categoriesDialog.setLocationRelativeTo(getFrame());
     categoriesDialog.setVisible(true);
   }
-
   /**
    * flag indicates if next file to open will be the first file (so fresh open)
    * or if a add has to be performed.
@@ -2316,10 +2313,10 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       File file = fc.getSelectedFile();
       int selectValue = 0;
       if (file.exists()) {
-        Object[] options = { "Overwrite", "Cancel" };
+        Object[] options = {"Overwrite", "Cancel"};
         selectValue = JOptionPane.showOptionDialog(null,
-            "<html><body>File exists<br><b>" + file + "</b></body></html>", "Confirm overwrite",
-            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                "<html><body>File exists<br><b>" + file + "</b></body></html>", "Confirm overwrite",
+                JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
       }
       if (selectValue == 0) {
         FileOutputStream fos = null;
@@ -2346,7 +2343,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    * @param addFile
    *          check if a log file should be added or if tree should be cleared.
    */
-  private void chooseFile() {    
+  private void chooseFile() {
     if (firstFile && (PrefManager.get().getPreferredSizeFileChooser().height > 0)) {
       fc.setPreferredSize(PrefManager.get().getPreferredSizeFileChooser());
     }
@@ -2372,18 +2369,19 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   private void openFiles(File[] files, boolean isRecent) {
     for (int i = 0; i < files.length; i++) {
       dumpFile = files[i].getAbsolutePath();
+      System.out.println("DumpFileName3: " + dumpFile);
       if (dumpFile != null) {
         if (!firstFile) {
           // root nodes are moved down.
           setRootNodeLevel(1);
 
           // do direct add without re-init.
-          addDumpFile();          
+          addDumpFile();
         } else {
           initDumpDisplay(null);
           if (isFileOpen()) {
             firstFile = false;
-          }          
+          }
         }
       }
 
@@ -2393,8 +2391,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     }
 
     if (isFileOpen()) {
-      if (this.getRootPane() != null)
+      if (this.getRootPane() != null) {
         this.getRootPane().revalidate();
+      }
       displayContent(null);
     }
   }
@@ -2407,12 +2406,12 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     if (imgURL != null) {
       return new ImageIcon(imgURL);
     }
-    
+
     imgURL = ThreadLogic.class.getResource("docs/" + path);
     if (imgURL != null) {
       return new ImageIcon(imgURL);
     }
-    
+
     System.err.println("Couldn't find file: " + path);
     return null;
   }
@@ -2475,8 +2474,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     // get pos of this node in the thread dump hierarchy.
     int pos = node.getParent().getIndex(node);
 
-    ((Logfile) ((DefaultMutableTreeNode) node.getParent()).getUserObject()).getUsedParser()
-        .setDumpHistogramCounter(pos);
+    ((Logfile) ((DefaultMutableTreeNode) node.getParent()).getUserObject()).getUsedParser().setDumpHistogramCounter(pos);
     openLoggcFile();
   }
 
@@ -2485,19 +2483,20 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    */
   private void closeCurrentDump() {
     TreePath selPath = tree.getSelectionPath();
-    if (selPath == null)
+    if (selPath == null) {
       return;
-    
+    }
+
     boolean isNotFromFile = isNotFromFile((DefaultMutableTreeNode) selPath.getLastPathComponent());
-    
+
     while (selPath != null
-        && !isNotFromFile
-        && !(checkNameFromNode((DefaultMutableTreeNode) selPath.getLastPathComponent(), File.separator) 
+            && !isNotFromFile
+            && !(checkNameFromNode((DefaultMutableTreeNode) selPath.getLastPathComponent(), File.separator)
             || checkNameFromNode((DefaultMutableTreeNode) selPath.getLastPathComponent(), 2, File.separator))) {
       selPath = selPath.getParentPath();
     }
 
-    Object[] options = { "Close File", "Cancel close" };
+    Object[] options = {"Close File", "Cancel close"};
 
     String fileName = ((DefaultMutableTreeNode) selPath.getLastPathComponent()).getUserObject().toString();
     if (!isNotFromFile) {
@@ -2505,15 +2504,15 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     }
 
     int selectValue = JOptionPane.showOptionDialog(null,
-        "<html><body>Are you sure, you want to close the currently selected dump file<br><b>" + fileName
+            "<html><body>Are you sure, you want to close the currently selected dump file<br><b>" + fileName
             + "</b></body></html>", "Confirm closing...", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE,
-        null, options, options[0]);
+            null, options, options[0]);
 
     // if first option "close file" is selected.
     if (selectValue == 0) {
       // remove stuff from the top nodes
 
-      if ( topNodes.remove(selPath.getLastPathComponent()) == false) {
+      if (topNodes.remove(selPath.getLastPathComponent()) == false) {
         ((DefaultMutableTreeNode) selPath.getPathComponent(0)).remove((DefaultMutableTreeNode) selPath.getLastPathComponent());
       }
 
@@ -2547,11 +2546,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    * close all open dumps
    */
   private void closeAllDumps() {
-    Object[] options = { "Close all", "Cancel close" };
+    Object[] options = {"Close all", "Cancel close"};
 
     int selectValue = JOptionPane.showOptionDialog(null,
-        "<html><body>Are you sure, you want to close all open dump files", "Confirm closing...",
-        JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+            "<html><body>Are you sure, you want to close all open dump files", "Confirm closing...",
+            JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 
     // if first option "close file" is selected.
     if (selectValue == 0) {
@@ -2573,11 +2572,12 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       result = (String) info;
     }
     if (result.contains("Clipboard at") || result.contains("Merge between Dump")
-        || result.contains("Long running thread detection")) {
+            || result.contains("Long running thread detection")) {
       return true;
     }
     return false;
   }
+
   /**
    * reset the main panel to start up
    */
@@ -2652,9 +2652,10 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       if (loggcFile != null) {
         try {
           final InputStream loggcFileStream = new ProgressMonitorInputStream(this, "Parsing " + loggcFile,
-              new FileInputStream(loggcFile));
+                  new FileInputStream(loggcFile));
 
           final SwingWorker worker = new SwingWorker() {
+
             public Object construct() {
               try {
                 DefaultMutableTreeNode top = fetchTop(tree.getSelectionPath());
@@ -2693,7 +2694,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     TreePath[] paths = tree.getSelectionPaths();
     if ((paths == null) || (paths.length < 2)) {
       JOptionPane.showMessageDialog(this.getRootPane(),
-          "You must select at least two dumps for long thread run detection!\n", "Error", JOptionPane.ERROR_MESSAGE);
+              "You must select at least two dumps for long thread run detection!\n", "Error", JOptionPane.ERROR_MESSAGE);
 
     } else {
       DefaultMutableTreeNode mergeRoot = fetchTop(tree.getSelectionPath());
@@ -2713,7 +2714,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
     }
   }
-
   private int rootNodeLevel = 0;
 
   private int getRootNodeLevel() {
@@ -2742,7 +2742,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     }
     PrefManager.get().flush();
   }
-
   /**
    * trigger, if a file is opened
    */
@@ -2791,6 +2790,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
      * add window listener for persisting state of main frame
      */
     frame.addWindowListener(new WindowAdapter() {
+
       public void windowClosing(WindowEvent e) {
         ThreadLogic.get(true).saveState();
       }
@@ -2810,22 +2810,23 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     frame.setExtendedState(PrefManager.get().getWindowState());
 
     frame.setVisible(true);
-    
+
     Runtime.getRuntime().addShutdownHook(new Thread() {
-        public void run() {
-              ThreadLogic.get(true).finalize();
-            }
-        });
-    
+
+      public void run() {
+        ThreadLogic.get(true).finalize();
+      }
+    });
+
     // If a path to a directory has been provided as an argument,
     // load the log files within them.
     if (ThreadLogic.defaultTDumpDir != null) {
       String logDir = ThreadLogic.defaultTDumpDir;
       File logDirFile = new File(logDir);
-      System.out.println("Log Directory: " + logDir );
+      System.out.println("Log Directory: " + logDir);
 
       File[] logFiles = logDirFile.listFiles();
-      if (logFiles.length < 0) {          
+      if (logFiles.length < 0) {
         System.out.println("No files found under the specified Log Directory:" + logDir);
       }
 
@@ -2852,6 +2853,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     searchDialog.setVisible(true);
 
     searchDialog.addWindowListener(new WindowAdapter() {
+
       public void windowClosed(WindowEvent e) {
         getFrame().setEnabled(true);
       }
@@ -2862,22 +2864,24 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    * main startup method for ThreadLogic
    */
   public static void main(String[] args) {
-    if (args.length > 0) {      
-      
+    if (args.length > 0) {
+
       File dumpDir = new File(args[0]);
-      
+
       // Check for directory and load dumps within it
       if (dumpDir.isDirectory()) {
         defaultTDumpDir = args[0];
       } else {
         // Load single thread dump file
         dumpFile = args[0];
+        System.out.println("DumpFileName4: " + dumpFile);
       }
       //dumpFile = args[0];
     }
     // Schedule a job for the event-dispatching thread:
     // creating and showing this application's GUI.
     javax.swing.SwingUtilities.invokeLater(new Runnable() {
+
       public void run() {
         createAndShowGUI();
       }
@@ -2950,52 +2954,49 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   protected void addToTempFileList(File tempFile) {
     tempFileList.add(tempFile);
   }
-  
+
   protected void finalize() {
     // Clean up all temporary files created with additional markers...
-    for(File tmpFile: tempFileList) {
-      tmpFile.delete();      
+    for (File tmpFile : tempFileList) {
+      tmpFile.delete();
     }
     tempFileList.clear();
   }
-  
+
   /**
    * Clone the stream and save temporarily
    *
    */
   private InputStream createTempFileFromClipboard(byte[] content) throws IOException {
-    
-    BufferedInputStream bis = null; 
+
+    BufferedInputStream bis = null;
     try {
       File tempFile = null;
       tempFile = File.createTempFile("tlogic.tmp.", ".log");
       tempFile.deleteOnExit();
       addToTempFileList(tempFile);
-      
+
       // Add the markers based on VM Type
-      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile));      
-      
+      BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(tempFile));
+
       bos.write(content);
       bos.flush();
       bos.close();
       bos = null;
-      dumpFile = tempFile.getAbsolutePath();      
-      
+      dumpFile = tempFile.getAbsolutePath();
+      System.out.println("DumpFileName1: " + dumpFile);
+
       bis = new BufferedInputStream(new FileInputStream(tempFile));
-      
-    } catch(IOException e) {
+
+    } catch (IOException e) {
       System.out.println("Unable to create a temporary file to store clipboard contents: " + e.getMessage());
       e.printStackTrace();
       throw e;
     }
     return bis;
   }
-  
+
   public static Vector getTopNodes() {
     return ThreadLogic.get().topNodes;
   }
-  
-  
 }
-
-

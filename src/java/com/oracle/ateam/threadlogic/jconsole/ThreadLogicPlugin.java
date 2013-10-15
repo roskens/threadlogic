@@ -30,7 +30,6 @@
  *
  * $Id: ThreadLogicPlugin.java,v 1.1 2007-12-08 09:58:34 irockel Exp $
  */
-
 package com.oracle.ateam.threadlogic.jconsole;
 
 import com.oracle.ateam.threadlogic.ThreadLogic;
@@ -45,89 +44,85 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.swing.SwingWorker;
 
-
-
 /**
  * The ThreadLogicPlugin capsulates ThreadLogic to be displayed in jconsole.
  */
-public class ThreadLogicPlugin extends JConsolePlugin implements PropertyChangeListener
-{
-    private MBeanDumper mBeanDumper;
-    private ThreadLogic threadlogic = null;
-    private Map tabs = null;
+public class ThreadLogicPlugin extends JConsolePlugin implements PropertyChangeListener {
 
-    public ThreadLogicPlugin() {
-        // register itself as a listener
-        addContextPropertyChangeListener(this);
+  private MBeanDumper mBeanDumper;
+  private ThreadLogic threadlogic = null;
+  private Map tabs = null;
+
+  public ThreadLogicPlugin() {
+    // register itself as a listener
+    addContextPropertyChangeListener(this);
+  }
+
+  /*
+   * Returns a Thread Dumps tab to be added in JConsole.
+   */
+  public synchronized Map getTabs() {
+    if (tabs == null) {
+      try {
+        mBeanDumper = new MBeanDumper(getContext().getMBeanServerConnection());
+        threadlogic = new ThreadLogic(false, mBeanDumper);
+
+        threadlogic.init(true, false);
+        tabs = new LinkedHashMap();
+        tabs.put("ThreadLogic", threadlogic);
+      } catch (IOException ex) {
+        ex.printStackTrace();
+      }
+    }
+    return tabs;
+  }
+
+  /*
+   * Returns a SwingWorker which is responsible for updating the TDA tab.
+   */
+  public SwingWorker newSwingWorker() {
+    return (new Worker(threadlogic));
+  }
+
+  /** 
+   * SwingWorker responsible for updating the GUI
+   */
+  class Worker extends SwingWorker {
+
+    private ThreadLogic tda;
+
+    Worker(ThreadLogic tda) {
+      this.tda = tda;
     }
 
-    /*
-     * Returns a Thread Dumps tab to be added in JConsole.
-     */
-    public synchronized Map getTabs() {
-        if (tabs == null) {
-            try {
-                mBeanDumper = new MBeanDumper(getContext().getMBeanServerConnection());
-                threadlogic = new ThreadLogic(false, mBeanDumper);
-                
-                threadlogic.init(true, false);
-                tabs = new LinkedHashMap();
-                tabs.put("ThreadLogic", threadlogic);
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
-        return tabs;
-    }
-    
-    
-
-    /*
-     * Returns a SwingWorker which is responsible for updating the TDA tab.
-     */
-    public SwingWorker newSwingWorker() {
-        return(new Worker(threadlogic));
-    }
-    
-    /** 
-     * SwingWorker responsible for updating the GUI
-     */
-    class Worker extends SwingWorker {
-        private ThreadLogic tda;
-        Worker(ThreadLogic tda) {
-            this.tda = tda;
-        }
-                                                                                
-        protected void done() {
-            // nothing to do atm
-        }
-
-        protected Object doInBackground() throws Exception {
-            // nothing to do atm
-            return null;
-        }
-    }    
-
-    /*
-     * Property listener to reset the MBeanServerConnection
-     * at reconnection time.
-     */
-    public void propertyChange(PropertyChangeEvent ev) {
-        String prop = ev.getPropertyName();
-        if (JConsoleContext.CONNECTION_STATE_PROPERTY.equals(prop)) {
-            ConnectionState newState = (ConnectionState)ev.getNewValue();
-            
-            /* 
-               JConsole supports disconnection and reconnection
-               The MBeanServerConnection will become invalid when
-               disconnected. Need to use the new MBeanServerConnection object
-               created at reconnection time. 
-             */
-            if (newState == ConnectionState.CONNECTED && threadlogic != null) {
-                mBeanDumper.setMBeanServerConnection(getContext().getMBeanServerConnection());
-            }
-        }
+    protected void done() {
+      // nothing to do atm
     }
 
-    
+    protected Object doInBackground() throws Exception {
+      // nothing to do atm
+      return null;
+    }
+  }
+
+  /*
+   * Property listener to reset the MBeanServerConnection
+   * at reconnection time.
+   */
+  public void propertyChange(PropertyChangeEvent ev) {
+    String prop = ev.getPropertyName();
+    if (JConsoleContext.CONNECTION_STATE_PROPERTY.equals(prop)) {
+      ConnectionState newState = (ConnectionState) ev.getNewValue();
+
+      /* 
+      JConsole supports disconnection and reconnection
+      The MBeanServerConnection will become invalid when
+      disconnected. Need to use the new MBeanServerConnection object
+      created at reconnection time. 
+       */
+      if (newState == ConnectionState.CONNECTED && threadlogic != null) {
+        mBeanDumper.setMBeanServerConnection(getContext().getMBeanServerConnection());
+      }
+    }
+  }
 }

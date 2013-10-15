@@ -104,297 +104,297 @@ Or using | as delimiter to provide a choice of patterns:
 
 <tlogic:GroupsDefn xmlns:tlogic="http://java.net/projects/threadlogic" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
 xmlns="http://java.net/projects/threadlogic">
-	<Name>Non WLS Groups</Name>
-	<SimpleGroup>
-		<Name>JVM</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>GC task</Pattern>
-			<Pattern>Low Memory Detector</Pattern>
-			<Pattern>CompilerThread</Pattern>
-			<Pattern>Finalizer</Pattern>
-			<Pattern>VM Periodic Task</Pattern>
-			<Pattern>Attach Listener</Pattern>
-			<Pattern>Attach .andler</Pattern>
-			<Pattern>OperatingSystemMXBean</Pattern>
-			<Pattern>MemoryPoolMXBean</Pattern>
-			<Pattern>Code Generation Thread</Pattern>
-			<Pattern>Code Optimization Thread</Pattern>
-			<Pattern>VM Thread</Pattern>
-			<Pattern>GC task thread</Pattern>
-			<Pattern>Sensor Event Thread</Pattern>
-			<Pattern>JMAPI event thread</Pattern>
-			<Pattern>GC Worker Thread</Pattern>
-			<Pattern>OC Main Thread</Pattern>
-			<Pattern>Gc Slave Thread</Pattern>
-			<Pattern>RMI TCP Accept</Pattern>
-			<Pattern>Reference Handler</Pattern>
-			<Pattern>JIT Compilation</Pattern>
-			<Pattern>Signal Dispatcher</Pattern>
-			<Pattern>DestroyJavaVM</Pattern>
+  <Name>Non WLS Groups</Name>
+  <SimpleGroup>
+    <Name>JVM</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>GC task</Pattern>
+      <Pattern>Low Memory Detector</Pattern>
+      <Pattern>CompilerThread</Pattern>
+      <Pattern>Finalizer</Pattern>
+      <Pattern>VM Periodic Task</Pattern>
+      <Pattern>Attach Listener</Pattern>
+      <Pattern>Attach .andler</Pattern>
+      <Pattern>OperatingSystemMXBean</Pattern>
+      <Pattern>MemoryPoolMXBean</Pattern>
+      <Pattern>Code Generation Thread</Pattern>
+      <Pattern>Code Optimization Thread</Pattern>
+      <Pattern>VM Thread</Pattern>
+      <Pattern>GC task thread</Pattern>
+      <Pattern>Sensor Event Thread</Pattern>
+      <Pattern>JMAPI event thread</Pattern>
+      <Pattern>GC Worker Thread</Pattern>
+      <Pattern>OC Main Thread</Pattern>
+      <Pattern>Gc Slave Thread</Pattern>
+      <Pattern>RMI TCP Accept</Pattern>
+      <Pattern>Reference Handler</Pattern>
+      <Pattern>JIT Compilation</Pattern>
+      <Pattern>Signal Dispatcher</Pattern>
+      <Pattern>DestroyJavaVM</Pattern>
       <Pattern>RMI Reaper</Pattern>
       <Pattern>GC Daemon</Pattern>
       <Pattern>Signal Handler</Pattern>
       <Pattern>VM JFR Buffer Thread</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>IWay Adapter</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.ibi.adapters.util</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>SAP Connector</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.sap.conn.jco</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Other Poller</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>SelectorImpl.select</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Tibco JMS Listener</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>TibjmsxLinkTcp.LinkReader.run</Pattern>
-		</PatternList>
-  <ExcludedAdvisories>
-    <AdvisoryId>Socket Read</AdvisoryId>
-  </ExcludedAdvisories>           
-	</SimpleGroup>  
-	<SimpleGroup>
-		<Name>LDAP</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>netscape.ldap.LDAPConnThread</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>IWay Adapter</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.ibi.adapters.util</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>SAP Connector</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.sap.conn.jco</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Other Poller</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>SelectorImpl.select</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Tibco JMS Listener</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>TibjmsxLinkTcp.LinkReader.run</Pattern>
+    </PatternList>
+    <ExcludedAdvisories>
+      <AdvisoryId>Socket Read</AdvisoryId>
+    </ExcludedAdvisories>           
+  </SimpleGroup>  
+  <SimpleGroup>
+    <Name>LDAP</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>netscape.ldap.LDAPConnThread</Pattern>
       <Pattern>com.sun.jndi.ldap.Connection</Pattern>
-		</PatternList>
+    </PatternList>
     <ExcludedAdvisories>
-			<AdvisoryId>Socket Read</AdvisoryId>
-		</ExcludedAdvisories>    
-	</SimpleGroup>
+      <AdvisoryId>Socket Read</AdvisoryId>
+    </ExcludedAdvisories>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>RMI TCP Threads</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>RMI TCP Accept</Pattern>
+    <Name>RMI TCP Threads</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>RMI TCP Accept</Pattern>
       <Pattern>RMI TCP Connection</Pattern>
-		</PatternList>
+    </PatternList>
     <ExcludedAdvisories>
-			<AdvisoryId>Socket Read</AdvisoryId>
-		</ExcludedAdvisories>    
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Java Timer</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>java.util.Timer</Pattern>
-		</PatternList>
-	</SimpleGroup>
+      <AdvisoryId>Socket Read</AdvisoryId>
+    </ExcludedAdvisories>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Oracle JDBC Pool</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>oracle.jdbc.pool.OracleImplicitConnectionCacheThread</Pattern>
-		</PatternList>
-	</SimpleGroup>
+    <Name>Java Timer</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>java.util.Timer</Pattern>
+    </PatternList>
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Oracle ONS</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
+    <Name>Oracle JDBC Pool</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>oracle.jdbc.pool.OracleImplicitConnectionCacheThread</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Oracle ONS</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
       <Pattern>oracle.repackaged.ons</Pattern>
       <Pattern>oracle.repackaged.ucp</Pattern>
-		</PatternList>
+    </PatternList>
     <ExcludedAdvisories>			
-			  <AdvisoryId>Socket Read</AdvisoryId>
-		</ExcludedAdvisories>
-	</SimpleGroup>  
+      <AdvisoryId>Socket Read</AdvisoryId>
+    </ExcludedAdvisories>
+  </SimpleGroup>  
   <SimpleGroup>
-		<Name>Quartz Pool</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
+    <Name>Quartz Pool</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
       <Pattern>org.quartz.core.QuartzSchedulerThread</Pattern>
-			<Pattern>org.quartz.simpl.SimpleThreadPool</Pattern>
-		</PatternList>
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>JacORB CORBA</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>org.jacorb.poa.RequestProcessor</Pattern>
+      <Pattern>org.quartz.simpl.SimpleThreadPool</Pattern>
+    </PatternList>
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>JacORB CORBA</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>org.jacorb.poa.RequestProcessor</Pattern>
       <Pattern>org.jacorb.poa.RequestController</Pattern>
       <Pattern>org.jacorb.util.threadpool.ConsumerTie</Pattern>
       <Pattern>org.jacorb.orb.iiop.IIOPListener</Pattern>
-		</PatternList>
+    </PatternList>
     <ExcludedAdvisories>
-			<AdvisoryId>Socket Read</AdvisoryId>
-		</ExcludedAdvisories>     
-	</SimpleGroup>
-	<SimpleGroup>
-		<Name>Wily</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.wily.isengard.util.thread.AThreadedExecutable</Pattern>
+      <AdvisoryId>Socket Read</AdvisoryId>
+    </ExcludedAdvisories>     
+  </SimpleGroup>
+  <SimpleGroup>
+    <Name>Wily</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.wily.isengard.util.thread.AThreadedExecutable</Pattern>
       <Pattern>com.wily.introscope.agent.connection.ConnectionThread</Pattern>
       <Pattern>com.wily.util.task.ATask</Pattern>
       <Pattern>com.wily.util.heartbeat.IntervalHeartbeat</Pattern>
       <Pattern>com.wily.EDU.oswego.cs.dl.util.concurrent.QueuedExecutor</Pattern>
       <Pattern>com.wilytech.profserv.gcmonitor.GcMonitorThread</Pattern>
-		</PatternList>
+    </PatternList>
     <ExcludedAdvisories>
-			<AdvisoryId>Socket Read</AdvisoryId>
-		</ExcludedAdvisories>     
-	</SimpleGroup>  
+      <AdvisoryId>Socket Read</AdvisoryId>
+    </ExcludedAdvisories>     
+  </SimpleGroup>  
   <SimpleGroup>
-		<Name>EHCache</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>net.sf.ehcache.store.DiskStore</Pattern>
-		</PatternList>
-	</SimpleGroup> 
+    <Name>EHCache</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>net.sf.ehcache.store.DiskStore</Pattern>
+    </PatternList>
+  </SimpleGroup> 
   <SimpleGroup>
-		<Name>Adventnet SNMP Agent</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>			
+    <Name>Adventnet SNMP Agent</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>			
       <Pattern>com.adventnet</Pattern>      
-		</PatternList>
+    </PatternList>
     <ExcludedAdvisories>
-			<AdvisoryId>Socket Read</AdvisoryId>
-		</ExcludedAdvisories>     
-	</SimpleGroup>
+      <AdvisoryId>Socket Read</AdvisoryId>
+    </ExcludedAdvisories>     
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Sun Norm Updaters</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>norm-update-thread</Pattern>
-		</PatternList>
+    <Name>Sun Norm Updaters</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>norm-update-thread</Pattern>
+    </PatternList>
     <ExcludedAdvisories>
-			<AdvisoryId>Socket Read</AdvisoryId>
-		</ExcludedAdvisories>     
-	</SimpleGroup>  
+      <AdvisoryId>Socket Read</AdvisoryId>
+    </ExcludedAdvisories>     
+  </SimpleGroup>  
   <SimpleGroup>
-		<Name>Sun HSS Grouping Manager Threads</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>grouping-manager-attr-thread</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    <Name>Sun HSS Grouping Manager Threads</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>grouping-manager-attr-thread</Pattern>
+    </PatternList>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Sun JMX Client Notification Forwarders</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>ClientNotifForwarder</Pattern>
-		</PatternList>
+    <Name>Sun JMX Client Notification Forwarders</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>ClientNotifForwarder</Pattern>
+    </PatternList>
     <ExcludedAdvisories>
-			<AdvisoryId>Socket Read</AdvisoryId>
-		</ExcludedAdvisories> 
-	</SimpleGroup>
+      <AdvisoryId>Socket Read</AdvisoryId>
+    </ExcludedAdvisories> 
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>ZK Web Framework Component Library</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>org.zkoss.zk</Pattern>
-		</PatternList>    
-	</SimpleGroup>  
+    <Name>ZK Web Framework Component Library</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>org.zkoss.zk</Pattern>
+    </PatternList>    
+  </SimpleGroup>  
   <SimpleGroup>
-		<Name>Grizzly Threads</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.sun.grizzly</Pattern>
-		</PatternList>    
-	</SimpleGroup> 
+    <Name>Grizzly Threads</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.sun.grizzly</Pattern>
+    </PatternList>    
+  </SimpleGroup> 
   <SimpleGroup>
-		<Name>HK2 Transactions Notifiers</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>org.jvnet.hk2.config.Transactions.Notifier</Pattern>
-		</PatternList>    
-	</SimpleGroup> 
+    <Name>HK2 Transactions Notifiers</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>org.jvnet.hk2.config.Transactions.Notifier</Pattern>
+    </PatternList>    
+  </SimpleGroup> 
   <SimpleGroup>
-		<Name>Catalina Container Background Processors</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>org.apache.catalina.core.ContainerBase.ContainerBackgroundProcessor</Pattern>
-		</PatternList>    
-	</SimpleGroup> 
+    <Name>Catalina Container Background Processors</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>org.apache.catalina.core.ContainerBase.ContainerBackgroundProcessor</Pattern>
+    </PatternList>    
+  </SimpleGroup> 
   <SimpleGroup>
-		<Name>JMX Client Heartbeat</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>JMX client heartbeat</Pattern>
-		</PatternList>    
-	</SimpleGroup> 
+    <Name>JMX Client Heartbeat</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>JMX client heartbeat</Pattern>
+    </PatternList>    
+  </SimpleGroup> 
   <SimpleGroup>
-		<Name>JMX Server Connection Timeout</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>JMX server connection timeout</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    <Name>JMX Server Connection Timeout</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>JMX server connection timeout</Pattern>
+    </PatternList>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Log4J</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>Log4J </Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    <Name>Log4J</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>Log4J </Pattern>
+    </PatternList>    
+  </SimpleGroup>
   <!--
   <SimpleGroup>
 		<Name>Sun xVM</Name>
@@ -407,33 +407,33 @@ xmlns="http://java.net/projects/threadlogic">
 	</SimpleGroup>
   -->
   <SimpleGroup>
-		<Name>UniversalConnPool Workers</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>name</MatchLocation>
-		<PatternList>
-			<Pattern>UCP-worker-thread</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    <Name>UniversalConnPool Workers</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>name</MatchLocation>
+    <PatternList>
+      <Pattern>UCP-worker-thread</Pattern>
+    </PatternList>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Sun Cacao</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.sun.cacao</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    <Name>Sun Cacao</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.sun.cacao</Pattern>
+    </PatternList>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Sun HSS Domain Temp</Name>
-		<Visible>false</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.sun.hss.domain</Pattern>
+    <Name>Sun HSS Domain Temp</Name>
+    <Visible>false</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.sun.hss.domain</Pattern>
       <Pattern>com.sun.hss.services</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    </PatternList>    
+  </SimpleGroup>
   <ComplexGroup>
     <Name>Sun HSS Domain</Name>
     <Visible>true</Visible>
@@ -448,49 +448,49 @@ xmlns="http://java.net/projects/threadlogic">
     </Exclusions>        
   </ComplexGroup>  
   <SimpleGroup>
-		<Name>Iona CORBA</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.iona</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    <Name>Iona CORBA</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.iona</Pattern>
+    </PatternList>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Acsera</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.acsera.javaagent</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    <Name>Acsera</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.acsera.javaagent</Pattern>
+    </PatternList>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Cavisson</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.cavisson</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    <Name>Cavisson</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.cavisson</Pattern>
+    </PatternList>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>ODI</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>oracle.odi</Pattern>
+    <Name>ODI</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>oracle.odi</Pattern>
       <Pattern>com.sunopsis</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    </PatternList>    
+  </SimpleGroup>
   <SimpleGroup>
-		<Name>Stellent</Name>
-		<Visible>true</Visible>
-		<Inclusion>true</Inclusion>
-		<MatchLocation>stack</MatchLocation>
-		<PatternList>
-			<Pattern>com.stellent.cis</Pattern>
-		</PatternList>    
-	</SimpleGroup>
+    <Name>Stellent</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>com.stellent.cis</Pattern>
+    </PatternList>    
+  </SimpleGroup>
 </tlogic:GroupsDefn>
