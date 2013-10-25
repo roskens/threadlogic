@@ -2039,7 +2039,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
           }
         } else {
           dumpFile = source.getText();
-          System.out.println("DumpFileName2: " + dumpFile);
           openFiles(new File[]{new File(dumpFile)}, true);
         }
       } else if ("Open...".equals(source.getText())) {
@@ -2369,7 +2368,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   private void openFiles(File[] files, boolean isRecent) {
     for (int i = 0; i < files.length; i++) {
       dumpFile = files[i].getAbsolutePath();
-      System.out.println("DumpFileName3: " + dumpFile);
       if (dumpFile != null) {
         if (!firstFile) {
           // root nodes are moved down.
@@ -2874,7 +2872,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       } else {
         // Load single thread dump file
         dumpFile = args[0];
-        System.out.println("DumpFileName4: " + dumpFile);
       }
       //dumpFile = args[0];
     }
@@ -2984,7 +2981,6 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       bos.close();
       bos = null;
       dumpFile = tempFile.getAbsolutePath();
-      System.out.println("DumpFileName1: " + dumpFile);
 
       bis = new BufferedInputStream(new FileInputStream(tempFile));
 

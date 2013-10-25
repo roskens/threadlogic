@@ -89,7 +89,7 @@ Or using | as delimiter to provide a choice of patterns:
     <SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
   </Exclusions>
   <ExcludedAdvisories>
-    <AdvisoryId>Database Query Execution</AdvisoryId>
+    <AdvisoryId>DB Execute</AdvisoryId>
     <AdvisoryId>Socket Read</AdvisoryId>
   </ExcludedAdvisories>        
 </ComplexGroup>
@@ -225,6 +225,7 @@ xmlns="http://java.net/projects/threadlogic">
     <PatternList>
       <Pattern>com.bea.wli.sb.transports</Pattern>
       <Pattern>com.bea.wli.sb.pipeline</Pattern>
+      <Pattern>com.bea.wli.config</Pattern>
     </PatternList>
   </SimpleGroup>
   <SimpleGroup>
@@ -353,7 +354,7 @@ xmlns="http://java.net/projects/threadlogic">
       <Pattern>oracle.dfw</Pattern>
       <Pattern>oracle.dms</Pattern>
     </PatternList>
-  </SimpleGroup>
+  </SimpleGroup>  
   <ComplexGroup>
     <Name>Oracle AQ Adapter</Name>
     <Visible>true</Visible>
@@ -364,9 +365,10 @@ xmlns="http://java.net/projects/threadlogic">
       <SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
     </Exclusions>
     <ExcludedAdvisories>
-      <AdvisoryId>Database Query Execution</AdvisoryId>
+      <AdvisoryId>DB Execute</AdvisoryId>
       <AdvisoryId>Socket Read</AdvisoryId>
       <AdvisoryId>Stuck Thread</AdvisoryId>
+      <AdvisoryId>DB Execute</AdvisoryId>
     </ExcludedAdvisories>        
   </ComplexGroup>
   <ComplexGroup>
@@ -379,7 +381,7 @@ xmlns="http://java.net/projects/threadlogic">
       <SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
     </Exclusions>
     <ExcludedAdvisories>
-      <AdvisoryId>Database Query Execution</AdvisoryId>
+      <AdvisoryId>DB Execute</AdvisoryId>
       <AdvisoryId>Socket Read</AdvisoryId>
       <AdvisoryId>Stuck Thread</AdvisoryId>
     </ExcludedAdvisories>        
@@ -432,4 +434,18 @@ xmlns="http://java.net/projects/threadlogic">
       <Pattern>com.amberpoint</Pattern>
     </PatternList>    
   </SimpleGroup>
+  <!--
+  <SimpleGroup>
+    <Name>Oracle SOA File Adapter Poller</Name>
+    <Visible>true</Visible>
+    <Inclusion>true</Inclusion>
+    <MatchLocation>stack</MatchLocation>
+    <PatternList>
+      <Pattern>oracle.tip.adapter.file.inbound</Pattern>
+    </PatternList>
+    <ExcludedAdvisories>
+      <AdvisoryId>Thread Sleep</AdvisoryId>
+    </ExcludedAdvisories>      
+  </SimpleGroup>
+  -->
 </tlogic:GroupsDefn>

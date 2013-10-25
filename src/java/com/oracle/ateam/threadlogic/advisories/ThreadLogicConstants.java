@@ -72,8 +72,16 @@ public class ThreadLogicConstants {
   public static final String SEMAPHORE_ACQUIRE = "Semaphore.acquire";
   
   public static final String SOA_IDLE_THREADS = "SOAIdleThread";
+  public static final String SOA_AQ_ADAPTER_THREAD = "AQ Dequeue Agent";
+  public static final String SOA_JMS_ADAPTER_THREAD = "Oracle SOA JMS Adapter";
+  public static final String SOA_DB_ADAPTER_THREAD = "Oracle SOA DB Adapter";
+  public static final String SOA_FILE_ADAPTER_THREAD = "Oracle SOA File Adapter";
+  
+  
   public static final String OSB_WAIT_FOR_SERVICE_CALLOUT = "PipelineContextImpl.SynchronousListener.waitForResponse";
   public static final String OSB_EJB_INBOUND = "com.bea.wli.sb.transports.jejb.gen.inb.BaseInboundEJBHelper.callPipeline";
+  public static final String OSB_TXMGR_BEGINTX = "com.bea.wli.config.transaction.TransactionManager..beginTransaction";
+  public static final String OSB_DERIVED_CACHE = "com.bea.wli.config.derivedcache.DerivedCache.Purger.changesCommitted";
   public static final String OSB_WAIT_FOR_EJB_RESPONSE = "OSB_EJB_RESPONSE_WAIT";
           
   public static final String AQ_ADAPTER_POLLER = "oracle.tip.adapter.db.inbound.InboundWorkWrapper";

@@ -88,7 +88,7 @@ Or using | as delimiter to provide a choice of patterns:
     <SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
   </Exclusions>
   <ExcludedAdvisories>
-    <AdvisoryId>Database Query Execution</AdvisoryId>
+    <AdvisoryId>DB Execute</AdvisoryId>
     <AdvisoryId>Socket Read</AdvisoryId>
   </ExcludedAdvisories>        
 </ComplexGroup>

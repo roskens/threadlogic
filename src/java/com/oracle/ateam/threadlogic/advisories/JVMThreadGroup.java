@@ -95,16 +95,6 @@ public class JVMThreadGroup extends CustomizedThreadGroup {
     statData.append(this.isFinalizerBlocked);
     statData.append("</b></td></tr>\n\n");            
 
-    /*
-    statData.append("<tr bgcolor=\"#dddddd\"><td><font face=System "
-        + ">Number of BPEL Engine Threads </td><td><b><font face=System>");
-    statData.append(this.bpelEngineThreads);
-
-    statData.append("</b></td></tr>\n\n<tr bgcolor=\"#eeeeee\"><td><font face=System "
-        + ">Number of SOA JMS Consumer Threads </td><td><b><font face=System>");
-    statData.append(this.soaJMSConsumerThreads);
-     */
-    
     statData.append("</b></td></tr>\n\n");    
     return statData.toString();
   }  

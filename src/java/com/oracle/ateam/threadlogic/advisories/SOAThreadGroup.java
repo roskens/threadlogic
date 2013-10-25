@@ -18,6 +18,7 @@ package com.oracle.ateam.threadlogic.advisories;
 import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.ThreadState;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 
@@ -73,10 +74,11 @@ public class SOAThreadGroup extends CustomizedThreadGroup {
         ) {
       int stackDepth = threadStack.split("\n").length;
       return (stackDepth <= ThreadLogicConstants.ACTIVETHREAD_STACKDEPTH);
-    }
+    } 
     
     return false;
   }
+  
   public String getCustomizedOverview() {
     StringBuffer statData = new StringBuffer();
     statData.append("<tr bgcolor=\"#dddddd\"><td><font face=System "
@@ -97,6 +99,48 @@ public class SOAThreadGroup extends CustomizedThreadGroup {
 
     statData.append("</b></td></tr>\n\n");
     return statData.toString();
-  } 
+  }
+  
+  public static boolean isIdleSOAAdapterPoller(ThreadInfo ti,  ArrayList<ThreadAdvisory> advisories) {
+    
+    // A SOA Adapter thread is considered idle if its involved in one of the polling activity 
+    // and is either in sleep or wait state and has a stack depth of less than 15
+    
+    ThreadAdvisory aqAdapterThreadAdvisory = ThreadAdvisory.lookupThreadAdvisoryByName(ThreadLogicConstants.SOA_AQ_ADAPTER_THREAD);
+    ThreadAdvisory dbAdapterThreadAdvisory = ThreadAdvisory.lookupThreadAdvisoryByName(ThreadLogicConstants.SOA_DB_ADAPTER_THREAD);
+    ThreadAdvisory jmsAdapterThreadAdvisory = ThreadAdvisory.lookupThreadAdvisoryByName(ThreadLogicConstants.SOA_JMS_ADAPTER_THREAD);
+    ThreadAdvisory fileAdapterThreadAdvisory = ThreadAdvisory.lookupThreadAdvisoryByName(ThreadLogicConstants.SOA_FILE_ADAPTER_THREAD);
+    
+    if (! (advisories.contains(aqAdapterThreadAdvisory)
+            || advisories.contains(dbAdapterThreadAdvisory)
+            || advisories.contains(jmsAdapterThreadAdvisory)
+            || advisories.contains(fileAdapterThreadAdvisory)) )
+      return false;
+    
+    String threadStack = ti.getContent();    
+    Pattern soaThreadSleepingOrWaitingPattern = Pattern.compile("Thread.sleep|Object.wait");    
+    boolean threadInSleepOrWait = soaThreadSleepingOrWaitingPattern.matcher(threadStack).find();
+            
+    if (threadInSleepOrWait) {
+      int stackDepth = threadStack.split("\n").length;
+      return (stackDepth <= ThreadLogicConstants.ACTIVETHREAD_STACKDEPTH);
+    }
+    
+    return false;
+  }
+ 
+  // Downgrade a SOA adapter thread marked STUCK into Normal if its involved in polling and is idle
+  // This needs to happen before the advisories get associated with the thread
+  
+  public static void resetAdvisoriesBasedOnThread(ThreadInfo threadInfo, ArrayList<ThreadAdvisory> advisoryList) {
+
+    boolean isAnIdleSOAPollerThread = isIdleSOAAdapterPoller(threadInfo, advisoryList);
+    boolean isMarkedStuck = threadInfo.markedAsStuck();
+    
+    if (isAnIdleSOAPollerThread && isMarkedStuck) {
+        threadInfo.setHealth(HealthLevel.NORMAL);
+        advisoryList.remove(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.STUCK_PATTERN));
+    }
+  }
   
 }

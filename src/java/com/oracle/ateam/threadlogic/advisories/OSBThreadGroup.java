@@ -42,12 +42,24 @@ public class OSBThreadGroup extends CustomizedThreadGroup {
     ThreadAdvisory semaphoreWaitAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.SEMAPHORE_ACQUIRE);
     ThreadAdvisory osbEjbInboundAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.OSB_EJB_INBOUND);
     ThreadAdvisory osbEjbResponseAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.OSB_WAIT_FOR_EJB_RESPONSE);
+    ThreadAdvisory osbBeginTxAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.OSB_TXMGR_BEGINTX);
+    ThreadAdvisory osbDerivedCacheBlockedAdvisory = ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.OSB_DERIVED_CACHE);
             
+    boolean hasDerivedCacheBlockedAdvisory = false;
+    boolean hasTxMgrBlockedAdvisory = false;
             
     for(ThreadInfo ti: threads) { 
       ArrayList<ThreadAdvisory> advisories = ti.getAdvisories();
       if (advisories.contains(osbServiceCalloutAdvisory)) {
         serviceCalloutBlockedThreads++;
+      }
+      
+      if (!hasDerivedCacheBlockedAdvisory) {
+        hasDerivedCacheBlockedAdvisory = ti.getAdvisories().contains(osbDerivedCacheBlockedAdvisory);
+      }
+      
+      if (!hasTxMgrBlockedAdvisory) {
+        hasTxMgrBlockedAdvisory = ti.getAdvisories().contains(osbBeginTxAdvisory) && ti.isBlockedForLock();
       }
       
       // Change to OSB waiting for Ejb Response advisories if both semaphores and ejb inbound advisories are present
@@ -77,10 +89,32 @@ public class OSBThreadGroup extends CustomizedThreadGroup {
           
           ti.setHealth(HealthLevel.WARNING);          
         }
+      }
+    }
+    
+    // Bump up the Health Level to FATAL 
+    // if there are threads that have the derivedCacheBlocked and TxMgrBlocked...
+    if (hasDerivedCacheBlockedAdvisory && hasTxMgrBlockedAdvisory) {
+       
+      osbBeginTxAdvisory.setHealth(HealthLevel.FATAL);
+      this.addAdvisory(osbDerivedCacheBlockedAdvisory);
+      this.addAdvisory(osbBeginTxAdvisory);
+      
+      this.setHealth(HealthLevel.FATAL);
+        
+      for(ThreadInfo ti: threads) {
+        if ( (ti.getAdvisories().contains(osbDerivedCacheBlockedAdvisory) 
+                || ti.getAdvisories().contains(osbBeginTxAdvisory) )
+          && ti.getHealth().ordinal() == HealthLevel.WARNING.ordinal()) {
+          
+          ti.setHealth(HealthLevel.FATAL);          
+        }
       }      
     }
+    
   } 
   
   
   
 }
+

@@ -219,7 +219,8 @@ public class ThreadGroup extends ThreadLogicElement {
       // If similar pattern is seen frequently but is not associated with Muxer
       // or JVM GC threads, then flag that as worth WATCHing
       if (!threadGroupNameLower.contains("muxer") && !threadGroupNameLower.contains("jvm")
-          && (noOfHits >= ThreadLogicConstants.HOT_CALL_MIN_OCCURENCE)) {
+              && !threadGroupNameLower.contains("oracle ons")
+              && (noOfHits >= ThreadLogicConstants.HOT_CALL_MIN_OCCURENCE)) {
 
         ThreadAdvisory hotThreadsAdvisory = ThreadAdvisory.getHotPatternAdvisory();
 

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
+import com.oracle.ateam.threadlogic.advisories.ThreadLogicConstants;
 
 /**
  * Contains all the relevant structure associated with any thread dump element
@@ -188,4 +189,11 @@ public class ThreadLogicElement extends AbstractInfo implements Comparable {
     return list;
   }
 
+  public boolean markedAsStuck() {
+    if ((this.advisories == null) || (this.advisories.size() == 0)) {
+      return (getName().contains("STUCK"));
+    }
+    
+    return this.advisories.contains(ThreadAdvisory.lookupThreadAdvisory(ThreadLogicConstants.STUCK_PATTERN));
+  }
 }

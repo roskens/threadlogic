@@ -685,6 +685,8 @@ public class ThreadAdvisory implements Comparable, Serializable {
 
     if (threadNameLower.contains("muxer")) {      
       WLSMuxerThreadGroup.resetAdvisoriesBasedOnThread(threadInfo, advisoryList);
+    } else if (threadInfo.getContent().contains("oracle.tip.adapter")) {
+      SOAThreadGroup.resetAdvisoriesBasedOnThread(threadInfo, advisoryList);
     }
 
     if (isAtWatchLevel && threadNameLower.contains("ldap") || threadNameLower.contains("aq adapter")) {

@@ -38,7 +38,7 @@ There can be multiple keywords separated by a ", ".
 For example:
 
 <Advisory>
-  <Name>Database Query Execution</Name>
+  <Name>DB Execute</Name>
   <Health>WATCH</Health>    
   <Keyword>PreparedStatement.execute, Statement.executeQuery</Keyword>
   <Descrp>Executing operation or query on DB</Descrp>
@@ -70,12 +70,12 @@ Example:
     <SimpleGroupId>Oracle SOA DFW</SimpleGroupId>
   </Exclusions>
   <ExcludedAdvisories>
-    <AdvisoryId>Database Query Execution</AdvisoryId>
+    <AdvisoryId>DB Execute</AdvisoryId>
     <AdvisoryId>Socket Read</AdvisoryId>
   </ExcludedAdvisories>        
 </ComplexGroup>
 
-In the above example, Database Query Execution and Socket Read Advisories are excluded for the thread group: Oracle AQ Adapter
+In the above example, DB Execute and Socket Read Advisories are excluded for the thread group: Oracle AQ Adapter
 as the AQ Adapter threads basic functionality is to poll for data from DB over sockets repeatedly and its their normal behavior.
 
 Note: Avoid using '&' as it would confuse the XML Parser and result in exceptions.
@@ -126,7 +126,7 @@ xmlns="http://java.net/projects/threadlogic">
     <Health>FATAL</Health>
     <Keyword>Finalizer.doFinalize</Keyword>
     <Descrp>Finalizer Thread Blocked</Descrp>
-    <Advice>Check if the Finalizer Thread is blocked for a lock which can lead to wasted memory waiting to be reclaimed from Finalizer Queue; If using SOA and finalizer blocked for lock on HTTPClient.StreamDemultiplexor, apply bug fix: 11888645</Advice>
+    <Advice>Check if the Finalizer Thread is blocked for a lock which can lead to wasted memory waiting to be reclaimed from Finalizer Queue; If using SOA and finalizer blocked for lock on HTTPClient.StreamDemultiplexor, apply bug fixes: 16810628 and 11888645</Advice>
   </Advisory>
   <Advisory>
     <Name>WLS Server Shutdown</Name>
@@ -757,13 +757,6 @@ xmlns="http://java.net/projects/threadlogic">
     <Advice>Try to use SLSB if possible; If possible, increase SFSB cache size to avoid premature passivation (at cost of higher memory)</Advice>
   </Advisory>
   <Advisory>
-    <Name>OSB Session Activation</Name>
-    <Health>WATCH</Health>
-    <Keyword>com.bea.wli.config.transaction.TransactionManager</Keyword>
-    <Descrp>OSB Session activation in progress or committing</Descrp>
-    <Advice>OSB Configuration is being updated via an active session; Ensure the activation goes through and the thread does not enter into blocked state</Advice>
-  </Advisory>
-  <Advisory>
     <Name>OSB JMS Reporting Action</Name>
     <Health>NORMAL</Health>
     <Keyword>com.bea.wli.reporting.jmsprovider</Keyword>
@@ -878,15 +871,22 @@ xmlns="http://java.net/projects/threadlogic">
   <Advisory>
     <Name>Oracle SOA File Adapter</Name>
     <Health>NORMAL</Health>
-    <Keyword>oracle.tip.adapter.file.inbound.ProcessWork</Keyword>
+    <Keyword>oracle.tip.adapter.file.inbound</Keyword>
     <Descrp>Oracle SOA File Adapter running</Descrp>
     <Advice>Normal</Advice>
   </Advisory>
   <Advisory>
-    <Name>Oracle SOA JMS Adapter Consumer</Name>
+    <Name>Oracle SOA JMS Adapter</Name>
     <Health>NORMAL</Health>
-    <Keyword>oracle.tip.adapter.jms.inbound.JmsConsumer</Keyword>
+    <Keyword>oracle.tip.adapter.jms.inbound</Keyword>
     <Descrp>Oracle SOA JMS Adapter running</Descrp>
+    <Advice>Normal</Advice>
+  </Advisory>
+  <Advisory>
+    <Name>Oracle SOA DB Adapter</Name>
+    <Health>NORMAL</Health>
+    <Keyword>oracle.tip.adapter.db.inbound</Keyword>
+    <Descrp>Oracle SOA DB Adapter running</Descrp>
     <Advice>Normal</Advice>
   </Advisory>
   <Advisory>
@@ -1364,6 +1364,62 @@ xmlns="http://java.net/projects/threadlogic">
     <Keyword>org.apache.http.impl.conn.tsccm.ConnPoolByRoute.getEntryBlocking</Keyword>		         
     <Descrp>Apache limits number of concurrent outbound http clients to 2 for a given destination and overall to 20</Descrp>
     <Advice>Modify Apache Tsccm code to allow higher number of connections</Advice>
+  </Advisory>
+  <Advisory>
+    <Name>OSB Contention with AuthenticatedSubject</Name>
+    <Health>WARNING</Health>
+    <Keyword>weblogic.security.acl.internal.AuthenticatedSubject.SealableSet.1.run</Keyword>
+    <Descrp>Possible contention in OSB while using anonymous subjects if multiple threads blocked in same pattern</Descrp>
+    <Advice>Apply bug fix 17374975</Advice>
+  </Advisory>
+  <Advisory>
+    <Name>XQueryType Contention</Name>
+    <Health>WARNING</Health>
+    <Keyword>weblogic.xml.query.types.XQueryType.of</Keyword>
+    <Descrp>Possible XQueryType contention in OSB or layers using xquery if multiple threads blocked in same pattern</Descrp>
+    <Advice>Apply bug fix 17398269</Advice>
+  </Advisory>
+  <Advisory>
+    <Name>OSB Tux Transport Xmlbeans Locale Contention</Name>
+    <Health>WARNING</Health>
+    <Keyword>com.bea.wli.sb.transports.tuxedo.TuxedoUtil.getTuxedoConfig</Keyword>
+    <Descrp>Possible contention in OSB Tux transport while using xmlbeans if multiple threads blocked are waiting for Locale in the same pattern</Descrp>
+    <Advice>Apply bug fix 14765706</Advice>
+  </Advisory>
+  <Advisory>
+    <Name>OSB Possible deadlock with TransactionManager</Name>
+    <Health>WARNING</Health>
+    <Keyword>com.bea.wli.config.transaction.TransactionManager..beginTransaction</Keyword>
+    <Descrp>Possible deadlock in OSB internals if this thread appears blocked for lock on com.bea.wli.config.transaction.TransactionManager</Descrp>
+    <Advice>Apply bug fix 17345954</Advice>
+  </Advisory>
+  <Advisory>
+    <Name>OSB Possible deadlock with DerivedCache</Name>
+    <Health>FATAL</Health>
+    <Keyword>com.bea.wli.config.derivedcache.DerivedCache.Purger.changesCommitted</Keyword>
+    <Descrp>Possible deadlock in OSB internals if this thread appears blocked for Reentrant lock, while other osb threads appear to wait for lock on com.bea.wli.config.transaction.TransactionManager</Descrp>
+    <Advice>Apply bug fix 17345954</Advice>
+  </Advisory>
+  <Advisory>
+    <Name>OSB Session Activation</Name>
+    <Health>WATCH</Health>
+    <Keyword>com.bea.wli.config.transaction.TransactionManager</Keyword>
+    <Descrp>OSB Session activation in progress or committing</Descrp>
+    <Advice>OSB Configuration is being updated via an active session; Ensure the activation goes through and the thread does not enter into blocked state</Advice>
+  </Advisory>
+  <Advisory>
+    <Name>OSB possible contention with Xmlbeans Locale with log actions</Name>
+    <Health>WARNING</Health>
+    <Keyword>com.bea.wli.sb.resources.service.ProxyServiceRepository.getServiceLogLevel</Keyword>
+    <Descrp>OSB thread might get blocked for xmlbeans locale during log action</Descrp>
+    <Advice>Apply OSB patch 17286169 </Advice>
+  </Advisory>
+  <Advisory>
+    <Name>OSB possible contention with Xmlbeans Locale during GET</Name>
+    <Health>WARNING</Health>
+    <Keyword>com.bea.wli.sb.transports.http.generic.RequestHelperBase.wsiCompliant</Keyword>
+    <Descrp>OSB thread might get blocked for xmlbeans locale during check for WSI in GET action</Descrp>
+    <Advice>Apply OSB patch 16096932 </Advice>
   </Advisory>
 </tlogic:AdvisoryMap>
 	
