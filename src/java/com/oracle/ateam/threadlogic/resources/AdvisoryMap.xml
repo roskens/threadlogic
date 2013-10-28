@@ -662,7 +662,7 @@ xmlns="http://java.net/projects/threadlogic">
     <Health>WARNING</Health>
     <Keyword>log4j.Category.forcedLog</Keyword>
     <Descrp>Log4J using immediateFlush will reduce performance</Descrp>
-    <Advice>immediateFlush with log4j will result in slowdown and increased contention among threads; this option is ON by default and might not be explicitly specified; Set it to false and instead use bufferedIO in the appenders config</Advice>
+    <Advice>immediateFlush with log4j will result in slowdown and increased contention among threads; this option is ON by default and might not be explicitly specified; Set immediateFlush="false" and instead use bufferedIO in the appenders config. Set </Advice>
   </Advisory>
   <Advisory>
     <Name>Console checking Application Deployment status</Name>
@@ -934,10 +934,10 @@ xmlns="http://java.net/projects/threadlogic">
   </Advisory>
   <Advisory>
     <Name>WLS Java Socket Muxer</Name>
-    <Health>WARNING</Health>
+    <Health>FATAL</Health>
     <Keyword>JavaSocketMuxer.processSockets</Keyword>
     <Descrp>WLS is using JavaSocketMuxer instead of Native Socket Muxer, should be avoided for server side</Descrp>
-    <Advice>If thread dump is from a running WLS Server, Server should use the Native Socket Muxer Performance Pack instead of using the JavaSocketMuxer; Ensure the $LD_LIBRARY_PATH or $SHLIB_PATH or %PATH% includes the path to the native libraries</Advice>
+    <Advice>If thread dump is from a running WLS Server, Server should use the Native Socket Muxer Performance Pack instead of using the JavaSocketMuxer; Ensure the $LD_LIBRARY_PATH or $SHLIB_PATH or %PATH% includes the path to the native libraries; Ignorable if the thread dump is from a standalone client and not a WLS Server</Advice>
   </Advisory>
   <Advisory>
     <Name>Wait for RMI Response</Name>
