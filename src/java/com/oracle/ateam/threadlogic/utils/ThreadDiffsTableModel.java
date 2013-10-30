@@ -41,6 +41,7 @@ import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.ThreadState;
 import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.logging.Logger;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 
@@ -51,6 +52,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 public class ThreadDiffsTableModel extends ThreadsTableModel {
 
+  private static Logger theLogger = CustomLogger.getLogger(ThreadDiffsTableModel.class.getSimpleName());
 
   public enum STATE_CHANGE {
 
@@ -278,7 +280,7 @@ public class ThreadDiffsTableModel extends ThreadsTableModel {
       if (ti == null)
         continue;
       found = ti.getContent().indexOf(searchContent) >= 0;      
-      System.out.println("Found matching Thread Name: " + ti.getFilteredName());
+      theLogger.finest("Found matching Thread Name: " + ti.getFilteredName());
     }
     
     return (found ? i - 1 : -1);

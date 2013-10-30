@@ -19,6 +19,7 @@
  */
 package com.oracle.ateam.threadlogic.jedit;
 
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import javax.swing.event.*;
 import javax.swing.text.*;
 import javax.swing.undo.*;
@@ -28,6 +29,7 @@ import java.awt.event.*;
 import java.awt.*;
 import java.util.Enumeration;
 import java.util.Vector;
+import java.util.logging.Logger;
 
 /**
  * jEdit's text area component. It is more suited for editing program source
@@ -68,6 +70,8 @@ public class JEditTextArea extends JComponent {
 
   public static String LEFT_OF_SCROLLBAR = "los";
 
+  private static Logger theLogger = CustomLogger.getLogger(JEditTextArea.class.getSimpleName());
+  
   /**
    * Creates a new JEditTextArea with the default settings.
    */

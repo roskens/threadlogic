@@ -69,10 +69,6 @@ public class WLSMuxerThreadGroup extends CustomizedThreadGroup {
 
         String blockingThreadName = ownerOfLock.getName().toLowerCase();
 
-        // System.out.println("Blocked for lock: " +
-        // blockedForLock.getLockId() + ", owner of lock: " +
-        // blockingThreadName);
-
         if (blockingThreadName.contains("muxer")) {
           threadInfo.setHealth(HealthLevel.NORMAL);
           return;

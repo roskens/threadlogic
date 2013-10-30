@@ -21,6 +21,7 @@ import com.oracle.ateam.threadlogic.categories.TreeCategory;
 import com.oracle.ateam.threadlogic.monitors.IBMMonitorMap;
 import com.oracle.ateam.threadlogic.monitors.MonitorMap;
 import com.oracle.ateam.threadlogic.parsers.AbstractDumpParser.LineChecker;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import com.oracle.ateam.threadlogic.utils.DateMatcher;
 import com.oracle.ateam.threadlogic.utils.IconFactory;
 
@@ -41,8 +42,8 @@ import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 
-import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.logging.Logger;
 
 public class IBMJDKParser extends AbstractDumpParser {
 
@@ -52,6 +53,8 @@ public class IBMJDKParser extends AbstractDumpParser {
   private String waiter = "3LKWAITER";  
   private String parsedStartTime;
 
+  private static Logger theLogger = CustomLogger.getLogger(IBMJDKParser.class.getSimpleName());
+  
   public IBMJDKParser(BufferedReader bis, Map threadStore, int lineCounter, boolean withCurrentTimeStamp,
       int startCounter, DateMatcher dm) {
     super(bis, dm);
@@ -101,7 +104,7 @@ public class IBMJDKParser extends AbstractDumpParser {
           if (index >= 0) {
             index = line.indexOf("Date:", index) + 5;
             parsedStartTime = line.substring(index).trim();            
-            System.out.println("Timestamp:" + parsedStartTime);
+            theLogger.finest("Timestamp:" + parsedStartTime);
             return;
           } 
         }
@@ -125,7 +128,7 @@ public class IBMJDKParser extends AbstractDumpParser {
           if (index >= 0) {                        
             index += len; 
             super.setJvmVersion(line.substring(index).trim());
-            System.out.println("JVM Version:" + line);            
+            theLogger.info("JVM Version:" + line);            
             return;
           }
         }
@@ -246,7 +249,7 @@ public class IBMJDKParser extends AbstractDumpParser {
                   String tokens[] = parsedStartTime.substring(index + 5).trim().split(" ");
                   
                   parsedStartTime = tokens[0].replaceAll("/", "-") + " " + tokens[2];
-                  System.out.println("ParsedStartTime:" + parsedStartTime);
+                  theLogger.finest("ParsedStartTime:" + parsedStartTime);
                   if (!getDm().isDefaultMatches() && isMillisTimeStamp()) {
                     try {
                       // the factor is a hack for a bug in
@@ -309,7 +312,7 @@ public class IBMJDKParser extends AbstractDumpParser {
                                                                               // thread
                                                                               // stacks
                                                                               // later
-                    // System.out.println("1LockedMonitor[" + lockedObject +
+                    // theLogger.finest("1LockedMonitor[" + lockedObject +
                     // "], thread: " + lockingThread );
 
                     ThreadInfo lockOwner = ThreadInfo.createTempThreadInfo(lockingThread);
@@ -332,7 +335,7 @@ public class IBMJDKParser extends AbstractDumpParser {
                     line = additionalLines;
                   
                   mmap.addWaitToMonitor(lockedObject, lineChecker.getWaitingTo(line), null);
-                  // System.out.println("1BlockedForMonitor[" + lockedObject +
+                  // theLogger.finest("1BlockedForMonitor[" + lockedObject +
                   // "], thread: " + line + ", lineCheker : " +
                   // lineChecker.getWaitingTo(line));
                   String threadName = lineChecker.getWaitingTo(line);
@@ -357,7 +360,7 @@ public class IBMJDKParser extends AbstractDumpParser {
                     line = additionalLines;
                   
                   mmap.addSleepToMonitor(lockedObject, lineChecker.getWaitingOn(line), null);
-                  // System.out.println("1WaitingOnMonitor[" + lockedObject +
+                  // theLogger.finest("1WaitingOnMonitor[" + lockedObject +
                   // "], thread: " + line + ", lineCheker : " +
                   // lineChecker.getWaitingOn(line));
                   // sleeping++;
@@ -390,7 +393,8 @@ public class IBMJDKParser extends AbstractDumpParser {
                 Iterator iter = mmap.iterOfKeys();
                 while (iter.hasNext()) {
                   String shortTitle = title.substring(0, title.indexOf("\"", 1) + 1);
-                  //System.out.println("1Complete title: " + title + ", Map Searching for shortTitle: " + shortTitle);
+                  //theLogger.finest("1Complete title: " + title 
+                  // + ", Map Searching for shortTitle: " + shortTitle);
                   String monitor = (String) iter.next();
                   Map[] t = mmap.getFromMonitorMap(monitor);
                   Set lockMap = t[MonitorMap.LOCK_THREAD_POS].keySet();
@@ -398,7 +402,7 @@ public class IBMJDKParser extends AbstractDumpParser {
                     inLocking = true;
                     lockMap.remove(shortTitle);
                     mmap.addLockToMonitor(monitor, title, stringContent);
-                    // System.out.println("2LockedMonitor[" + monitor +
+                    // theLogger.finest("2LockedMonitor[" + monitor +
                     // "], title: " + title + ", content: " + stringContent );
                   }
                   Set waitingMap = t[MonitorMap.WAIT_THREAD_POS].keySet();
@@ -406,7 +410,7 @@ public class IBMJDKParser extends AbstractDumpParser {
                     inWaiting = true;
                     waitingMap.remove(shortTitle);
                     mmap.addWaitToMonitor(monitor, title, stringContent);
-                    // System.out.println("2BlockedForMonitor[" + monitor +
+                    // theLogger.finest("2BlockedForMonitor[" + monitor +
                     // "], title: " + title + ", content: " + stringContent );
                   }
                   Set sleepingMap = t[MonitorMap.SLEEP_THREAD_POS].keySet();
@@ -414,7 +418,7 @@ public class IBMJDKParser extends AbstractDumpParser {
                     inSleeping = true;
                     sleepingMap.remove(shortTitle);
                     mmap.addSleepToMonitor(monitor, title, stringContent);
-                    // System.out.println("2WaitOnMonitor[" + monitor +
+                    // theLogger.finest("2WaitOnMonitor[" + monitor +
                     // "], title: " + title + ", content: " + stringContent );
                   }
                 }
@@ -487,21 +491,24 @@ public class IBMJDKParser extends AbstractDumpParser {
             if (lockMap.contains(shortTitle)) {
               inLocking = true;
               lockMap.remove(shortTitle);
-              //System.out.println("Lock map contained shortTitle: " + shortTitle + ", removing it... and adding to LockMonitor with title : " + title );
+              //theLogger.finest("Lock map contained shortTitle: " + shortTitle 
+              // + ", removing it... and adding to LockMonitor with title : " + title );
               mmap.addLockToMonitor(monitor, title, stringContent);
             }
             Set waitingMap = t[MonitorMap.WAIT_THREAD_POS].keySet();
             if (waitingMap.contains(shortTitle)) {
               inWaiting = true;
               waitingMap.remove(shortTitle);
-              //System.out.println("Lock map contained shortTitle: " + shortTitle + ", removing it... and adding to waitMonitor with title : " + title );
+              //theLogger.finest("Lock map contained shortTitle: " + shortTitle 
+              // + ", removing it... and adding to waitMonitor with title : " + title );
               mmap.addWaitToMonitor(monitor, title, stringContent);
             }
             Set sleepingMap = t[MonitorMap.SLEEP_THREAD_POS].keySet();
             if (sleepingMap.contains(shortTitle)) {
               inSleeping = true;
               sleepingMap.remove(shortTitle);
-              //System.out.println("Lock map contained shortTitle: " + shortTitle + ", removing it... and adding to SleepMonitor with title : " + title );
+              //theLogger.finest("Lock map contained shortTitle: " + shortTitle 
+              // + ", removing it... and adding to SleepMonitor with title : " + title );
               mmap.addSleepToMonitor(monitor, title, stringContent);
             }
           }
@@ -664,12 +671,7 @@ public class IBMJDKParser extends AbstractDumpParser {
       Pattern p = Pattern.compile(patternMask);
       Matcher m = p.matcher(name);
 
-      m.matches();
-      /*
-      for (int iLoop = 1; iLoop < m.groupCount(); iLoop++) {
-        System.out.println(iLoop + ": " + m.group(iLoop));
-      }
-       */
+      m.matches();      
 
       tokens = new String[7];
       tokens[0] = m.group(1); // name
@@ -679,7 +681,7 @@ public class IBMJDKParser extends AbstractDumpParser {
 
      } catch(Exception e) { 
       
-      System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name);
+      theLogger.warning("WARNING!! Unable to parse Thread Tokens with name:" + name);
       e.printStackTrace();
     }
 

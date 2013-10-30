@@ -20,6 +20,8 @@ import java.util.Stack;
 
 import com.oracle.ateam.threadlogic.advisories.ThreadLogicConstants;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
+import java.util.logging.Logger;
 
 public class LockInfo implements Serializable {
 
@@ -27,6 +29,8 @@ public class LockInfo implements Serializable {
     String deadlockMsg;
     String completeDeadlockStack;
     Collection<ThreadInfo> deadlockChain;
+    
+    private static Logger theLogger = CustomLogger.getLogger(LockInfo.class.getSimpleName());
 
     public DeadLockEntry(String deadlockMsg, Stack<ThreadInfo> deadlockChain) {
       this.deadlockMsg = deadlockMsg;
@@ -42,7 +46,7 @@ public class LockInfo implements Serializable {
         th.addAdvisory(deadLockAdvisory);
       }
 
-      // System.out.println("Final Deadlock Chain Stack contains:\n");
+      theLogger.fine("Final Deadlock Chain Stack contains:\n");
       StringBuffer sbuf = new StringBuffer("Deadlock Chain:\n--------------------------\n");
       sbuf.append(deadlockMsg + "\n");
       int size = deadlockChain.size();
@@ -186,7 +190,7 @@ public class LockInfo implements Serializable {
       ThreadAdvisory.runLockInfoAdvisory(lock);
 
       if (currentOwnerThread == null) {
-        // System.out.println("Contention for an unlockedlock:" + currentLockId
+        // theLogger.fine("Contention for an unlockedlock:" + currentLockId
         // +
         // " Possible due to high concurrency..\nSo skipping that from Deadlock check");
         continue;
@@ -221,7 +225,7 @@ public class LockInfo implements Serializable {
       threadChainStack.push(currentOwnerThread);
       String navigationTrail = "Checking for deadlock with Thread[" + currentOwnerThread.getName()
           + "], blocked for Lock [" + blockedForLock.getLockId() + "] while holding Lock [" + currentLockId + "] ";
-      // System.out.println(navigationTrail);
+      // theLogger.fine(navigationTrail);
 
       // Check to see if the waiter on the lock can actual hold the lock
       // Deadlock will occur when waiter on this lock blocks the owner of the

@@ -15,10 +15,12 @@
  */
 package com.oracle.ateam.threadlogic.xml;
 
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import java.io.InputStream;
 import java.util.ArrayList;
 
 
+import java.util.logging.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -28,6 +30,8 @@ import org.w3c.dom.NodeList;
  * @author saparam
  */
 public class GroupsDefnParser extends DefaultDomParser{
+  
+  private static Logger theLogger = CustomLogger.getLogger(GroupsDefnParser.class.getSimpleName());
   
 	private static final String complexGrp = "ComplexGroup";
   private static final String simpleGrp = "SimpleGroup";
@@ -70,11 +74,11 @@ public class GroupsDefnParser extends DefaultDomParser{
 				
 				if (grpName.equals("SimpleGroup")) {
           SimpleGroup e = getSimpleGroup(el);
-          System.out.println("Parsed: " + e);
+          theLogger.finest("Parsed: " + e);
           simpleGrpList.add(e);
         } else {
           ComplexGroup e = getComplexGroup(el);
-          System.out.println("Parsed: " + e);
+          theLogger.finest("Parsed: " + e);
           complexGrpList.add(e);
         }
 			}
@@ -109,7 +113,7 @@ public class GroupsDefnParser extends DefaultDomParser{
       
       return smpGrp;
     } catch(Exception e) {
-      System.out.println("Error parsing SimpleGroup definition with name: " + name 
+      theLogger.warning("Error parsing SimpleGroup definition with name: " + name 
               + ", associated error: " + e.getMessage());
       e.printStackTrace();
       throw e;
@@ -124,7 +128,7 @@ public class GroupsDefnParser extends DefaultDomParser{
       //name, visibility
       name = getTextValue(grpEl,"Name");
       boolean visible = getBooleanValue(grpEl,"Visible");
-      //System.out.println("Parsing ComplexElement:" + name);
+      theLogger.finest("Parsing ComplexElement:" + name);
       ComplexGroup complexGrp = new ComplexGroup(name, visible);
 
       String enclosingTag = "Inclusions";
@@ -146,7 +150,7 @@ public class GroupsDefnParser extends DefaultDomParser{
 
       return complexGrp;
     } catch(Exception e) {
-      System.out.println("Error parsing ComplexGroup definition with name: " + name 
+      theLogger.warning("Error parsing ComplexGroup definition with name: " + name 
           + ", associated error: " + e.getMessage());
       e.printStackTrace();
       throw e;

@@ -19,6 +19,7 @@ import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.LockInfo;
 import com.oracle.ateam.threadlogic.ThreadState;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import com.oracle.ateam.threadlogic.xml.AdvisoryMapParser;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -26,6 +27,7 @@ import java.io.FileInputStream;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,10 +44,12 @@ public class ThreadAdvisory implements Comparable, Serializable {
   public static String THREADTYPEMAPPER_KEYS;
 
   public static final ArrayList<String> wildcardKeywordList = new ArrayList<String>();
-  public static final Hashtable<String, ThreadType> threadTypeMapper = new Hashtable<String, ThreadType>();
+  
   public static final Hashtable<String, ThreadAdvisory> threadAdvisoryMap = new Hashtable<String, ThreadAdvisory>();
   public static final Hashtable<String, ThreadAdvisory> threadAdvisoryMapById = new Hashtable<String, ThreadAdvisory>();
 
+  private static Logger theLogger = CustomLogger.getLogger(ThreadAdvisory.class.getSimpleName());
+  
   static {
     DICTIONARY_KEYS = createAdvisoryMapFromExternalResources();
     String internalKeys = createAdvisoryMapFromInternalResources(ThreadLogicConstants.ADVISORY_MAP_XML);
@@ -55,8 +59,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
     } else if (DICTIONARY_KEYS.length() == 0) {
       DICTIONARY_KEYS = internalKeys;
     }
-    System.out.println("Complete keyword patterns: " + DICTIONARY_KEYS);
-    populateThreadTypeMapper();      
+    theLogger.fine("Complete keyword patterns: " + DICTIONARY_KEYS);
   }
 
   private static String createAdvisoryMapFromExternalResources() {
@@ -72,7 +75,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
         File[] listOfFiles = folder.listFiles();
         for(File file: listOfFiles) {
         try {
-          System.out.println("\n\nReading advisories from External resources: " + file.getAbsolutePath()+ "\n");
+          theLogger.info("\n\nReading advisories from External resources: " + file.getAbsolutePath()+ "\n");
           BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
           advisoryMapParser = new AdvisoryMapParser(bis);
           advisoryMapParser.run();          
@@ -86,7 +89,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
             sbuf.append("|" + keywordList);            
           }
         } catch(Exception ioe) {
-          System.out.println("Problem in reading advisories from file: " + externalAdvisoryDirectory);
+          theLogger.warning("Problem in reading advisories from file: " + externalAdvisoryDirectory);
           ioe.printStackTrace();
         }
       }  
@@ -103,7 +106,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
     StringBuffer sbuf = new StringBuffer();     
     
     try {
-      System.out.println("\n\nAttempting to load Advisory Map from packaged threadlogic jar: " + advisoryMapXml + "\n");
+      theLogger.fine("\n\nAttempting to load Advisory Map from packaged threadlogic jar: " + advisoryMapXml + "\n");
       ClassLoader cl = ThreadLogicConstants.class.getClassLoader();
 
       advisoryMapParser = new AdvisoryMapParser(cl.getResourceAsStream(advisoryMapXml));
@@ -119,7 +122,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
       }
       
     } catch (Exception e) {
-      System.out.println("Unable to load or parse the Advisory Map Resource:" + e.getMessage());
+      theLogger.warning("Unable to load or parse the Advisory Map Resource:" + e.getMessage());
       e.printStackTrace();
     }
     
@@ -139,11 +142,11 @@ public class ThreadAdvisory implements Comparable, Serializable {
         String key = tadv.getKeyword();
         
         if (threadAdvisoryMap.containsKey(key)) {
-          System.out.println("WARNING!! Keyword already exists:" + key + ", use different keyword or update existing Advisory");
+          theLogger.warning("WARNING!! Keyword already exists:" + key + ", use different keyword or update existing Advisory");
           continue;
         }
         
-        System.out.println("Parsed Advisory: " + tadv);
+        theLogger.finest("Parsed Advisory: " + tadv);
     
         threadAdvisoryMap.put(key, tadv);
         if (key.contains("*"))
@@ -161,7 +164,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
           for(int i = 1; i < noOfKeywords; i++) {
             key = tadv.getKeywordList()[i];
             if (threadAdvisoryMap.containsKey(key)) {
-              System.out.println("WARNING!! Keyword already exists:" + key + " from Advisory:" + threadAdvisoryMap.get(key) + ", use different keyword or update existing Advisory");
+              theLogger.warning("WARNING!! Keyword already exists:" + key + " from Advisory:" + threadAdvisoryMap.get(key) + ", use different keyword or update existing Advisory");
               continue;
             }
             threadAdvisoryMap.put(key, tadv);
@@ -176,62 +179,6 @@ public class ThreadAdvisory implements Comparable, Serializable {
     
   }
   
-  public static void populateThreadTypeMapper() {
-
-    threadTypeMapper.put("oracle.dfw", ThreadType.ORCL);
-    threadTypeMapper.put("oracle.dms", ThreadType.ORCL);
-    threadTypeMapper.put("oracle.core.ojdl", ThreadType.ORCL);
-    threadTypeMapper.put("oracle.ias.cache.WorkerThread", ThreadType.ORCL);
-    threadTypeMapper.put("orabpel.engine.pool", ThreadType.SOA);
-    threadTypeMapper.put("orabpel.invoke.pool", ThreadType.SOA);
-    threadTypeMapper.put("HTTPClient", ThreadType.SOA);
-    threadTypeMapper.put("oracle.mds", ThreadType.SOA);
-    threadTypeMapper.put("orabpel.sweeper", ThreadType.SOA);
-    threadTypeMapper.put("com.collaxa.cube", ThreadType.SOA);
-    threadTypeMapper.put("oracle.tip.mediator", ThreadType.SOA);
-    threadTypeMapper.put("oracle.tip.b2b", ThreadType.SOA);
-    threadTypeMapper.put("com.ibi.adapters.util", ThreadType.IWAY);
-    threadTypeMapper.put("oracle.tip.adapter.jms", ThreadType.JMS_ADAPTER);
-    threadTypeMapper.put("oracle.integration.platform.blocks.event.saq", ThreadType.AQ_ADAPTER);
-    threadTypeMapper.put("netscape.ldap.LDAPConnThread", ThreadType.LDAP);
-    threadTypeMapper.put("com.tangosol.coherence", ThreadType.COHERENCE);
-
-    threadTypeMapper.put("java.util.TimerThread", ThreadType.TIMER);
-    threadTypeMapper.put("weblogic.timers.TimerThread", ThreadType.WLS_TIMER);
-    threadTypeMapper.put("java.util.concurrent.ThreadPoolExecutor", ThreadType.CUSTOM_POOL);
-    threadTypeMapper.put("com.mercury.diagnostics", ThreadType.MERCURY_DIAGNOSTICS);
-    threadTypeMapper.put("com.wily", ThreadType.WILY);
-    threadTypeMapper.put("weblogic.jms", ThreadType.WLS_JMS);
-    threadTypeMapper.put("weblogic.socket.Muxer", ThreadType.WLS_MUXER);
-    threadTypeMapper.put("weblogic.socket.SocketMuxer", ThreadType.WLS_MUXER);
-    threadTypeMapper.put("weblogic.socket.NTSocketMuxer", ThreadType.WLS_MUXER);
-    threadTypeMapper.put("weblogic.messaging", ThreadType.WLS_JMS);
-    threadTypeMapper.put("weblogic.server.channels.DynamicListenThread", ThreadType.WLS);
-    threadTypeMapper.put("com.octetstring.vde", ThreadType.WLS_EMBEDDED_LDAP);
-    threadTypeMapper.put("weblogic.store.internal.PersistentStoreImpl", ThreadType.WLS);
-    threadTypeMapper.put("weblogic.cluster.MulticastManager", ThreadType.WLS);
-    threadTypeMapper.put("weblogic.work.j2ee.J2EEWorkManager", ThreadType.WLS);
-    threadTypeMapper.put("weblogic.work.ExecuteThread", ThreadType.WLS);
-    threadTypeMapper.put("weblogic.work.DaemonWorkThread", ThreadType.WLS);
-    threadTypeMapper.put("weblogic.kernel.Default", ThreadType.WLS);
-
-    StringBuffer sbuf = new StringBuffer();
-    boolean empty = true;
-    for (Object key : threadTypeMapper.keySet()) {
-      if (!empty)
-        sbuf.append("|");
-      sbuf.append("(");
-      sbuf.append(key);
-      sbuf.append(")");
-      empty = false;
-    }
-    THREADTYPEMAPPER_KEYS = sbuf.toString();
-  }
-
-  public static ThreadType mapThreadType(String threadLabel) {
-    return threadTypeMapper.get(threadLabel);
-  }
-
   public ThreadAdvisory() {
   }
 
@@ -439,29 +386,6 @@ public class ThreadAdvisory implements Comparable, Serializable {
     return (this.callPattern.hashCode() & this.keyword.hashCode());
   }
 
-  public static ThreadType identifyThreadType(String queueName, String threadStack) {
-
-    // Search if the Queue Name is also a saved type
-    ThreadType type = ThreadAdvisory.mapThreadType(queueName);
-    if (type != null)
-      return type;
-
-    Pattern threadTypePattern = Pattern.compile(ThreadAdvisory.THREADTYPEMAPPER_KEYS);
-    Matcher m = threadTypePattern.matcher(threadStack);
-
-    if (m.find()) {
-      // JRockit uses / as package path separator compared to Hotspot, so change
-      // all / to . for lookup against dictionary
-      type = ThreadAdvisory.mapThreadType(m.group().replaceAll("/", "."));
-      return type;
-    }
-
-    if (threadStack.contains("weblogic"))
-      return ThreadType.WLS;
-
-    return ThreadType.UNKNOWN;
-  }
-
   public static void runThreadAdvisory(ThreadInfo threadInfo) {
 
     String threadName = threadInfo.getName();
@@ -512,7 +436,7 @@ public class ThreadAdvisory implements Comparable, Serializable {
       
       ThreadAdvisory advisory = ThreadAdvisory.lookupThreadAdvisory(keyword);
       if (advisory == null) {
-        System.out.println("Unable to find matching advisory with keyword:" + keyword);
+        theLogger.warning("Unable to find matching advisory with keyword:" + keyword);
       }
       
       if (advisory != null && !advisoryList.contains(advisory))
@@ -616,7 +540,6 @@ public class ThreadAdvisory implements Comparable, Serializable {
     
     // Empty up the lock info as these can be unique and result in cache misses
     subset = subset.replaceAll("<.*>", "");
-    //System.out.println("########Hot call after replacement:" + subset);
     
     return subset;
 

@@ -21,6 +21,7 @@ import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
 import com.oracle.ateam.threadlogic.advisories.ThreadGroupFactory;
 import com.oracle.ateam.threadlogic.advisories.ThreadGroup.HotCallPattern;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import com.oracle.ateam.threadlogic.xml.ComplexGroup;
 import com.oracle.ateam.threadlogic.xml.GroupsDefnParser;
 import com.oracle.ateam.threadlogic.xml.SimpleGroup;
@@ -33,6 +34,7 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
@@ -62,6 +64,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   
   private static Filter allWLSThreadStackFilter, allWLSThreadNameFilter;
   
+  private static Logger theLogger = CustomLogger.getLogger(ExternalizedNestedThreadGroupsCategory.class.getName());
   
   public static String DICTIONARY_KEYS;
   public static String THREADTYPEMAPPER_KEYS;
@@ -87,8 +90,8 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     allWLSThreadStackFilter = new Filter("WLS Stack", wlsThreadStackPattern, 2, false, false, true);  
     allWLSThreadNameFilter = new Filter("WLS Name", wlsThreadNamePattern, 0, false, false, true);
     
-    System.out.println("WLS Thread Stack Pattern: " + wlsThreadStackPattern);
-    System.out.println("WLS Thread Name Pattern: " + wlsThreadNamePattern);
+    theLogger.finest("WLS Thread Stack Pattern: " + wlsThreadStackPattern);
+    theLogger.finest("WLS Thread Name Pattern: " + wlsThreadNamePattern);
   }
   
   /**
@@ -101,17 +104,17 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     String externalGroupDefnDirectory = System.getProperty(GROUPDEFS_EXT_DIRECTORY, "groupsdef");
     File folder = new File(externalGroupDefnDirectory);
     if (folder.exists()) {              
-      System.out.println("\n\nAttempting to load Groups Defn files from directory: " + externalGroupDefnDirectory);
-      System.out.println("Alert!! There can only be two files - WLSGroups.xml and NonWLSGroups.xml files within the above directory");
+      theLogger.info("\n\nAttempting to load Groups Defn files from directory: " + externalGroupDefnDirectory);
+      theLogger.warning("Alert!! There can only be two files - WLSGroups.xml and NonWLSGroups.xml files within the above directory");
       
       File[] listOfFiles = folder.listFiles();
       for(File file: listOfFiles) {
         try {        
-          System.out.println("Attempting to load GroupsDefn from external resource: " + file.getAbsolutePath());
+          theLogger.info("Attempting to load GroupsDefn from external resource: " + file.getAbsolutePath());
           BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file));
           
           boolean isWLSGroup = !file.getName().toLowerCase().contains("nonwls");
-          System.out.println("Parsing file - " + file.getName() + " as a WLS Group Definition file??:" + isWLSGroup);
+          theLogger.info("Parsing file - " + file.getName() + " as a WLS Group Definition file??:" + isWLSGroup);
           
           ArrayList<Filter> filterList = parseFilterList(bis, isWLSGroup);    
           if (filterList.size() > 0) {
@@ -121,7 +124,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
               allNonWLSStaticFilterList = filterList;
           }
         } catch(Exception ioe) {
-          System.out.println("ERROR!! Problem in reading Group Defn from external file: " + ioe.getMessage());
+          theLogger.warning("ERROR!! Problem in reading Group Defn from external file: " + ioe.getMessage());
           ioe.printStackTrace();
         }
       }        
@@ -133,7 +136,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   private static ArrayList<Filter> createInternalFilterList(String groupsDefnXml) { 
     
     ClassLoader cl = ThreadLogicConstants.class.getClassLoader();
-    System.out.println("\n\nAttempting to load GroupsDefn from packaged threadlogic jar: " + groupsDefnXml);
+    theLogger.finest("\n\nAttempting to load GroupsDefn from packaged threadlogic jar: " + groupsDefnXml);
     boolean isWLSGroup = !(groupsDefnXml.toLowerCase().contains("nonwls"));
     return parseFilterList(cl.getResourceAsStream(groupsDefnXml), isWLSGroup);    
   }
@@ -179,7 +182,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
       }
 
     } catch (Exception e) {
-      System.out.println("ERROR!! Unable to load or parse the Group Definition Resource:" + e.getMessage());
+      theLogger.warning("ERROR!! Unable to load or parse the Group Definition Resource:" + e.getMessage());
       e.printStackTrace();
     }
     return filterArr;
@@ -218,9 +221,9 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     simpleFilter.setExcludedAdvisories(smpGrp.getExcludedAdvisories());
     simpleFilter.setInfo(filterName);
 
-    //System.out.println("SimpleFilter:" + filterName + ", patternList:" + pattern);  
+    
     if (allKnownFilterMap.containsKey(filterName)) {
-       System.out.println("Group Definition already exists:" + filterName + ", use different name or update existing Group Defintion");       
+       theLogger.warning("Group Definition already exists:" + filterName + ", use different name or update existing Group Defintion");       
     } else {
       allKnownFilterMap.put(filterName, simpleFilter);
     }
@@ -242,7 +245,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     for (String simpleGrpKey : cmplxGrp.getInclusionList()) {
       Filter simpleFilter = allKnownFilterMap.get(simpleGrpKey);
       if (simpleFilter == null) {
-        System.out.println("ERROR: Simple Group referred by name:" + simpleGrpKey + " not declared previously or name mismatch!!, Fix the error");
+        theLogger.warning("ERROR: Simple Group referred by name:" + simpleGrpKey + " not declared previously or name mismatch!!, Fix the error");
         Thread.dumpStack();
         continue;
       }
@@ -253,7 +256,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     for (String simpleGrpKey : cmplxGrp.getExclusionList()) {
       Filter simpleFilter = allKnownFilterMap.get(simpleGrpKey);
       if (simpleFilter == null) {
-        System.out.println("ERROR: Simple Group referred by name:" + simpleGrpKey + " not declared previously or name mismatch!!, Fix the error");
+        theLogger.warning("ERROR: Simple Group referred by name:" + simpleGrpKey + " not declared previously or name mismatch!!, Fix the error");
         Thread.dumpStack();
         continue;
       }
@@ -451,9 +454,9 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
       if (excludedAdvisories != null && excludedAdvisories.size() > 0) {
         for(String advisoryId: filter.getExcludedAdvisories()) {
 
-          //System.out.println(name + " > Adding exclusion for:" + advisoryId);
+          //theLogger.finest(name + " > Adding exclusion for:" + advisoryId);
           ThreadAdvisory tadv = ThreadAdvisory.lookupThreadAdvisoryByName(advisoryId);
-          //System.out.println("Found ThreadAdvisory :" + tadv);
+          //theLogger.finest("Found ThreadAdvisory :" + tadv);
           if (tadv != null)
             tg.addToExclusionList(tadv);
         }      
@@ -463,7 +466,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
       for (Iterator<ThreadInfo> iterator = pendingThreadList.iterator(); iterator.hasNext();) {
         ThreadInfo ti = iterator.next();
         if (filter.matches(ti)) {
-          //System.out.println("Found Match against filter: " + filter.getName() + ", for Thread:" + ti.getName());
+          //theLogger.finest("Found Match against filter: " + filter.getName() + ", for Thread:" + ti.getName());
           tg.addThread(ti);
           ti.setThreadGroup(tg);
           iterator.remove();

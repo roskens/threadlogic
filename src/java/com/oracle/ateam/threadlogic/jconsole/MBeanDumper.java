@@ -32,6 +32,7 @@
  */
 package com.oracle.ateam.threadlogic.jconsole;
 
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import java.io.IOException;
 import java.lang.management.LockInfo;
 import java.lang.management.ManagementFactory;
@@ -42,6 +43,7 @@ import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.logging.Logger;
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
 import javax.management.MBeanOperationInfo;
@@ -70,6 +72,9 @@ public class MBeanDumper {
   private String findDeadlocksMethodName = "findDeadlockedThreads";
   private boolean canDumpLocks = true;
   private String javaVersion;
+  
+  private static Logger theLogger = CustomLogger.getLogger(MBeanDumper.class.getSimpleName());
+  
 
   /**
    * Constructs a ThreadMonitor object to get thread information
@@ -96,6 +101,7 @@ public class MBeanDumper {
       dumpPrefix += rmbean.getVmName() + " " + rmbean.getVmVersion() + "\n";
       javaVersion = rmbean.getVmVersion();
     } catch (IOException ex) {
+      theLogger.severe("Unable to connect or read: " + ex.getMessage());
       ex.printStackTrace();
     }
   }
@@ -141,7 +147,7 @@ public class MBeanDumper {
         } catch (InterruptedException ex) {
           ex.printStackTrace();
         }
-        //System.out.println("retrying " + retries);
+        theLogger.finest("retrying " + retries);
         retries++;
       }
     }
@@ -348,8 +354,7 @@ public class MBeanDumper {
          * hack for jconsole dumping itself, for strange reasons, vm 
          * doesn't provide findDeadlockedThreads, but 1.5 ops fail with
          * an error.
-         */
-        //System.out.println("java.version=" +javaVersion);
+         */        
         canDumpLocks = javaVersion.startsWith("1.6");
       }
     } catch (IntrospectionException e) {

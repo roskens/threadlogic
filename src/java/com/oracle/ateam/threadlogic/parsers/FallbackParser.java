@@ -42,6 +42,7 @@ import com.oracle.ateam.threadlogic.categories.TableCategory;
 import com.oracle.ateam.threadlogic.categories.TreeCategory;
 import com.oracle.ateam.threadlogic.monitors.FallbackMonitorMap;
 import com.oracle.ateam.threadlogic.monitors.MonitorMap;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import com.oracle.ateam.threadlogic.utils.DateMatcher;
 import com.oracle.ateam.threadlogic.utils.IconFactory;
 
@@ -54,6 +55,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Stack;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -86,6 +88,8 @@ public class FallbackParser extends AbstractDumpParser {
   
   protected boolean determinedJVMType = false;
 
+  private static Logger theLogger = CustomLogger.getLogger(FallbackParser.class.getSimpleName());
+  
   /**
    * Creates a new instance of SunJDKParser
    */
@@ -389,12 +393,7 @@ public class FallbackParser extends AbstractDumpParser {
       Pattern p = Pattern.compile(patternMask);
       Matcher m = p.matcher(name);
 
-      m.matches();
-      /*
-      for (int iLoop = 1; iLoop < m.groupCount(); iLoop++) {
-        System.out.println(iLoop + ": " + m.group(iLoop));
-      }
-       */
+      m.matches();      
     
       tokens = new String[7];
       tokens[0] = m.group(1); // name
@@ -405,7 +404,7 @@ public class FallbackParser extends AbstractDumpParser {
 
     } catch(Exception e) { 
       
-      System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name);           
+      theLogger.warning("WARNING!! Unable to parse Thread Tokens with name:" + name);           
       //e.printStackTrace();
       
       int index = name.indexOf("\"", 1);
@@ -452,12 +451,7 @@ public class FallbackParser extends AbstractDumpParser {
       Pattern p = Pattern.compile(patternMask);
       Matcher m = p.matcher(name);
 
-      m.matches();
-      /*
-      for (int iLoop = 1; iLoop < m.groupCount(); iLoop++) {
-        System.out.println(iLoop + ": " + m.group(iLoop));
-      }
-       */
+      m.matches();      
 
       tokens = new String[7];
       tokens[0] = m.group(1); // name
@@ -467,7 +461,7 @@ public class FallbackParser extends AbstractDumpParser {
 
     } catch(Exception e) { 
 
-      System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name  );
+      theLogger.warning("WARNING!! Unable to parse Thread Tokens with name:" + name  );
 
       int index = name.indexOf("\"", 1);
       if (index > 1) {
@@ -908,10 +902,10 @@ public class FallbackParser extends AbstractDumpParser {
           Iterator iterLocks = threadsInMap[MonitorMap.LOCK_THREAD_POS].keySet().iterator();
           while (iterLocks.hasNext()) {
             String threadOwner = (String) iterLocks.next();
-            // System.out.println("ThreadOwner :" + threadOwner);
+            theLogger.finest("ThreadOwner :" + threadOwner);
             String stackTrace = (String) threadsInMap[MonitorMap.LOCK_THREAD_POS].get(threadOwner);
             if (stackTrace == null) {
-              // System.out.println("ThreadOwner :" + threadOwner + ", owner stack is null");
+              theLogger.finest("ThreadOwner :" + threadOwner + ", owner stack is null");
               // Search for the owner of the lock
               ThreadInfo ownerThread = overallTDI.getThreadByName(threadOwner);
               if (ownerThread != null)
@@ -1108,7 +1102,7 @@ public class FallbackParser extends AbstractDumpParser {
       //mmap.addWaitToMonitor(blockedLockId, thread.getFilteredName(), content);
     }
 
-    System.out.println("Thread : " + content + ", blocked forLock: " + blockedForLock);
+    theLogger.finest("Thread : " + content + ", blocked forLock: " + blockedForLock);
     
     ThreadInfo lockOwner = blockedForLock.getLockOwner();
     beginIndex = content.indexOf(" owned by ");

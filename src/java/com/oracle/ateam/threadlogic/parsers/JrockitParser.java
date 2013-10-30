@@ -36,6 +36,7 @@ import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.categories.Category;
 import com.oracle.ateam.threadlogic.monitors.JRockitMonitorMap;
 import com.oracle.ateam.threadlogic.parsers.AbstractDumpParser.LineChecker;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import com.oracle.ateam.threadlogic.utils.DateMatcher;
 
 import java.io.BufferedReader;
@@ -43,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,6 +60,8 @@ public class JrockitParser extends AbstractDumpParser {
   // private boolean foundClassHistograms = false;
   // private boolean withCurrentTimeStamp = false;
 
+  private static Logger theLogger = CustomLogger.getLogger(JrockitParser.class.getSimpleName());
+  
   private static Pattern jrockitDatePattern = Pattern.compile("[MTWFSa-z]{3}\\s[a-zA-Z]{3}\\s*\\d{1,2}\\s\\d\\d:\\d\\d:\\d\\d\\s\\d\\d\\d\\d");  
   
   /**
@@ -113,7 +117,7 @@ public class JrockitParser extends AbstractDumpParser {
           if (m != null) {
             dateEntry = line;
             foundDate = true;
-            System.out.println("Timestamp:" + dateEntry);
+            theLogger.finest("Timestamp:" + dateEntry);
             return;
           } 
         }
@@ -133,7 +137,7 @@ public class JrockitParser extends AbstractDumpParser {
         if (line != null) {
           int index = line.indexOf(" JRockit(R) ");
           if (index >= 0) {            
-            System.out.println("JVM Version:" + line);
+            theLogger.info("JVM Version:" + line);
             super.setJvmVersion(line.substring(index).trim());
             return;
           }
@@ -211,11 +215,6 @@ public class JrockitParser extends AbstractDumpParser {
       Matcher m = p.matcher(name);
 
       m.matches();
-      /*
-      for (int iLoop = 1; iLoop < m.groupCount(); iLoop++) {
-        System.out.println(iLoop + ": " + m.group(iLoop));
-      }
-       */
 
       tokens = new String[7];
       tokens[0] = m.group(1); // name
@@ -225,7 +224,7 @@ public class JrockitParser extends AbstractDumpParser {
 
     } catch(Exception e) { 
 
-      System.out.println("WARNING!! Unable to parse Thread Tokens with name:" + name  );
+      theLogger.warning("WARNING!! Unable to parse Thread Tokens with name:" + name  );
       //e.printStackTrace();
       return doHardParsing(name);
     }
@@ -354,7 +353,7 @@ public class JrockitParser extends AbstractDumpParser {
                 // Call addLockToMonitor() just to cover cases like threads that are holding locks 
                 // that are not visible in the thread stack trace (like ReentrantLocks)
                 mmap.addLockToMonitor(prevLockObj, ownerThreadInfo.getName(), ownerThreadInfo.getContent()); 
-                //System.out.println("Added owner: " + blockedThread + ", for lock: " + prevLockObj);
+                //theLogger.finest("Added owner: " + blockedThread + ", for lock: " + prevLockObj);
             }          
 
             prevLockObj = lockObj;
@@ -366,9 +365,9 @@ public class JrockitParser extends AbstractDumpParser {
             if (m.matches()) {
               ownerThread = "\"" + m.group(1).replaceAll("\\[.*\\] ", "") + "\"";
               
-              //System.out.println("Blocked Thread: " + blockedThread);
-              //System.out.println("Owner Thread: " + ownerThread);
-              //System.out.println("Lock Obj: " + lockObj);
+              //theLogger.finest("Blocked Thread: " + blockedThread);
+              //theLogger.finest("Owner Thread: " + ownerThread);
+              //theLogger.finest("Lock Obj: " + lockObj);
               
               
               ThreadInfo ownerThreadInfo = threadMap.get(ownerThread);

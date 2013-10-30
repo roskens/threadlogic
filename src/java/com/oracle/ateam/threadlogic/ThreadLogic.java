@@ -33,6 +33,7 @@ import com.oracle.ateam.threadlogic.parsers.DumpParserFactory;
 import com.oracle.ateam.threadlogic.parsers.FallbackParser;
 import com.oracle.ateam.threadlogic.utils.AppInfo;
 import com.oracle.ateam.threadlogic.utils.Browser;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import com.oracle.ateam.threadlogic.utils.HistogramTableModel;
 import com.oracle.ateam.threadlogic.utils.MonitorComparator;
 import com.oracle.ateam.threadlogic.utils.PrefManager;
@@ -113,6 +114,7 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.swing.BorderFactory;
@@ -202,6 +204,16 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   // Placeholder to initialize ThreadLogic AppInfo ahead of everything else...
   private static AppInfo appInfoInitializer = new AppInfo();
 
+  private static Logger theLogger = CustomLogger.getLogger(ThreadLogic.class.getSimpleName());
+  
+  /*
+  static {
+    theLogger.addHandler(LogHandler.getHandler());    
+  }
+   * 
+   */
+  
+          
   /**
    * singleton access method for ThreadLogic
    */
@@ -227,11 +239,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     super(new BorderLayout());
 
     if (System.getProperty("threadlogic.advisories") == null) {
-      System.out.println("Customized Advisories!!\nUse -Dthreadlogic.advisories=directory... command line argument to pick your own set of custom \nadvisories from a specific directory to be used in ADDITION TO the ones packaged within Threadlogic jar file.\nExtract the AdvisoryMap.xml from com/oracle/ateam/threadlogic/resources package in the jar \nand use that as a template to create custom advisories. Use unique keywords and names to avoid conflicts.\n\tExample:  -Dthreadlogic.advisories=/user/tlogic/advisories\n\n");
+      theLogger.fine("Customized Advisories!!\nUse -Dthreadlogic.advisories=directory... command line argument to pick your own set of custom \nadvisories from a specific directory to be used in ADDITION TO the ones packaged within Threadlogic jar file.\nExtract the AdvisoryMap.xml from com/oracle/ateam/threadlogic/resources package in the jar \nand use that as a template to create custom advisories. Use unique keywords and names to avoid conflicts.\n\tExample:  -Dthreadlogic.advisories=/user/tlogic/advisories\n\n");
     }
 
     if (System.getProperty("threadlogic.groups") == null) {
-      System.out.println("Customized Grouping!!\nUse -Dthreadlogic.groups=directory... command line argument to pick your customized set of group \ndefinitions from a specific directory INSTEAD OF ones packaged within Threadlogic jar file. \nExtract the NonWLSGroups.xml & WLSGroups.xml from com/oracle/ateam/threadlogic/resources package \nin the jar and use that as a template to customize or create custom Groups. \nEnsure the names for the files are retained as its needed for forming WLS & NonWLS parent groups.\n\tExample:  -Dthreadlogic.groups=/user/tlogic/groups\n\n");
+      theLogger.fine("Customized Grouping!!\nUse -Dthreadlogic.groups=directory... command line argument to pick your customized set of group \ndefinitions from a specific directory INSTEAD OF ones packaged within Threadlogic jar file. \nExtract the NonWLSGroups.xml & WLSGroups.xml from com/oracle/ateam/threadlogic/resources package \nin the jar and use that as a template to customize or create custom Groups. \nEnsure the names for the files are retained as its needed for forming WLS & NonWLS parent groups.\n\tExample:  -Dthreadlogic.groups=/user/tlogic/groups\n\n");
     }
 
     if (setLF) {
@@ -360,9 +372,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
               // launch a browser with the appropriate URL
               Browser.open(evt.getURL().toString());
             } catch (InterruptedException e) {
-              System.out.println("Error launching external browser.");
+              theLogger.warning("Error launching external browser.");
             } catch (IOException e) {
-              System.out.println("I/O error launching external browser." + e.getMessage());
+              theLogger.warning("I/O error launching external browser." + e.getMessage());
               e.printStackTrace();
             }
           }
@@ -637,7 +649,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     try {
       InputStream bis = createTempFileFromClipboard(dump.getBytes());
     } catch (Exception e) {
-      System.out.println("Error in creating temporary file with clipboard content:" + e.getMessage());
+      theLogger.warning("Error in creating temporary file with clipboard content:" + e.getMessage());
     }
 
     ((LogFileContent) logFile.getUserObject()).appendToContentBuffer(dump);
@@ -1290,7 +1302,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
     // If the ThreadModel is for the Merge/ThreadDiffs and user has selected thread progress columns, 
     // then try to highlight the thread stack content belonging to the selected dump    
-    if ((threadsModel instanceof ThreadDiffsTableModel) && (cols[cols.length - 1] > advisoryColmn)) {
+    if ((cols.length > 0) && (threadsModel instanceof ThreadDiffsTableModel) && (cols[cols.length - 1] > advisoryColmn)) {
 
       // There can be cases when we are doing diff between log files 
       // and every dump is tagged as "Dump No. 1"
@@ -2821,11 +2833,11 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     if (ThreadLogic.defaultTDumpDir != null) {
       String logDir = ThreadLogic.defaultTDumpDir;
       File logDirFile = new File(logDir);
-      System.out.println("Log Directory: " + logDir);
+      theLogger.fine("Log Directory: " + logDir);
 
       File[] logFiles = logDirFile.listFiles();
       if (logFiles.length < 0) {
-        System.out.println("No files found under the specified Log Directory:" + logDir);
+        theLogger.warning("No files found under the specified Log Directory:" + logDir);
       }
 
       ThreadLogic.get(true).openFiles(logFiles, false);
@@ -2985,7 +2997,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       bis = new BufferedInputStream(new FileInputStream(tempFile));
 
     } catch (IOException e) {
-      System.out.println("Unable to create a temporary file to store clipboard contents: " + e.getMessage());
+      theLogger.warning("Unable to create a temporary file to store clipboard contents: " + e.getMessage());
       e.printStackTrace();
       throw e;
     }

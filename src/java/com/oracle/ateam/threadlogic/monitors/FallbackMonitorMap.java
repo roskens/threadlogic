@@ -25,7 +25,6 @@ public class FallbackMonitorMap extends MonitorMap {
     if ((index > 0)) {
       int end = line.indexOf(" ", index+3);
       String monitor = line.substring(index + 6, end != -1 ? end : line.length());
-      //System.out.println("Adding to monitors..." + monitor);
 
       if (line.contains(" BLOCKED on"))  {
         addWaitToMonitor(monitor, threadTitle, content);

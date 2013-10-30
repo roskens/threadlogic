@@ -41,6 +41,7 @@ import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
 
 import java.math.BigInteger;
 import java.util.Vector;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.table.AbstractTableModel;
@@ -52,6 +53,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
  * @author irockel
  */
 public class ThreadsTableModel extends AbstractTableModel {
+  
+  private static Logger theLogger = CustomLogger.getLogger(ThreadsTableModel.class.getSimpleName());
   
   public static class ThreadData {
 
@@ -87,7 +90,7 @@ public class ThreadsTableModel extends AbstractTableModel {
         tid = parseNumbers(columns[1]);
         nid = parseNumbers(columns[2]);
         } catch(Exception e) {
-          System.out.println("Error in parsing Thread tid/nid: " + ti.getFilteredName());
+          theLogger.warning("Error in parsing Thread tid/nid: " + ti.getFilteredName());
           e.printStackTrace();
         }
     }

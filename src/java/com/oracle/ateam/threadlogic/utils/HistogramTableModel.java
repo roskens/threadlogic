@@ -35,6 +35,7 @@
 package com.oracle.ateam.threadlogic.utils;
 
 import java.util.Vector;
+import java.util.logging.Logger;
 import javax.swing.table.AbstractTableModel;
 
 /**
@@ -43,6 +44,9 @@ import javax.swing.table.AbstractTableModel;
  * @author irockel
  */
 public class HistogramTableModel extends AbstractTableModel {
+  
+  private static Logger theLogger = CustomLogger.getLogger(HistogramTableModel.class.getSimpleName());
+  
   private static int DEFINED_ROWS = 3;
 
   private Vector elements = new Vector();
@@ -189,7 +193,7 @@ public class HistogramTableModel extends AbstractTableModel {
    *          the name of the class
    */
   private boolean isNotHotspotClass(String className) {
-    // System.out.println("className" + className + " eval=" +
+    // theLogger.fineste("className" + className + " eval=" +
     // (!isShowHotspotClasses() && className.startsWith("<")));
     return (isShowHotspotClasses() || !(className.indexOf("[internal HotSpot]") >= 0));
   }

@@ -12,10 +12,11 @@
 package com.oracle.ateam.threadlogic;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
 import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
+import java.util.logging.Logger;
 
 /**
  * Info (name, content tuple) for thread dump display tree. Modified by Sabha to
@@ -24,6 +25,7 @@ import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
  * @author irockel
  */
 public class ThreadInfo extends ThreadLogicElement {
+  
   private String content;
   private String info;
   private int stackLines;
@@ -52,7 +54,10 @@ public class ThreadInfo extends ThreadLogicElement {
   private String ctxData;
   
   public static final String CONTEXT_DATA_SEPARATOR = ";;"; 
-
+  
+  private static Logger theLogger = CustomLogger.getLogger(ThreadLogic.class.getSimpleName());
+  
+  
   public ThreadInfo(String name, String info, String content, int stackLines, String[] tableTokens) {
     super(name);
     setFilteredName();
@@ -182,8 +187,7 @@ public class ThreadInfo extends ThreadLogicElement {
     if ((tokens != null) && tokens.length > 2)
       nameId = getFilteredName() + tokens[1];
     else
-      nameId = getFilteredName();
-    //System.out.println("Complete Name: " + getName() + ", NameId: " + nameId);
+      nameId = getFilteredName();    
   }
   
   public String getId() {
@@ -271,8 +275,8 @@ public class ThreadInfo extends ThreadLogicElement {
   }
 
   public void setBlockedForLock(String lockId) {
-     //System.out.println("setBlockedForLock: '" + lockId +"', for thread:"+
-     // this.getName());
+     theLogger.finest("setBlockedForLock: '" + lockId +"', for thread:"+
+      this.getName());
     LockInfo lock = this.getParentThreadDump().findLock(lockId);
     if (lock == null) {
       lock = new LockInfo(lockId);
@@ -290,8 +294,6 @@ public class ThreadInfo extends ThreadLogicElement {
 
     for (String lockId : holdingLocks) {
       LockInfo lock = this.getParentThreadDump().findLock(lockId);
-       //System.out.println("addOwnedLocks: '" + lockId +"', for thread: "+
-       // this.getName());
       if (lock == null) {
         lock = new LockInfo(lockId);
         this.getParentThreadDump().addLock(lock);
@@ -311,7 +313,7 @@ public class ThreadInfo extends ThreadLogicElement {
   }
 
   public void runAdvisory() {
-    //System.out.println("Running advisory against Thread: " + this.name);
+    theLogger.finest("Running advisory against Thread: " + this.name);
     //Thread.dumpStack();
     this.health = HealthLevel.IGNORE;
 
@@ -326,8 +328,8 @@ public class ThreadInfo extends ThreadLogicElement {
 
         // If any of the advisory is at a higher level, set the thread health to
         // the higher level
-        // System.out.println("Advisory:"+ advisory);
-        // System.out.println("ThreadHolder health:"+ this.health);
+        theLogger.finest("Advisory:"+ advisory);
+        theLogger.finest("ThreadHolder health:"+ this.health);
         if (advisory.getHealth().ordinal() > this.health.ordinal()) {
           this.health = advisory.getHealth();
         }

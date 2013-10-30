@@ -20,11 +20,13 @@ import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.ThreadLogicElement;
 import com.oracle.ateam.threadlogic.ThreadInfo;
 import com.oracle.ateam.threadlogic.ThreadState;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 public class ThreadGroup extends ThreadLogicElement {
 
-
+  private static Logger theLogger = CustomLogger.getLogger(ThreadGroup.class.getSimpleName());
 
   public class HotCallPattern implements Serializable {
     String threadPattern;
@@ -208,13 +210,13 @@ public class ThreadGroup extends ThreadLogicElement {
         this.addAdvisory(watchLevelAdvisory);      
     }
     
-    // System.out.println("*************** No of Hot Patterns:" +
-    // threadStackCache.keySet().size());
+    theLogger.finest("*************** No of Hot Patterns:" +
+     threadStackCache.keySet().size());
     for (String key : threadStackCache.keySet()) {
       HotCallPattern hotCallPattern = threadStackCache.get(key);
       int noOfHits = hotCallPattern.threads.size();
 
-      //System.out.println("*************** Hot Patterns - hit:" + noOfHits + ", pattern: " + hotCallPattern.geThreadPattern());
+      theLogger.finest("*************** Hot Patterns - hit:" + noOfHits + ", pattern: " + hotCallPattern.geThreadPattern());
       
       // If similar pattern is seen frequently but is not associated with Muxer
       // or JVM GC threads, then flag that as worth WATCHing
@@ -230,8 +232,8 @@ public class ThreadGroup extends ThreadLogicElement {
         this.addAdvisory(hotThreadsAdvisory);        
 
         this.hotPatternList.add(hotCallPattern);
-        //System.out.println(this.threadGroupName + ": Added a Hot call Pattern:" +
-        //  hotCallPattern.threadPattern);
+        theLogger.finest(this.threadGroupName + ": Added a Hot call Pattern:" +
+          hotCallPattern.threadPattern);
       }
     }
 

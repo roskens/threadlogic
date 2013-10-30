@@ -32,33 +32,28 @@
  */
 package com.oracle.ateam.threadlogic.parsers;
 
-import com.oracle.ateam.threadlogic.HeapInfo;
 import com.oracle.ateam.threadlogic.HistogramInfo;
 import com.oracle.ateam.threadlogic.ThreadLogic;
 import com.oracle.ateam.threadlogic.ThreadDumpInfo;
 import com.oracle.ateam.threadlogic.categories.TreeCategory;
 import com.oracle.ateam.threadlogic.monitors.MonitorMap;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import com.oracle.ateam.threadlogic.utils.DateMatcher;
 import com.oracle.ateam.threadlogic.utils.HistogramTableModel;
 import com.oracle.ateam.threadlogic.utils.IconFactory;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Stack;
 import java.util.Vector;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.JOptionPane;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
 
 /**
  * Parses SunJDK Thread Dumps. Also parses SAP and HP Dumps. Needs to be closed
@@ -72,6 +67,8 @@ public class HotspotParser extends AbstractDumpParser {
   private boolean foundClassHistograms = false;
   private boolean withCurrentTimeStamp = false;
 
+  private static Logger theLogger = CustomLogger.getLogger(HotspotParser.class.getSimpleName());
+  
   /**
    * Creates a new instance of SunJDKParser
    */
@@ -298,7 +295,7 @@ public class HotspotParser extends AbstractDumpParser {
     }
     if (hContent.length() > 0) {
       tdi.setHeapInfo(new HeapInfo(hContent.toString()));
-      System.out.println("Found heap info:" + hContent.toString());
+      theLogger.finest("Found heap info:" + hContent.toString());
     }
 
     return (found);
@@ -451,12 +448,7 @@ public class HotspotParser extends AbstractDumpParser {
       p = Pattern.compile(patternMask);
       Matcher m = p.matcher(name);
 
-      m.matches();
-      /*
-      for (int iLoop = 1; iLoop < m.groupCount(); iLoop++) {
-        System.out.println(iLoop + ": " + m.group(iLoop));
-      }
-       */
+      m.matches();      
     
       tokens = new String[7];
       tokens[0] = m.group(1); // name
@@ -487,7 +479,7 @@ public class HotspotParser extends AbstractDumpParser {
         tokens[2] = m.group(2); // nid
         tokens[3] = m.group(3); // State
       } catch(Exception e2) {
-      System.out.println("WARNING!! Unable to parse partial Thread Tokens with name:" + name);           
+      theLogger.finest("WARNING!! Unable to parse partial Thread Tokens with name:" + name);           
       //e.printStackTrace();
       return doHardParsing(name);
       }
@@ -590,7 +582,7 @@ public class HotspotParser extends AbstractDumpParser {
           int index = line.indexOf("Java HotSpot");
           if (index > 0) {            
             super.setJvmVersion(line.substring(index + 5).trim().replaceAll(":", ""));
-            System.out.println("Found JVM Version:" + line);
+            theLogger.info("Found JVM Version:" + line);
             return;
           }
         }

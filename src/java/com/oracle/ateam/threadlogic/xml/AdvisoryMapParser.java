@@ -17,10 +17,12 @@ package com.oracle.ateam.threadlogic.xml;
 
 import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import java.io.InputStream;
 import java.util.ArrayList;
 
 
+import java.util.logging.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -30,6 +32,8 @@ import org.w3c.dom.NodeList;
  * @author saparam
  */
 public class AdvisoryMapParser extends DefaultDomParser{
+  
+  private static Logger theLogger = CustomLogger.getLogger(AdvisoryMapParser.class.getSimpleName());
   
   private static final String xmlElementName = "Advisory";
   private InputStream input;
@@ -70,7 +74,7 @@ public class AdvisoryMapParser extends DefaultDomParser{
         }
       }
     } catch(Exception e) {
-      System.out.println("Error in parsing of advisory element definition: " + el);
+      theLogger.warning("Error in parsing of advisory element definition: " + el);
       e.printStackTrace();
     }
 	}
@@ -108,7 +112,7 @@ public class AdvisoryMapParser extends DefaultDomParser{
       tadv.setKeywordList(list);
     
 		return tadv;
-    } catch (Exception e) { System.out.println("Error parsing ThreadAdvisory with name: " + name + ", associated error: " + e.getMessage());
+    } catch (Exception e) { theLogger.warning("Error parsing ThreadAdvisory with name: " + name + ", associated error: " + e.getMessage());
       throw e;
     }
 	}

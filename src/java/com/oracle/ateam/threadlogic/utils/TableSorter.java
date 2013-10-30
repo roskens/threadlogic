@@ -25,6 +25,7 @@ import java.awt.event.*;
 import java.util.*;
 import java.util.List;
 
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -85,6 +86,8 @@ public class TableSorter extends AbstractTableModel {
   public static final int ASCENDING = 1;
 
   private static Directive EMPTY_DIRECTIVE = new Directive(-1, NOT_SORTED);
+  
+  private static Logger theLogger = CustomLogger.getLogger(TableSorter.class.getSimpleName());
 
   public static final Comparator COMPARABLE_COMAPRATOR = new Comparator() {
     public int compare(Object o1, Object o2) {
@@ -329,7 +332,7 @@ public class TableSorter extends AbstractTableModel {
           comparison = getComparator(column).compare(o1, o2);
         }        
         if (comparison != 0) {
-          //System.out.println("Cmp Result: " + comparison + ", between " + o1 + " and " + o2);
+          //theLogger.fineste("Cmp Result: " + comparison + ", between " + o1 + " and " + o2);
           return directive.direction == DESCENDING ? -comparison : comparison;
         }
       }

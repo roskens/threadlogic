@@ -36,6 +36,7 @@ package com.oracle.ateam.threadlogic.dialogs;
 import com.oracle.ateam.threadlogic.ThreadLogic;
 import com.oracle.ateam.threadlogic.utils.Browser;
 
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -45,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JEditorPane;
@@ -64,6 +66,8 @@ public class HelpOverviewDialog extends JDialog {
   private JButton closeButton;
 
   private String file;
+  
+  private static Logger theLogger = CustomLogger.getLogger(HelpOverviewDialog.class.getSimpleName());
 
   /**
    * Creates a new instance of HelpOverviewDialog
@@ -106,9 +110,9 @@ public class HelpOverviewDialog extends JDialog {
               Browser.open(evt.getURL().toString());
             }
           } catch (InterruptedException e) {
-            System.out.println("Error launching external browser.");
+            theLogger.warning("Error launching external browser.");
           } catch (IOException e) {
-            System.out.println("I/O error launching external browser." + e.getMessage());
+            theLogger.warning("I/O error launching external browser." + e.getMessage());
             e.printStackTrace();
           }
         }

@@ -102,8 +102,7 @@ public class FilterChecker {
    *          the name of the filter.
    * @return filter with the given name, null otherwise.
    */
-  public Filter getFromFilters(String key) {
-    System.out.println("getFromFilters= " + key);
+  public Filter getFromFilters(String key) {    
     return (filters != null ? (Filter) filters.get(key) : null);
   }
 

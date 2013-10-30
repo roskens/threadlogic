@@ -32,13 +32,14 @@
  */
 package com.oracle.ateam.threadlogic.utils;
 
+import com.oracle.ateam.threadlogic.ThreadLogic;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Properties;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import java.util.logging.Logger;
 
 /**
  * provides static application information like name and version
@@ -52,6 +53,7 @@ public class AppInfo {
   private static String FULL_VERSION;
   private static String BUILD_DATE;
   
+  private static Logger theLogger = CustomLogger.getLogger(AppInfo.class.getSimpleName());
 
   private static final String COPYRIGHT = "2012-2020";
 
@@ -85,7 +87,7 @@ public class AppInfo {
     if (BUILD_DATE == null)
       BUILD_DATE = new Date().toString();
 
-    System.out.println("\n" + APP_FULL_NAME + "\n Version: " + FULL_VERSION + ", " + BUILD_DATE + "\n");
+    theLogger.info("\n" + APP_FULL_NAME + "\n Version: " + FULL_VERSION + ", " + BUILD_DATE + "\n");
   }
     
   /**

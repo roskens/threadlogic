@@ -45,6 +45,7 @@ import java.awt.Point;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultListModel;
@@ -57,6 +58,8 @@ import javax.swing.ListModel;
  * @author irockel
  */
 public class PrefManager {
+  private static Logger theLogger = CustomLogger.getLogger(PrefManager.class.getSimpleName());
+  
   public static final String PARAM_DELIM = "\u00A7\u00A7\u00A7\u00A7";
 
   public static final String FILTER_SEP = "\u00ac\u00ac\u00ac\u00ac";
@@ -394,7 +397,7 @@ public class PrefManager {
             categories.add(i, newCat);
           }
         } catch (ArrayIndexOutOfBoundsException aioob) {
-          System.out.println("couldn't parse categories, " + aioob.getMessage());
+          theLogger.warning("couldn't parse categories, " + aioob.getMessage());
           aioob.printStackTrace();
           // fall back to default categories
           categories = new DefaultListModel();

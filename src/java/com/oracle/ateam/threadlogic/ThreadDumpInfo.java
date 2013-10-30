@@ -45,6 +45,7 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 /**
  * Thread Dump Information Node. It stores structural data about the thread dump
@@ -98,6 +99,8 @@ public class ThreadDumpInfo extends ThreadLogicElement {
   private Hashtable<String, String> threadContextDataMap = new Hashtable<String, String>();
   
   static ExecutorService fixedPoolExecutor = Executors.newFixedThreadPool(6);
+  
+  private static Logger theLogger = Logger.getLogger(ThreadDumpInfo.class.getSimpleName());
 
   public ThreadDumpInfo(String name, int lineCount) {
     super(name);
@@ -534,8 +537,7 @@ public class ThreadDumpInfo extends ThreadLogicElement {
         
 
       // ThreadInfo.getName() returns everything including state/nid/tid..., so
-      // use the filteredName that does not have the rest of the labels...
-      //System.out.println("Saving inside ThreadMap: threadName: " + ti.getName() + ", NameId is: " + ti.getNameId());
+      // use the filteredName that does not have the rest of the labels...      
       this.threadTable.put(ti.getNameId(), ti);
     }
   }
@@ -676,21 +678,21 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     lockTable.put(lock.getLockId(), lock);
 
     ThreadInfo lockOwner = lock.getLockOwner();
-    // System.out.println("********************Lock Registered..." +
-    // lock.getLockId() + ", hashCode: " + lock.hashcode()
-    // + ", owner: " + ((lockOwner == null)? "null":lockOwner.getTName()) +
-    // ", blocked:" + lock.getBlockers().size());
+    theLogger.finest("********************Lock Registered..." +
+     lock.getLockId() + ", hashCode: " + lock.hashCode()
+     + ", owner: " + ((lockOwner == null)? "null":lockOwner.getNameId()) +
+     ", blocked:" + lock.getBlockers().size());
   }
 
   public ThreadInfo getLockOwner(String lock) {
-    System.out.println("Lock searched for: " + lock);
-    System.out.println("Lock Table size: " + lockTable.size());
+    theLogger.finest("Lock searched for: " + lock);
+    theLogger.finest("Lock Table size: " + lockTable.size());
     Enumeration<String> keys = lockTable.keys();
     while(keys.hasMoreElements()) {
       String key = keys.nextElement();
-      System.out.println("Lock : " + key + ", lock:" + lockTable.get(key));
+      theLogger.finest("Lock : " + key + ", lock:" + lockTable.get(key));
     }
-    System.out.println("Lock: " + lockTable.get(lock));
+    theLogger.finest("Lock: " + lockTable.get(lock));
     return this.lockTable.get(lock).getLockOwner();
   }
 
@@ -808,23 +810,8 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     } while (totalThreads > processedThreads.get());
     
     this.threadList = sortByHealth(this.threadList);    
-  }
+  }  
   
-  /*
-  public void runThreadsAdvisory() {
-    System.out.println("Without Executors");
-    long start = System.currentTimeMillis();
-    
-    for (final ThreadInfo ti : this.threadTable.values()) {
-      ti.runAdvisory();
-    }
-    
-    this.threadList = sortByHealth(this.threadList);
-    System.out.println("Time spent without Executors: "  + (System.currentTimeMillis() - start));
-  }
-   * 
-   */
-
   public synchronized void runAdvisory() {
 
     detectDeadlock();
@@ -864,12 +851,12 @@ public class ThreadDumpInfo extends ThreadLogicElement {
     this.threadList = ThreadInfo.sortByHealth(this.threadList);
     this.threadTable.clear();
     for (ThreadInfo ti : threadList) {
-      //System.out.println("Saving inside ThreadMap: threadName: " + ti.getName() + ", NameId is: " + ti.getNameId());
+      theLogger.finest("Saving inside ThreadMap: threadName: " + ti.getName() + ", NameId is: " + ti.getNameId());
       this.threadTable.put(ti.getNameId(), ti);
     }
-    // System.out.println("ThreadDump[" + this.id + "] blocked:" +
-    // noOfBlockedThreads + ", running:" + noOfRunningThreads + ", noOfLocks:" +
-    // noOfLocks);
+    theLogger.finest("ThreadDump[" + this.name + "] blocked:" +
+     noOfBlockedThreads + ", running:" + noOfRunningThreads + ", noOfLocks:" +
+     noOfLocks);
   }
 
   /**

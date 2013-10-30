@@ -20,6 +20,8 @@ import java.util.Collections;
 
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
 import com.oracle.ateam.threadlogic.advisories.ThreadLogicConstants;
+import com.oracle.ateam.threadlogic.utils.CustomLogger;
+import java.util.logging.Logger;
 
 /**
  * Contains all the relevant structure associated with any thread dump element
@@ -32,7 +34,9 @@ public class ThreadLogicElement extends AbstractInfo implements Comparable {
   protected HealthLevel health = HealthLevel.IGNORE;
   protected ThreadState state;
   protected ArrayList<ThreadAdvisory> advisories = new ArrayList<ThreadAdvisory>();
-
+  
+  private static Logger theLogger = CustomLogger.getLogger(ThreadLogic.class.getSimpleName());  
+  
   public ThreadLogicElement(String id) {
     super.setName(id);
   }
@@ -133,7 +137,7 @@ public class ThreadLogicElement extends AbstractInfo implements Comparable {
   // Reset the Health level for the advisory list (due to exclusions)
   public void recalibrateHealthForExcludedAdvisories( HealthLevel downgradedLevel, ArrayList<ThreadAdvisory> exclusionList) {
     
-    //System.out.println(this.getName()+">> HealthLevel before recalibration:" + this.health);
+    theLogger.finest(this.getName()+">> HealthLevel before recalibration:" + this.health);
     
     HealthLevel highestLevel = HealthLevel.IGNORE;
     ThreadState state = this.getState();
@@ -147,7 +151,7 @@ public class ThreadLogicElement extends AbstractInfo implements Comparable {
     }
 
     this.setHealth(highestLevel);    
-    //System.out.println(this.getName()+">> HealthLevel after recalibration:" + this.health);
+    theLogger.finest(this.getName()+">> HealthLevel after recalibration:" + this.health);
   }
   
   public synchronized ArrayList<ThreadAdvisory> getCritAdvisories() {
