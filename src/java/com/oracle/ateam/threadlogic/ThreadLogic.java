@@ -167,6 +167,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   private static String loggcFile;
   private static int fontSizeModifier = 0;
   private static ThreadLogic myThreadLogic = null;
+  
   private JEditorPane htmlPane;
   private PopupFactory popupFactory = PopupFactory.getSharedInstance();
   private Popup popup;
@@ -480,11 +481,12 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
     } catch (UnsupportedFlavorException ex) {
       ex.printStackTrace();
     } catch (IOException ex) {
+      theLogger.warning("Error with reading from clipboard: " + ex.getMessage());
       ex.printStackTrace();
     }
 
-    if (text != null) {
-      if (topNodes == null) {
+    if (text != null) {      
+      if (firstFile || topNodes == null ) {
         initDumpDisplay(text);
         firstFile = false;
       } else {
@@ -499,7 +501,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         "Clipboard at " + new Date(System.currentTimeMillis()), false);
         addToLogfile(text);
          * 
-         */
+         */        
         if (this.getRootPane() != null) {
           this.getRootPane().revalidate();
         }
@@ -619,7 +621,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       dump += "\n" + locks;
     }
 
-    if (topNodes == null) {
+    if (firstFile || topNodes == null) {
       initDumpDisplay(null);
       firstFile = false;
     } else {
@@ -975,7 +977,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
 
     topNodes = new Vector();
 
-    if (!runningAsJConsolePlugin && !runningAsVisualVMPlugin) {
+    if (!runningAsVisualVMPlugin) { // && !runningAsJConsolePlugin ) {
       //getMainMenu().getLongMenuItem().setEnabled(true);
       getMainMenu().getSaveSessionMenuItem().setEnabled(true);
       getMainMenu().getExpandButton().setEnabled(true);
@@ -986,7 +988,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       getMainMenu().getCollapseAllMenuItem().setEnabled(true);
     }
 
-    if (!runningAsJConsolePlugin && (dumpFile != null)) {
+    //if (!runningAsJConsolePlugin && (dumpFile != null)) {
+    if ((dumpFile != null)) {
       addDumpFile();
     } else if (content != null) {
       SimpleDateFormat sdfDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
@@ -2040,6 +2043,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    * check menu and button events.
    */
   public void actionPerformed(ActionEvent e) {
+    try {
     if (e.getSource() instanceof JMenuItem) {
       JMenuItem source = (JMenuItem) (e.getSource());
       if (source.getText().substring(1).startsWith(":\\") || source.getText().startsWith("/")) {
@@ -2180,6 +2184,10 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         displayCategory(node.getUserObject());
       }
     }
+    
+  } catch(Exception e1) {
+  e1.printStackTrace();
+  }
   }
 
   private void showInfo() {
@@ -2378,6 +2386,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
    *          true, if passed files are from recent file list.
    */
   private void openFiles(File[] files, boolean isRecent) {
+    
     for (int i = 0; i < files.length; i++) {
       dumpFile = files[i].getAbsolutePath();
       if (dumpFile != null) {
@@ -2389,9 +2398,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
           addDumpFile();
         } else {
           initDumpDisplay(null);
-          if (isFileOpen()) {
-            firstFile = false;
-          }
+          firstFile = false;
+          setFileOpen(true);
         }
       }
 
@@ -2497,7 +2505,7 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       return;
     }
 
-    boolean isNotFromFile = isNotFromFile((DefaultMutableTreeNode) selPath.getLastPathComponent());
+    boolean isNotFromFile = isNotFromFile((DefaultMutableTreeNode) selPath.getLastPathComponent());    
 
     while (selPath != null
             && !isNotFromFile
@@ -2540,6 +2548,9 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
         getMainMenu().getCloseAllMenuItem().setEnabled(false);
         getMainMenu().getExpandAllMenuItem().setEnabled(false);
         getMainMenu().getCollapseAllMenuItem().setEnabled(false);
+        
+        firstFile = true;
+        dumpFile = null;
 
       } else {
         // rebuild jtree
@@ -2582,7 +2593,8 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
       result = (String) info;
     }
     if (result.contains("Clipboard at") || result.contains("Merge between Dump")
-            || result.contains("Long running thread detection")) {
+            || result.contains("Long running thread detection")
+            || result.contains("JMX Thread Dump")) {
       return true;
     }
     return false;

@@ -19,18 +19,18 @@ import java.util.logging.LogRecord;
  *
  * @author saparam
  */
-public class LogHandler {
+public class LogHandler extends ConsoleHandler {
   
   private static final String LINE_SEPARATOR = System.getProperty("line.separator");
   
-  public static ConsoleHandler theConsoleHandler = new ConsoleHandler();
+  public static ConsoleHandler theHandler = new LogHandler();
   
   static {
-    theConsoleHandler.setFormatter(new LogFormatter());
+    theHandler.setFormatter(new LogFormatter());
   }
   
   public static Handler getHandler() {
-    return theConsoleHandler;
+    return theHandler;
   }
   
   static public class LogFormatter extends Formatter{ 

@@ -53,7 +53,7 @@ public class AppInfo {
   private static String FULL_VERSION;
   private static String BUILD_DATE;
   
-  private static Logger theLogger = CustomLogger.getLogger(AppInfo.class.getSimpleName());
+  private static Logger theLogger = CustomLogger.getLogger(ThreadLogic.class.getSimpleName());
 
   private static final String COPYRIGHT = "2012-2020";
 

@@ -89,10 +89,10 @@ public class ThreadLogicPlugin extends JConsolePlugin implements PropertyChangeL
    */
   class Worker extends SwingWorker {
 
-    private ThreadLogic tda;
+    private ThreadLogic threadLogic;
 
-    Worker(ThreadLogic tda) {
-      this.tda = tda;
+    Worker(ThreadLogic threadLogic) {
+      this.threadLogic = threadLogic;
     }
 
     protected void done() {

@@ -515,10 +515,14 @@ public class MainMenu extends JMenuBar {
     HealthLevelFilter healthFilter = (HealthLevelFilter) FilterChecker.getFilterChecker().getFromFilters("Minimum Health Level Filter");
     for (HealthLevel health : HealthLevel.values()) {
       healthBox.addItem(health.name());
+      /*
       if (healthFilter.getHealth().name().equals(health.name())) {
         healthBox.setSelectedItem(health.name());
       }
+       * 
+       */
     }
+    healthBox.setSelectedItem(HealthLevel.IGNORE);
     healthBox.addActionListener(listener);
     healthBox.setMaximumSize(healthBox.getPreferredSize());
     return healthBox;
