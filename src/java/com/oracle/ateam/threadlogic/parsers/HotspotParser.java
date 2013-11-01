@@ -582,7 +582,7 @@ public class HotspotParser extends AbstractDumpParser {
           int index = line.indexOf("Java HotSpot");
           if (index > 0) {            
             super.setJvmVersion(line.substring(index + 5).trim().replaceAll(":", ""));
-            theLogger.info("Found JVM Version:" + line);
+            theLogger.info("JVM Version:" + line);
             return;
           }
         }
