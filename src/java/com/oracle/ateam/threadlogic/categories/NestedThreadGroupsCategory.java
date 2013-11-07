@@ -276,8 +276,8 @@ public class NestedThreadGroupsCategory extends NestedCategory {
 
     LinkedList<ThreadInfo> pendingThreadList = new LinkedList<ThreadInfo>(threadLinkedList);
     createThreadGroups(pendingThreadList, allWLSFilterList, true, nestedWLSCategory);
-    createThreadGroups(pendingThreadList, allNonWLSFilterList, false, nestedNonWLSCategory);
-
+    createThreadGroups(pendingThreadList, allNonWLSFilterList, false, nestedNonWLSCategory);    
+            
     // For the rest of the unknown type threads, add them to the unknown group
     for (ThreadInfo ti : pendingThreadList) {
       unknownThreadGroup.addThread(ti);
@@ -298,9 +298,11 @@ public class NestedThreadGroupsCategory extends NestedCategory {
       boolean isJvmGroup = name.contains("JVM");
       ThreadGroup tg = ThreadGroupFactory.createThreadGroup(name);
 
+      
       boolean foundAtleastOneThread = false;
       for (Iterator<ThreadInfo> iterator = pendingThreadList.iterator(); iterator.hasNext();) {
         ThreadInfo ti = iterator.next();
+
         if (filter.matches(ti)) {
           tg.addThread(ti);
           iterator.remove();
@@ -364,4 +366,5 @@ public class NestedThreadGroupsCategory extends NestedCategory {
       }
     }
   }
+
 }

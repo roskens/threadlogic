@@ -31,6 +31,9 @@ public class RestOfWLSThreadGroup extends CustomizedThreadGroup {
 
   // Try to make sure there are atleast 5 Idle threads in Default Thread pool
   public static final int MIN_IDLE_THREADS = 3;
+  
+  private boolean isMissingThreads = false;
+  private String missingThreadIds = null;
 
   public RestOfWLSThreadGroup(String grpName) {
     super(grpName);
@@ -97,5 +100,19 @@ public class RestOfWLSThreadGroup extends CustomizedThreadGroup {
     }
   }
 
+  public void addMissingThreadsAdvisory(ThreadAdvisory missingThreadsAdv) {
+
+    if (!this.getAdvisories().contains(missingThreadsAdv))
+      addAdvisory(missingThreadsAdv);
+
+    this.setHealth(missingThreadsAdv.getHealth());
+
+    for(ThreadInfo ti: threads) {
+      ti.addAdvisory(missingThreadsAdv);
+      ti.setHealth(HealthLevel.FATAL);
+    }
+    
+    this.createOverview();
+  }
 
 }

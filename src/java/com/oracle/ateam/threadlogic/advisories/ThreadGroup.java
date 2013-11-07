@@ -248,8 +248,8 @@ public class ThreadGroup extends ThreadLogicElement {
     this.threads = ThreadInfo.sortByHealth(this.threads);
     this.advisories = ThreadAdvisory.sortByHealth(this.advisories);
     this.setAdvisoryRun();
-  }
-
+  }  
+  
   /**
    * get the overview information of this thread groups.
    * 

@@ -17,6 +17,7 @@ import com.oracle.ateam.threadlogic.HealthLevel;
 import com.oracle.ateam.threadlogic.ThreadLogic;
 import com.oracle.ateam.threadlogic.advisories.ThreadLogicConstants;
 import com.oracle.ateam.threadlogic.ThreadInfo;
+import com.oracle.ateam.threadlogic.advisories.RestOfWLSThreadGroup;
 import com.oracle.ateam.threadlogic.advisories.ThreadGroup;
 import com.oracle.ateam.threadlogic.advisories.ThreadAdvisory;
 import com.oracle.ateam.threadlogic.advisories.ThreadGroupFactory;
@@ -30,6 +31,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -64,7 +66,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   
   private static Filter allWLSThreadStackFilter, allWLSThreadNameFilter;
   
-  private static Logger theLogger = CustomLogger.getLogger(ExternalizedNestedThreadGroupsCategory.class.getName());
+  private static Logger theLogger = CustomLogger.getLogger("ThreadGroupsCategory");
   
   public static String DICTIONARY_KEYS;
   public static String THREADTYPEMAPPER_KEYS;
@@ -72,6 +74,10 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   public static String GROUPDEFS_EXT_DIRECTORY = "threadlogic.groups";
   public static final Hashtable<String, Filter> allKnownFilterMap = new Hashtable<String, Filter>();
   public static String wlsThreadStackPattern, wlsThreadNamePattern;
+  
+  private int totalWlsDefaultExecuteThreads, maxWlsDefaultExecuteThreadId = 0;
+  private int[] wlsDefaultExecuteThreadIds = new int[800];
+  private static final String REST_OF_WLS = "Rest of WLS";
   
   static {
     init();
@@ -386,7 +392,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     wlsJMSThreadsFilter.addFilter(wlsJMSFilter2, true);
     nestedWLSCategory.addToFilters(wlsJMSThreadsFilter);
 
-    CompositeFilter wlsThreadsFilter = new CompositeFilter("Rest of WLS");
+    CompositeFilter wlsThreadsFilter = new CompositeFilter(REST_OF_WLS);
     wlsThreadsFilter.addFilter(allWLSThreadStackFilter, true);
     wlsThreadsFilter.addFilter(allWLSThreadNameFilter, true);
     
@@ -427,10 +433,57 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
       }
     }
 
+    Arrays.fill(wlsDefaultExecuteThreadIds, -1);
     LinkedList<ThreadInfo> pendingThreadList = new LinkedList<ThreadInfo>(threadLinkedList);
     createThreadGroups(pendingThreadList, allWLSFilterList, true, nestedWLSCategory);
     createThreadGroups(pendingThreadList, allNonWLSFilterList, false, nestedNonWLSCategory);
 
+    // Check for Missing ExecuteThread Ids now that WLS related threads have been filtered.
+    StringBuffer missingExecuteThreadIdsBuf = new StringBuffer(100);
+    
+    boolean firstThread = true;
+    for (int i = 0; i <= maxWlsDefaultExecuteThreadId; i++) {
+      if (wlsDefaultExecuteThreadIds[i] == -1) {       
+        if (!firstThread) 
+          missingExecuteThreadIdsBuf.append(", ");
+        
+        missingExecuteThreadIdsBuf.append("ExecuteThread: '" + i + "'");
+        firstThread = false;
+      }
+    }
+    
+    if (missingExecuteThreadIdsBuf.length() > 0) {
+      theLogger.warning("WLS Default ExecuteThreads Missing : " 
+              + missingExecuteThreadIdsBuf.toString());
+      
+      ThreadGroup restOfWLSTG = null;
+      
+      for(ThreadGroup tg: wlsThreadGroupList) {
+        if (tg.getName().equals(REST_OF_WLS)) {
+          restOfWLSTG = tg;
+          
+          ThreadAdvisory missingThreadAdvisory 
+                  = ThreadAdvisory.lookupThreadAdvisoryByName(
+                      ThreadLogicConstants.WLS_EXECUTETHREADS_MISSING);
+          missingThreadAdvisory.setDescrp(missingThreadAdvisory.getDescrp() 
+                  + ". Missing Thread Ids: " + missingExecuteThreadIdsBuf.toString());
+          
+          ((RestOfWLSThreadGroup)restOfWLSTG).addMissingThreadsAdvisory(missingThreadAdvisory);
+          break;
+        }
+      }
+      
+      for(Filter filter: allWLSFilterList) {
+        
+        if (filter.getName().equals(REST_OF_WLS)) {
+          Filter restOfWLSFilter = filter;          
+          restOfWLSFilter.setInfo(restOfWLSTG.getOverview());
+          break;
+        }
+      }
+      
+    }
+    
     // For the rest of the unknown type threads, add them to the unknown group
     for (ThreadInfo ti : pendingThreadList) {
       unknownThreadGroup.addThread(ti);
@@ -465,6 +518,20 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
       boolean foundAtleastOneThread = false;
       for (Iterator<ThreadInfo> iterator = pendingThreadList.iterator(); iterator.hasNext();) {
         ThreadInfo ti = iterator.next();
+        
+        // Check for the thread id and mark it for WLS Default ExecuteThreads
+        if (isWLSThreadGroup) {
+          int threadId = getWLSDefaultExecuteThreadId(ti);
+          if (threadId >= 0) {
+            
+            if (threadId > maxWlsDefaultExecuteThreadId) 
+              maxWlsDefaultExecuteThreadId = threadId; 
+            
+            incrementTotalWLSDefaultExecuteThreads();
+            wlsDefaultExecuteThreadIds[threadId] = 1;      
+          }
+        }
+        
         if (filter.matches(ti)) {
           //theLogger.finest("Found Match against filter: " + filter.getName() + ", for Thread:" + ti.getName());
           tg.addThread(ti);
@@ -530,5 +597,34 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
     }
 
     associatedFilter.setInfo(tg.getOverview());
+  }
+  
+    
+  public boolean isWLSDefaultExecuteThread(ThreadInfo ti) {
+    if (ti.getName() == null)
+      return false;
+    
+    return ti.getName().contains("weblogic.kernel.Default");
+  }
+  
+  public int getWLSDefaultExecuteThreadId(ThreadInfo ti) {
+    if (!isWLSDefaultExecuteThread(ti))
+      return -1;
+    
+    int threadIdBeginIndex = ti.getName().indexOf("ExecuteThread: '") + 16;// "ExecuteThread: 'ID';
+    int threadIdEndIndex = ti.getName().indexOf("'", threadIdBeginIndex+1);
+    return Integer.parseInt(ti.getName().substring(threadIdBeginIndex, threadIdEndIndex));
+  }
+  
+  public int getTotalWLSDefaultExecuteThreads() {
+    return totalWlsDefaultExecuteThreads;
+  }
+  
+  public int incrementTotalWLSDefaultExecuteThreads() {
+    return ++totalWlsDefaultExecuteThreads;
+  }
+  
+  public int getMaxWLSDefaultExecuteThreadId() {
+    return maxWlsDefaultExecuteThreadId;
   }
 }

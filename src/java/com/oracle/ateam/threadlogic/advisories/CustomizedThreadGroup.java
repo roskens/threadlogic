@@ -38,6 +38,12 @@ public class CustomizedThreadGroup extends ThreadGroup {
     runGroupAdvisory();
   }
   
+  public void runAdvisory(boolean force) {    
+    super.runAdvisory();    
+    runGroupAdvisory();
+  }
+  
+  
   public void runGroupAdvisory() {
   } 
   
@@ -50,6 +56,7 @@ public class CustomizedThreadGroup extends ThreadGroup {
    * creates the overview information for this thread group.
    */
   protected void createOverview() {  
-    setOverview(getBaseOverview() + getCustomizedOverview() + getEndOfBaseOverview() + getCritOverview());
+    setOverview(getBaseOverview() + getCustomizedOverview() 
+            + getEndOfBaseOverview() + getCritOverview());
   }
 }

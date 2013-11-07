@@ -1421,5 +1421,12 @@ xmlns="http://java.net/projects/threadlogic">
     <Descrp>OSB thread might get blocked for xmlbeans locale during check for WSI in GET action</Descrp>
     <Advice>Apply OSB patch 16096932 </Advice>
   </Advisory>
+  <Advisory>
+    <Name>WLS ExecuteThreads Missing</Name>
+    <Health>FATAL</Health>
+    <Keyword>WLS ExecuteThreads Missing</Keyword>
+    <Descrp>WebLogic ExecuteThreads appear missing. Threads might have been killed due to Memory or other conditions. Check "Rest of WLS" Thread Group tree node overview for missing thread ids</Descrp>
+    <Advice>WLS Server is missing ExecuteThreads (possibly killed). Check Memory, GC, CPU and logs.</Advice>
+  </Advisory>
 </tlogic:AdvisoryMap>
 	

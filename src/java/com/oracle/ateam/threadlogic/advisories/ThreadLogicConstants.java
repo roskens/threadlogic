@@ -63,6 +63,7 @@ public class ThreadLogicConstants {
   public static final String WLS_SESSION_REPLICATION = "MessageReceiverRunning";
   
   public static final String LISTENER_MISSING = "Socket Listener Missing";
+  public static final String WLS_EXECUTETHREADS_MISSING = "WLS ExecuteThreads Missing";
   public static final String WLS_IDLE_THREADS = "ExecuteThread.waitForRequest";  
   public static final String LISTENER_THREAD = "SocketImpl.socketAccept";  
   public static final String WLS_SERVICES_STARTUP = "ServerServicesManager.startService";
