@@ -473,15 +473,17 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
         }
       }
       
-      for(Filter filter: allWLSFilterList) {
-        
-        if (filter.getName().equals(REST_OF_WLS)) {
-          Filter restOfWLSFilter = filter;          
-          restOfWLSFilter.setInfo(restOfWLSTG.getOverview());
-          break;
+      if (restOfWLSTG != null) {        
+      
+        for(Filter filter: allWLSFilterList) {
+
+          if (filter.getName().equals(REST_OF_WLS)) {
+            Filter restOfWLSFilter = filter;          
+            restOfWLSFilter.setInfo(restOfWLSTG.getOverview());
+            break;
+          }
         }
       }
-      
     }
     
     // For the rest of the unknown type threads, add them to the unknown group
@@ -601,19 +603,24 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   
     
   public boolean isWLSDefaultExecuteThread(ThreadInfo ti) {
-    if (ti.getName() == null)
+    String threadName = ti.getName();
+    if (threadName == null)
       return false;
     
-    return ti.getName().contains("weblogic.kernel.Default");
+    return threadName.contains("weblogic.kernel.Default") && threadName.contains("ExecuteThread");
   }
   
   public int getWLSDefaultExecuteThreadId(ThreadInfo ti) {
     if (!isWLSDefaultExecuteThread(ti))
       return -1;
     
-    int threadIdBeginIndex = ti.getName().indexOf("ExecuteThread: '") + 16;// "ExecuteThread: 'ID';
-    int threadIdEndIndex = ti.getName().indexOf("'", threadIdBeginIndex+1);
-    return Integer.parseInt(ti.getName().substring(threadIdBeginIndex, threadIdEndIndex));
+    try {
+      int threadIdBeginIndex = ti.getName().indexOf("ExecuteThread: '") + 16;// "ExecuteThread: 'ID';
+      int threadIdEndIndex = ti.getName().indexOf("'", threadIdBeginIndex+1);
+      return Integer.parseInt(ti.getName().substring(threadIdBeginIndex, threadIdEndIndex)); 
+    } catch(Exception e) {
+      return -1;
+    }
   }
   
   public int getTotalWLSDefaultExecuteThreads() {
