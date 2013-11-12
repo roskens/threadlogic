@@ -75,7 +75,7 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
   public static final Hashtable<String, Filter> allKnownFilterMap = new Hashtable<String, Filter>();
   public static String wlsThreadStackPattern, wlsThreadNamePattern;
   
-  private int totalWlsDefaultExecuteThreads, maxWlsDefaultExecuteThreadId = 0;
+  private int totalWlsDefaultExecuteThreads, maxWlsDefaultExecuteThreadId = -1;
   private int[] wlsDefaultExecuteThreadIds = new int[800];
   private static final String REST_OF_WLS = "Rest of WLS";
   
@@ -526,8 +526,9 @@ public class ExternalizedNestedThreadGroupsCategory extends NestedCategory {
           int threadId = getWLSDefaultExecuteThreadId(ti);
           if (threadId >= 0) {
             
-            if (threadId > maxWlsDefaultExecuteThreadId) 
-              maxWlsDefaultExecuteThreadId = threadId; 
+            if (threadId > maxWlsDefaultExecuteThreadId) {
+              maxWlsDefaultExecuteThreadId = threadId;
+            }
             
             incrementTotalWLSDefaultExecuteThreads();
             wlsDefaultExecuteThreadIds[threadId] = 1;      
