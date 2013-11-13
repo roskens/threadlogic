@@ -93,33 +93,32 @@ public class PreferencesDialog extends JDialog {
     prefsPane.addTab("General", generalPanel);
     prefsPane.addTab("Date Parsing", regExPanel);
     getContentPane().add(prefsPane, BorderLayout.CENTER);
+    
+    okButton = new JButton("Ok");
+    cancelButton = new JButton("Cancel");
+    buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+    buttonPanel.add(okButton);
+    buttonPanel.add(cancelButton);
+    getContentPane().add(buttonPanel, BorderLayout.SOUTH);
 
-    // only add buttons if there is an owner frame
-    // otherwise we are running in visualvm
-    if (frame != null) {
-      okButton = new JButton("Ok");
-      cancelButton = new JButton("Cancel");
-      buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-      buttonPanel.add(okButton);
-      buttonPanel.add(cancelButton);
-      getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+    okButton.addActionListener(new ActionListener() {
 
-      okButton.addActionListener(new ActionListener() {
-
-        public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(ActionEvent e) {
+        if (frame != null)
           frame.setEnabled(true);
-          saveSettings();
-        }
-      });
+        saveSettings();
+      }
+    });
 
-      cancelButton.addActionListener(new ActionListener() {
+    cancelButton.addActionListener(new ActionListener() {
 
-        public void actionPerformed(ActionEvent e) {
+      public void actionPerformed(ActionEvent e) {
+        if (frame != null)
           frame.setEnabled(true);
-          dispose();
-        }
-      });
-    }
+        dispose();
+      }
+    });
+
     reset();
   }
 

@@ -2261,11 +2261,17 @@ public class ThreadLogic extends JPanel implements ListSelectionListener, TreeSe
   private void showPreferencesDialog() {
     // Create and set up the window.
     if (prefsDialog == null) {
-      prefsDialog = new PreferencesDialog(getFrame());
+      prefsDialog = new PreferencesDialog(getFrame());      
       prefsDialog.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
     }
 
+    /*
+     * No Parent Frame when running as JConsolePlugin
+     * Commenting off this does not seem to affect the dialog box behavior.
     getFrame().setEnabled(false);
+     * 
+     */
+    
     // Display the window.
     prefsDialog.reset();
     prefsDialog.pack();
